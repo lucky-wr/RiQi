@@ -10,7 +10,6 @@ import secrets
 import shutil
 import urllib.parse
 import socket
-import time
 from datetime import date
 
 # Windows 终端 GBK 编码兼容
@@ -142,21 +141,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     data = json.load(f)
             except (FileNotFoundError, json.JSONDecodeError):
                 data = {"tasks": []}
-            self._send_json(200, data)
-
-        elif path == "/api/templates":
-            token = get_first("token")
-            user = self._auth(token)
-            if not user:
-                self._send_json(401, {"error": "未登录或登录已过期"})
-                return
-            templates_path = os.path.join(DATA_DIR, user["name"], "templates.json")
-            os.makedirs(os.path.join(DATA_DIR, user["name"]), exist_ok=True)
-            try:
-                with open(templates_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                data = {"templates": []}
             self._send_json(200, data)
 
         elif path == "/api/history":
@@ -365,53 +349,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             user["password"] = hash_password(new_password)
             user["token"] = ""
             save_users(users_data)
-            self._send_json(200, {"ok": True})
-
-        elif self.path == "/api/templates/add":
-            token = body.get("token", "")
-            user = self._auth(token)
-            if not user:
-                self._send_json(401, {"error": "未登录或登录已过期"})
-                return
-            title = body.get("title", "").strip()
-            if not title:
-                self._send_json(400, {"error": "内容不能为空"})
-                return
-            templates_path = os.path.join(DATA_DIR, user["name"], "templates.json")
-            os.makedirs(os.path.join(DATA_DIR, user["name"]), exist_ok=True)
-            try:
-                with open(templates_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                data = {"templates": []}
-            data["templates"].append({
-                "id": int(time.time() * 1000),
-                "title": title,
-            })
-            with open(templates_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            self._send_json(200, {"ok": True})
-
-        elif self.path == "/api/templates/delete":
-            token = body.get("token", "")
-            user = self._auth(token)
-            if not user:
-                self._send_json(401, {"error": "未登录或登录已过期"})
-                return
-            tid = body.get("id")
-            if not tid:
-                self._send_json(400, {"error": "参数不完整"})
-                return
-            templates_path = os.path.join(DATA_DIR, user["name"], "templates.json")
-            os.makedirs(os.path.join(DATA_DIR, user["name"]), exist_ok=True)
-            try:
-                with open(templates_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                data = {"templates": []}
-            data["templates"] = [t for t in data["templates"] if t["id"] != tid]
-            with open(templates_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
             self._send_json(200, {"ok": True})
 
         else:

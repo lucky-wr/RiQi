@@ -751,176 +751,6 @@ body {
 }
 .btn-bar-close:hover { background:rgba(255,255,255,0.35); color:var(--text-secondary); }
 .btn-bar-close:active { transform:scale(0.88); }
-.btn-bar-tpl {
-  flex-shrink:0;
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  border:none;
-  background:rgba(255,255,255,0.2);
-  color:var(--text-muted);
-  font-size:1.1rem;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:all 0.2s;
-}
-.btn-bar-tpl:hover { background:rgba(255,255,255,0.35); color:var(--text-secondary); }
-.btn-bar-tpl:active { transform:scale(0.88); }
-.btn-bar-tpl.active { background:rgba(201,168,124,0.2); color:var(--accent); }
-
-/* ====== 任务模板面板 ====== */
-.tpl-panel {
-  max-width:640px;
-  width:100%;
-  margin:-4px auto 0;
-  padding:0 16px;
-  display:none;
-  z-index:3;
-  position:relative;
-}
-.tpl-panel.show { display:block; animation:barDown 0.25s cubic-bezier(0.22,1,0.36,1); }
-.tpl-panel .tpl-inner {
-  background:rgba(255,255,255,0.20);
-  backdrop-filter:blur(16px) saturate(1.2);
-  -webkit-backdrop-filter:blur(16px) saturate(1.2);
-  border:1px solid var(--card-border);
-  border-radius:18px;
-  padding:14px 16px 12px;
-  box-shadow:0 4px 20px rgba(0,0,0,0.06);
-}
-.tpl-header {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:10px;
-  font-family:var(--font-hand);
-  font-size:0.95rem;
-  color:var(--text-secondary);
-  letter-spacing:1px;
-}
-.tpl-header-actions {
-  display:flex;
-  gap:6px;
-}
-.tpl-header-actions button {
-  padding:4px 12px;
-  border-radius:10px;
-  border:none;
-  font-family:var(--font-hand);
-  font-size:0.85rem;
-  cursor:pointer;
-  transition:all 0.2s;
-  letter-spacing:0.5px;
-  background:rgba(255,255,255,0.15);
-  color:var(--text-secondary);
-}
-.tpl-header-actions button:hover { background:rgba(255,255,255,0.3); }
-.tpl-list {
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  max-height:220px;
-  overflow-y:auto;
-}
-.tpl-item {
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  border-radius:12px;
-  cursor:pointer;
-  transition:background 0.15s;
-}
-.tpl-item:hover { background:rgba(255,255,255,0.15); }
-.tpl-item-text {
-  flex:1;
-  font-family:var(--font-hand);
-  font-size:1rem;
-  color:var(--text);
-  letter-spacing:0.5px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.tpl-item-add {
-  flex-shrink:0;
-  width:26px;
-  height:26px;
-  border-radius:50%;
-  border:none;
-  background:rgba(122,158,126,0.12);
-  color:var(--green);
-  font-size:1rem;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:all 0.15s;
-}
-.tpl-item-add:hover { background:rgba(122,158,126,0.25); transform:scale(1.1); }
-.tpl-item-del {
-  flex-shrink:0;
-  width:26px;
-  height:26px;
-  border-radius:50%;
-  border:none;
-  background:rgba(200,80,80,0.06);
-  color:#c85555;
-  font-size:0.85rem;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:all 0.15s;
-  opacity:0.6;
-}
-.tpl-item-del:hover { background:rgba(200,80,80,0.18); opacity:1; }
-.tpl-empty {
-  font-family:var(--font-hand);
-  font-size:0.9rem;
-  color:var(--text-muted);
-  text-align:center;
-  padding:12px 0;
-  letter-spacing:1px;
-}
-.tpl-save-input {
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-top:10px;
-  padding-top:10px;
-  border-top:1px solid rgba(255,255,255,0.12);
-}
-.tpl-save-input input {
-  flex:1;
-  font-family:var(--font-hand);
-  font-size:0.95rem;
-  color:var(--text);
-  background:rgba(255,255,255,0.1);
-  border:1px solid rgba(255,255,255,0.15);
-  border-radius:10px;
-  outline:none;
-  padding:6px 12px;
-}
-.tpl-save-input input:focus { border-color:var(--accent); }
-.tpl-save-input input::placeholder { color:var(--text-muted); font-family:var(--font-hand); }
-.tpl-save-btn {
-  flex-shrink:0;
-  padding:6px 14px;
-  border-radius:10px;
-  border:none;
-  background:linear-gradient(135deg, var(--accent), var(--accent-soft));
-  color:#fff;
-  font-family:var(--font-hand);
-  font-size:0.9rem;
-  cursor:pointer;
-  transition:all 0.2s;
-}
-.tpl-save-btn:hover { opacity:0.85; }
-.tpl-save-btn:active { transform:scale(0.94); }
-
 /* ====== 任务计数 ====== */
 .task-count {
   text-align:center;
@@ -1385,27 +1215,11 @@ body {
       <div class="input-bar" id="inputBar">
         <div class="bar-inner">
           <input type="text" id="taskInput" placeholder="输入今天要做的事..." autocomplete="off">
-          <button class="btn-bar-tpl" id="btnTpl" title="任务模板">&#128203;</button>
           <button class="btn-bar-add" id="btnAddTask">添加</button>
           <button class="btn-bar-close" id="btnCloseBar">&#10003;</button>
         </div>
       </div>
 
-      <div class="tpl-panel" id="tplPanel">
-        <div class="tpl-inner">
-          <div class="tpl-header">
-            <span>任务模板</span>
-            <div class="tpl-header-actions">
-              <button id="tplRefresh" title="刷新">&#8635;</button>
-            </div>
-          </div>
-          <div class="tpl-list" id="tplList"></div>
-          <div class="tpl-save-input">
-            <input type="text" id="tplSaveInput" placeholder="保存当前输入为模板...">
-            <button class="tpl-save-btn" id="tplSaveBtn">保存</button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- 页面：管理成员 -->
@@ -1791,7 +1605,6 @@ function escapeHtml(str) {
 // ==================== 添加任务 ====================
 function hideInputBar() {
   document.getElementById('inputBar').classList.remove('show');
-  hideTplPanel();
 }
 
 function addTaskFromInput() {
@@ -2141,140 +1954,10 @@ function createSparkles(container) {
   }
 }
 
-// ==================== 任务模板 ====================
-
-let templates = [];
-
-async function loadTemplates() {
-  const token = getToken();
-  if (!token) return;
-  try {
-    const res = await fetch('/api/templates?token=' + encodeURIComponent(token));
-    if (!res.ok) return;
-    const data = await res.json();
-    templates = data.templates || [];
-    renderTemplates();
-  } catch(e) {}
-}
-
-function renderTemplates() {
-  const list = document.getElementById('tplList');
-  if (!list) return;
-  if (templates.length === 0) {
-    list.innerHTML = '<div class="tpl-empty">暂无模板，在下方保存当前任务为模板</div>';
-    return;
-  }
-  list.innerHTML = templates.map(function(t) {
-    return '<div class="tpl-item">'
-      + '<span class="tpl-item-text">' + escapeHtml(t.title) + '</span>'
-      + '<button class="tpl-item-add" data-tpl-add="' + t.id + '" title="添加此任务">+</button>'
-      + '<button class="tpl-item-del" data-tpl-del="' + t.id + '" title="删除模板">✕</button>'
-    + '</div>';
-  }).join('');
-}
-
-function addTaskFromTemplate(title) {
-  state.tasks.push({
-    id: Date.now() + Math.random() * 1000,
-    title: title,
-    completed: false,
-    doneSettled: false,
-    _fresh: true,
-  });
-  renderTasks();
-  debouncedSave();
-  setTimeout(function() {
-    var cards = document.querySelectorAll('.task-card');
-    if (cards.length > 0) {
-      cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, 100);
-}
-
-async function saveTemplate(title) {
-  if (!title) return;
-  const token = getToken();
-  try {
-    const res = await fetch('/api/templates/add', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: token, title: title }),
-    });
-    if (!res.ok) return;
-    document.getElementById('tplSaveInput').value = '';
-    await loadTemplates();
-  } catch(e) {}
-}
-
-async function deleteTemplate(id) {
-  const token = getToken();
-  try {
-    const res = await fetch('/api/templates/delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: token, id: id }),
-    });
-    if (!res.ok) return;
-    await loadTemplates();
-  } catch(e) {}
-}
-
-function toggleTplPanel() {
-  const panel = document.getElementById('tplPanel');
-  const btn = document.getElementById('btnTpl');
-  panel.classList.toggle('show');
-  btn.classList.toggle('active');
-  if (panel.classList.contains('show')) {
-    loadTemplates();
-  }
-}
-
-function hideTplPanel() {
-  document.getElementById('tplPanel').classList.remove('show');
-  document.getElementById('btnTpl').classList.remove('active');
-}
-
-// 模板列表事件委托
-document.addEventListener('click', function(e) {
-  const addBtn = e.target.closest('[data-tpl-add]');
-  if (addBtn) {
-    var id = parseFloat(addBtn.dataset.tplAdd);
-    var tpl = templates.find(function(t) { return t.id === id; });
-    if (tpl) addTaskFromTemplate(tpl.title);
-    return;
-  }
-  const delBtn = e.target.closest('[data-tpl-del]');
-  if (delBtn) {
-    var id = parseFloat(delBtn.dataset.tplDel);
-    deleteTemplate(id);
-  }
-});
-
-// 模板按钮
-document.getElementById('btnTpl').addEventListener('click', toggleTplPanel);
-
-// 模板保存
-document.getElementById('tplSaveBtn').addEventListener('click', function() {
-  var input = document.getElementById('tplSaveInput');
-  var title = input.value.trim();
-  if (title) saveTemplate(title);
-});
-document.getElementById('tplSaveInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    var title = this.value.trim();
-    if (title) saveTemplate(title);
-  }
-});
-document.getElementById('tplRefresh').addEventListener('click', function() {
-  loadTemplates();
-});
-
-// 打开输入条时加载模板
+// 打开输入条
 function showInputBar() {
   document.getElementById('inputBar').classList.add('show');
-  hideTplPanel();
   setTimeout(function() { document.getElementById('taskInput').focus(); }, 100);
-  loadTemplates(); // 预加载模板
 }
 
 // ==================== 事件绑定（任务） ====================
@@ -2290,7 +1973,6 @@ document.addEventListener('click', function(e) {
   var bar = document.getElementById('inputBar');
   if (!bar.classList.contains('show')) return;
   if (!e.target.closest('#inputBar') && !e.target.closest('#btnAdd')) hideInputBar();
-  if (!e.target.closest('#tplPanel') && !e.target.closest('#btnTpl')) hideTplPanel();
 });
 
 document.getElementById('taskList').addEventListener('click', function(e) {
@@ -2558,7 +2240,6 @@ function renderHistory(history) {
   var autoLoggedIn = await checkAutoLogin();
   if (autoLoggedIn) {
     showApp();
-    loadTemplates();
   } else {
     document.getElementById('loginOverlay').classList.remove('hidden');
   }
