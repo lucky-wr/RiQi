@@ -10,7 +10,7 @@ import secrets
 import shutil
 import urllib.parse
 import socket
-from datetime import date
+from datetime import date, datetime, timedelta
 
 # Windows 终端 GBK 编码兼容
 if sys.stdout.encoding and sys.stdout.encoding.upper() in ("GBK", "GB2312", "CP936"):
@@ -67,10 +67,12 @@ def find_user_by_token(users_data, token):
     return None
 
 
-def user_data_file(username):
+def user_data_file(username, date_str=None):
     d = os.path.join(DATA_DIR, username)
     os.makedirs(d, exist_ok=True)
-    return os.path.join(d, f"tasks_{date.today().isoformat()}.json")
+    if date_str is None:
+        date_str = date.today().isoformat()
+    return os.path.join(d, f"tasks_{date_str}.json")
 
 
 def get_lan_ip():
@@ -83,6 +85,278 @@ def get_lan_ip():
         return ip
     except Exception:
         return "127.0.0.1"
+
+
+# ==================== 保护卡管理 ====================
+
+def protection_file(username):
+    d = os.path.join(DATA_DIR, username)
+    os.makedirs(d, exist_ok=True)
+    return os.path.join(d, "protection.json")
+
+
+def load_protection(username):
+    try:
+        with open(protection_file(username), "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"cards": 0, "protected": [], "totalEarned": 0}
+
+
+def save_protection(username, data):
+    with open(protection_file(username), "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def get_card_max(streak):
+    if streak <= 20: return 2
+    if streak <= 50: return 5
+    return 10
+
+
+def task_file_for_date(username, date_str):
+    d = os.path.join(DATA_DIR, username)
+    return os.path.join(d, f"tasks_{date_str}.json")
+
+
+def read_tasks_for_date(username, date_str):
+    path = task_file_for_date(username, date_str)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("tasks", [])
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+
+def compute_stats(username):
+    """计算用户统计，自动处理保护卡"""
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+
+    # 加载保护卡数据
+    prot = load_protection(username)
+    cards = prot["cards"]
+    protected_set = set(prot["protected"])
+    total_earned = prot["totalEarned"]
+
+    # 读取用户所有任务数据
+    user_dir = os.path.join(DATA_DIR, username)
+    all_tasks = {}
+    if os.path.exists(user_dir):
+        for fname in sorted(os.listdir(user_dir)):
+            if fname.startswith("tasks_") and fname.endswith(".json"):
+                ds = fname[len("tasks_"):-len(".json")]
+                try:
+                    with open(os.path.join(user_dir, fname), "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    all_tasks[ds] = data.get("tasks", [])
+                except (json.JSONDecodeError, FileNotFoundError):
+                    continue
+
+    if not all_tasks:
+        # 没有数据时返回初始状态
+        return {
+            "streak": 0, "longestStreak": 0, "totalDays": 0, "fullDays": 0,
+            "totalTasks": 0, "completedTasks": 0, "completionRate": 0,
+            "monthTasks": 0, "monthCompleted": 0,
+            "cards": 0, "cardsMax": 2, "protectedDates": [],
+            "calendar": build_calendar(today, all_tasks, protected_set)
+        }
+
+    # 基础统计
+    total_tasks = 0
+    completed_tasks = 0
+    total_days = len(all_tasks)
+    full_days = 0  # 任务全部完成的天数
+
+    for ds, tasks in all_tasks.items():
+        if tasks:
+            total_tasks += len(tasks)
+            done = sum(1 for t in tasks if t.get("completed"))
+            completed_tasks += done
+            if done == len(tasks):
+                full_days += 1
+
+    completion_rate = round(completed_tasks / total_tasks, 2) if total_tasks > 0 else 0
+
+    # ---- 计算当月统计 ----
+    month_start = today.replace(day=1)
+    month_tasks = 0
+    month_completed = 0
+    d = month_start
+    while d <= today:
+        ds = d.isoformat()
+        tasks = all_tasks.get(ds, [])
+        if tasks:
+            month_tasks += len(tasks)
+            month_completed += sum(1 for t in tasks if t.get("completed"))
+        d += timedelta(days=1)
+
+    # ---- 计算连续打卡 + 自动保护 ----
+    used_cards = 0
+    new_protected = []
+
+    # 从昨天开始往前遍历（今天还没结束，不纳入连续判断）
+    check_start = yesterday
+    # 但今天如果已经全部完成，也从今天开始算
+    today_tasks = all_tasks.get(today.isoformat(), [])
+    if today_tasks:
+        today_done = sum(1 for t in today_tasks if t.get("completed"))
+        if today_done == len(today_tasks) and len(today_tasks) > 0:
+            check_start = today
+
+    dates_sorted = sorted(all_tasks.keys())
+    first_date = date.fromisoformat(dates_sorted[0]) if dates_sorted else today
+    # 往前最多查 365 天
+    earliest = max(first_date, today - timedelta(days=365))
+
+    streak = 0
+    current = check_start
+
+    while current >= earliest:
+        ds = current.isoformat()
+        tasks = all_tasks.get(ds)
+
+        if tasks is not None and len(tasks) > 0:
+            # 有任务数据
+            done = sum(1 for t in tasks if t.get("completed"))
+            all_done = done == len(tasks)
+
+            if all_done:
+                streak += 1
+            elif ds in protected_set:
+                streak += 1
+            elif cards > 0:
+                cards -= 1
+                used_cards += 1
+                protected_set.add(ds)
+                new_protected.append(ds)
+                streak += 1
+            else:
+                break
+        elif tasks is not None and len(tasks) == 0:
+            # 空任务列表，算打卡成功（无任务可做）
+            streak += 1
+        else:
+            # 没有数据（没打卡）
+            if ds in protected_set:
+                streak += 1
+            elif cards > 0:
+                cards -= 1
+                used_cards += 1
+                protected_set.add(ds)
+                new_protected.append(ds)
+                streak += 1
+            else:
+                break
+
+        current -= timedelta(days=1)
+
+    # ---- 计算奖励保护卡 ----
+    # 每连续 2 天奖励 1 张，不超过上限
+    new_earned = (streak // 2) - total_earned
+    if new_earned > 0:
+        total_earned += new_earned
+        cards += new_earned
+
+    # 上限限制
+    cards_max = get_card_max(streak)
+    cards = min(cards, cards_max)
+
+    # ---- 保存保护卡状态 ----
+    prot["cards"] = cards
+    prot["protected"] = sorted(protected_set)
+    prot["totalEarned"] = total_earned
+    save_protection(username, prot)
+
+    # ---- 计算最长连续（含保护） ----
+    longest = compute_longest_streak(all_tasks, protected_set, today, yesterday)
+
+    # ---- 构建日历 ----
+    calendar = build_calendar(today, all_tasks, protected_set)
+
+    return {
+        "streak": streak,
+        "longestStreak": longest,
+        "totalDays": total_days,
+        "fullDays": full_days,
+        "totalTasks": total_tasks,
+        "completedTasks": completed_tasks,
+        "completionRate": completion_rate,
+        "monthTasks": month_tasks,
+        "monthCompleted": month_completed,
+        "cards": cards,
+        "cardsMax": cards_max,
+        "cardsUsedThisRun": used_cards,
+        "newCardsAwarded": max(new_earned, 0),
+        "protectedDates": sorted(protected_set),
+        "calendar": calendar,
+    }
+
+
+def build_calendar(today, all_tasks, protected_set):
+    """构建当前月份的日历"""
+    month_start = today.replace(day=1)
+    if month_start.month == 12:
+        month_end = month_start.replace(year=month_start.year + 1, month=1)
+    else:
+        month_end = month_start.replace(month=month_start.month + 1)
+
+    calendar = {}
+    d = month_start
+    while d < month_end:
+        ds = d.isoformat()
+        tasks = all_tasks.get(ds)
+        if ds in protected_set:
+            calendar[ds] = "protected"
+        elif tasks:
+            done = sum(1 for t in tasks if t.get("completed"))
+            if len(tasks) > 0 and done == len(tasks):
+                calendar[ds] = "full"
+            elif done > 0:
+                calendar[ds] = "partial"
+            else:
+                calendar[ds] = "empty"
+        else:
+            calendar[ds] = "empty"
+        d += timedelta(days=1)
+    return calendar
+
+
+def compute_longest_streak(all_tasks, protected_set, today, yesterday):
+    """计算历史最长连续打卡（含保护）"""
+    dates = sorted(all_tasks.keys())
+    if not dates:
+        return 0
+
+    longest = 0
+    current_run = 0
+
+    for ds in dates:
+        if ds > today.isoformat():
+            continue
+        tasks = all_tasks.get(ds, [])
+
+        if tasks and len(tasks) > 0:
+            done = sum(1 for t in tasks if t.get("completed"))
+            if done == len(tasks) or ds in protected_set:
+                current_run += 1
+                longest = max(longest, current_run)
+            else:
+                current_run = 0
+        elif tasks and len(tasks) == 0:
+            current_run += 1
+            longest = max(longest, current_run)
+        else:
+            # 没有任务数据的日期
+            if ds in protected_set:
+                current_run += 1
+                longest = max(longest, current_run)
+            else:
+                current_run = 0
+
+    return longest
 
 
 # ==================== HTTP Handler ====================
@@ -136,12 +410,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
+            date_str = get_first("date")
             try:
-                with open(user_data_file(user["name"]), "r", encoding="utf-8") as f:
+                with open(user_data_file(user["name"], date_str), "r", encoding="utf-8") as f:
                     data = json.load(f)
             except (FileNotFoundError, json.JSONDecodeError):
                 data = {"tasks": []}
             self._send_json(200, data)
+
+        elif path == "/api/stats":
+            token = get_first("token")
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            name = user["name"]
+            self._send_json(200, compute_stats(name))
 
         elif path == "/api/history":
             token = get_first("token")
@@ -225,7 +509,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
-            filepath = user_data_file(user["name"])
+            filepath = user_data_file(user["name"], body.get("date"))
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump({"tasks": body.get("tasks", [])}, f, ensure_ascii=False, indent=2)
             self._send_json(200, {"ok": True})
