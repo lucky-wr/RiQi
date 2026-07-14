@@ -1448,6 +1448,7 @@ body {
       <button class="nav-item active" data-page="tasks">&#128203; 任务</button>
       <button class="nav-item" data-page="tomorrow">&#128221; 明日任务</button>
       <button class="nav-item" data-page="history">&#128197; 历史任务</button>
+      <button class="nav-item" data-page="stats">&#128200; 数据看板</button>
       <button class="nav-item" data-page="members" data-admin>&#128101; 管理成员</button>
       <button class="nav-item" data-page="progress" data-admin>&#128200; 全局进度</button>
     </div>
@@ -1523,6 +1524,17 @@ body {
       </div>
     </div>
 
+    <!-- 页面：数据看板 -->
+    <div class="page" id="page-stats">
+      <div class="header">
+        <h1>数据看板</h1>
+        <div class="date" id="statsDateDisplay"></div>
+      </div>
+      <div class="page-content">
+        <div id="statsDashboard"></div>
+      </div>
+    </div>
+
     <!-- 页面：管理成员 -->
     <div class="page" id="page-members">
       <div class="header">
@@ -1564,7 +1576,6 @@ body {
       <div class="page-content">
         <div id="historyLoading" style="text-align:center;padding:40px;color:var(--text-muted);font-family:var(--font-hand);font-size:1.1rem;">加载中...</div>
         <div id="historyList"></div>
-        <div id="statsDashboard" style="display:none;"></div>
       </div>
     </div>
 
@@ -1770,6 +1781,9 @@ function switchPage(page) {
   // 页面切换时刷新数据
   if (page === 'tasks') { loadTasks(); }
   if (page === 'tomorrow') { loadTomorrowTasks(); }
+  if (page === 'stats') {
+    fetchStats().then(function(s) { renderStatsDashboard(s); updateStreakBadge(s); });
+  }
   if (page === 'members') { loadMembers(); }
   if (page === 'progress') { loadProgress(); }
   if (page === 'history') { loadHistory(); }
@@ -2776,11 +2790,6 @@ async function loadHistory() {
   } finally {
     loadingEl.style.display = 'none';
   }
-
-  // 同时加载数据看板
-  const stats = await fetchStats();
-  renderStatsDashboard(stats);
-  updateStreakBadge(stats);
 }
 
 function renderHistory(history) {
