@@ -129,6 +129,16 @@ def read_tasks_for_date(username, date_str):
         return None
 
 
+# ==================== 每日复盘管理 ====================
+
+def review_file(username, date_str=None):
+    d = os.path.join(DATA_DIR, username)
+    os.makedirs(d, exist_ok=True)
+    if date_str is None:
+        date_str = date.today().isoformat()
+    return os.path.join(d, f"review_{date_str}.json")
+
+
 def compute_stats(username):
     """计算用户统计，自动处理保护卡"""
     today = date.today()
@@ -427,6 +437,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             name = user["name"]
             self._send_json(200, compute_stats(name))
 
+        elif path == "/api/review":
+            token = get_first("token")
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            date_str = get_first("date") or date.today().isoformat()
+            try:
+                with open(review_file(user["name"], date_str), "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                data = {}
+            self._send_json(200, data)
+
         elif path == "/api/history":
             token = get_first("token")
             user = self._auth(token)
@@ -503,7 +527,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         body = self._read_body()
 
-        if self.path == "/api/save":
+        if self.path == "/api/review":
+            token = body.get("token", "")
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            date_str = body.get("date") or date.today().isoformat()
+            review_data = body.get("review", {})
+            review_data["updatedAt"] = datetime.now().isoformat()
+            with open(review_file(user["name"], date_str), "w", encoding="utf-8") as f:
+                json.dump(review_data, f, ensure_ascii=False, indent=2)
+            self._send_json(200, {"ok": True})
+
+        elif self.path == "/api/save":
             token = body.get("token", "")
             user = self._auth(token)
             if not user:

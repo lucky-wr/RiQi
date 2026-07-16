@@ -1398,6 +1398,316 @@ body {
   font-weight:500;
 }
 
+/* ====== 每日复盘 ====== */
+.review-page {
+  max-width:640px;
+  width:100%;
+  margin:0 auto;
+  padding:4px 16px 60px;
+  flex:1;
+}
+.review-section {
+  background:var(--card-bg);
+  backdrop-filter:blur(20px) saturate(1.2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.2);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-card);
+  padding:20px 22px 18px;
+  margin-bottom:16px;
+  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  position:relative;
+  overflow:hidden;
+  animation:slideUp 0.5s cubic-bezier(0.22,1,0.36,1) backwards;
+}
+.review-section::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+}
+.review-section:nth-child(1) { animation-delay:0.05s; }
+.review-section:nth-child(2) { animation-delay:0.10s; }
+.review-section:nth-child(3) { animation-delay:0.15s; }
+
+.review-section-title {
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  color:var(--text);
+  letter-spacing:2px;
+  margin-bottom:14px;
+}
+.review-section-title.done-title { color:var(--green); }
+.review-section-title.pending-title { color:#c9a04a; }
+
+/* 打分大数字 */
+.score-section { text-align:center; }
+.score-display {
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:4px;
+  margin-bottom:10px;
+}
+.score-number {
+  font-family:var(--font-hand);
+  font-size:4rem;
+  font-weight:600;
+  color:var(--accent);
+  line-height:1;
+  letter-spacing:2px;
+  transition:color 0.3s, transform 0.15s;
+}
+.score-number.changing {
+  animation:popScore 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popScore {
+  0% { transform:scale(1); }
+  50% { transform:scale(1.25); }
+  100% { transform:scale(1); }
+}
+.score-unit {
+  font-family:var(--font-hand);
+  font-size:1.3rem;
+  color:var(--text-muted);
+  letter-spacing:1px;
+}
+
+/* 打分滑块 */
+.score-slider-container {
+  padding:4px 0 2px;
+  margin-bottom:6px;
+  touch-action:none;
+}
+.score-slider-track {
+  position:relative;
+  height:44px;
+  cursor:pointer;
+  touch-action:none;
+  user-select:none;
+}
+.score-track-bg {
+  position:absolute;
+  top:15px; left:0; right:0;
+  height:14px;
+  border-radius:7px;
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.15);
+}
+.score-fill {
+  position:absolute;
+  top:15px; left:0;
+  height:14px;
+  border-radius:7px;
+  background:linear-gradient(90deg, var(--accent-soft), var(--accent));
+  transition:width 0.08s linear;
+  pointer-events:none;
+}
+.score-knob {
+  position:absolute;
+  top:8px;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#fff;
+  border:2px solid var(--accent);
+  box-shadow:0 2px 10px var(--accent-glow), 0 1px 3px rgba(0,0,0,0.08);
+  transform:translateX(-50%);
+  transition:left 0.08s linear;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--font-hand);
+  font-size:0.78rem;
+  font-weight:600;
+  color:var(--accent);
+  cursor:pointer;
+  touch-action:none;
+}
+.score-knob.dragging {
+  transform:translateX(-50%) scale(1.15);
+  box-shadow:0 4px 18px var(--accent-glow), 0 2px 6px rgba(0,0,0,0.12);
+}
+.score-marks {
+  position:absolute;
+  bottom:0; left:0; right:0;
+  display:flex;
+  justify-content:space-between;
+  padding:0 2px;
+}
+.score-marks span {
+  font-family:var(--font-hand);
+  font-size:0.72rem;
+  color:var(--text-muted);
+  opacity:0.6;
+  width:20px;
+  text-align:center;
+}
+
+/* 心情标签 */
+.score-mood {
+  font-family:var(--font-hand);
+  font-size:1.2rem;
+  color:var(--text-secondary);
+  letter-spacing:1px;
+  min-height:1.8em;
+  transition:color 0.3s;
+}
+
+/* 已完成/未完成任务列表 */
+.review-task-list { display:flex; flex-direction:column; gap:6px; }
+.review-task-item {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 4px;
+  font-family:var(--font-hand);
+  font-size:1.1rem;
+  letter-spacing:0.5px;
+}
+.review-task-item.done .review-task-bullet {
+  background:var(--green);
+  color:#fff;
+}
+.review-task-item .review-task-bullet {
+  flex-shrink:0;
+  width:22px; height:22px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:0.7rem;
+  font-weight:700;
+}
+.review-task-item.done .review-task-bullet { background:var(--green); color:#fff; }
+.review-task-item.pending .review-task-bullet {
+  border:2px solid #c9a04a;
+  background:transparent;
+}
+.review-task-title {
+  flex:1;
+  word-break:break-word;
+}
+.review-task-item.done .review-task-title {
+  color:var(--text-muted);
+  text-decoration:line-through;
+}
+.review-task-item.pending .review-task-title {
+  color:var(--text);
+  font-weight:500;
+}
+
+/* 反思表单 */
+.review-reflection {
+  margin:8px 0 6px 32px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.review-reflection-field {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.review-reflection-field label {
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-muted);
+  letter-spacing:0.5px;
+}
+.review-reflection-field textarea {
+  width:100%;
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.12);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  color:var(--text);
+  outline:none;
+  resize:vertical;
+  min-height:60px;
+  transition:border-color 0.25s;
+  letter-spacing:0.5px;
+}
+.review-reflection-field textarea:focus {
+  border-color:var(--accent);
+  background:rgba(255,255,255,0.18);
+}
+.review-reflection-field textarea::placeholder {
+  color:var(--text-muted);
+  opacity:0.7;
+}
+
+/* 保存按钮区 */
+.review-actions {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-top:4px;
+}
+.btn-review-save {
+  padding:12px 36px;
+  border-radius:14px;
+  border:none;
+  background:linear-gradient(135deg, var(--accent), var(--accent-soft));
+  color:#fff;
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  letter-spacing:3px;
+  cursor:pointer;
+  transition:all 0.25s;
+  box-shadow:0 4px 20px var(--accent-glow);
+}
+.btn-review-save:hover { opacity:0.85; transform:translateY(-1px); }
+.btn-review-save:active { transform:scale(0.96); }
+.btn-review-save:disabled { opacity:0.4; cursor:default; transform:none; }
+.review-save-status {
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--green);
+  letter-spacing:1px;
+  opacity:0;
+  transition:opacity 0.3s;
+}
+.review-save-status.show { opacity:1; }
+
+/* 全部完成 */
+.review-empty {
+  text-align:center;
+  padding:24px 16px;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:1.1rem;
+  letter-spacing:1px;
+}
+.review-empty-icon {
+  font-size:2.4rem;
+  margin-bottom:8px;
+}
+
+/* 已有评分的已保存状态 */
+.review-section.saved-indicator {
+  border-color:var(--green-soft);
+}
+.review-section.saved-indicator::after {
+  content:'已保存';
+  position:absolute;
+  top:12px; right:16px;
+  font-family:var(--font-hand);
+  font-size:0.8rem;
+  color:var(--green);
+  letter-spacing:1px;
+  opacity:0.7;
+}
+
+@media (max-width:480px) {
+  .score-number { font-size:3.2rem; }
+  .review-section { padding:16px 18px 14px; }
+  .review-reflection { margin-left:28px; }
+  .btn-review-save { padding:10px 28px; font-size:1.05rem; }
+}
+
 /* ====== 适配 ====== */
 @media (max-width:480px) {
   .header h1 { font-size:2.2rem; letter-spacing:6px; }
@@ -1449,6 +1759,7 @@ body {
       <button class="nav-item" data-page="tomorrow">&#128221; 明日任务</button>
       <button class="nav-item" data-page="history">&#128197; 历史任务</button>
       <button class="nav-item" data-page="stats">&#128200; 数据看板</button>
+<button class="nav-item" data-page="review">&#128214; 每日复盘</button>
       <button class="nav-item" data-page="members" data-admin>&#128101; 管理成员</button>
       <button class="nav-item" data-page="progress" data-admin>&#128200; 全局进度</button>
     </div>
@@ -1532,6 +1843,58 @@ body {
       </div>
       <div class="page-content">
         <div id="statsDashboard"></div>
+      </div>
+    </div>
+
+    <!-- 页面：每日复盘 -->
+    <div class="page" id="page-review">
+      <div class="header">
+        <h1>每日复盘</h1>
+        <div class="date" id="reviewDateDisplay"></div>
+      </div>
+      <div class="page-content review-page">
+        <!-- 打分区 -->
+        <div class="review-section score-section">
+          <div class="review-section-title">今天给自己打几分？</div>
+          <div class="score-display">
+            <span class="score-number" id="scoreNumber">5</span>
+            <span class="score-unit">分</span>
+          </div>
+          <div class="score-slider-container">
+            <div class="score-slider-track" id="scoreTrack">
+              <div class="score-track-bg"></div>
+              <div class="score-fill" id="scoreFill" style="width:44.4%"></div>
+              <div class="score-knob" id="scoreKnob" style="left:44.4%">5</div>
+              <div class="score-marks">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+              </div>
+            </div>
+          </div>
+          <div class="score-mood" id="scoreMood">中规中矩 🙂</div>
+        </div>
+
+        <!-- 已完成任务 -->
+        <div class="review-section" id="reviewCompletedSection">
+          <div class="review-section-title done-title">✅ 今天完成了</div>
+          <div class="review-task-list" id="reviewCompletedList"></div>
+        </div>
+
+        <!-- 未完成任务（含反思） -->
+        <div class="review-section" id="reviewUncompletedSection">
+          <div class="review-section-title pending-title">⏳ 还没完成的</div>
+          <div id="reviewUncompletedList"></div>
+          <div class="review-empty" id="reviewAllDone">
+            <div class="review-empty-icon">🎉</div>
+            <div>今天的任务全部完成！太棒了 👏</div>
+          </div>
+        </div>
+
+        <!-- 保存按钮 -->
+        <div class="review-actions">
+          <button class="btn-review-save" id="btnReviewSave">保存复盘</button>
+          <span class="review-save-status" id="reviewSaveStatus"></span>
+        </div>
       </div>
     </div>
 
@@ -1787,6 +2150,7 @@ function switchPage(page) {
   if (page === 'members') { loadMembers(); }
   if (page === 'progress') { loadProgress(); }
   if (page === 'history') { loadHistory(); }
+  if (page === 'review') { loadReview(); }
 }
 
 // 侧栏导航点击
@@ -2943,6 +3307,319 @@ function updateStreakBadge(stats) {
     }
   }
 }
+
+// ==================== 每日复盘 ====================
+
+// 评分情绪标签
+const SCORE_MOODS = [
+  '今天有点水 😅', '状态不太好 😕', '浑浑噩噩的一天 😶',
+  '勉强及格 📋', '中规中矩 🙂', '还不错 👍',
+  '今天挺顺 😊', '效率很高 🎯', '几乎完美 ✨',
+  '神级一天！🔥'
+];
+
+// 评分颜色
+const SCORE_COLORS = [
+  '#c85555', '#c85555', '#c9a04a',
+  '#c9a04a', 'var(--accent)', 'var(--accent)',
+  'var(--accent)', 'var(--green)', 'var(--green)',
+  'var(--green)'
+];
+
+function formatReviewDate() {
+  var d = new Date();
+  var w = ['日','一','二','三','四','五','六'];
+  return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 星期'+w[d.getDay()];
+}
+
+// 初始化日期
+(function() {
+  var el = document.getElementById('reviewDateDisplay');
+  if (el) el.textContent = formatReviewDate();
+})();
+
+// 复盘状态
+var reviewState = {
+  score: 5,
+  uncompletedItems: [], // [{taskId, title, difficulty, solution}]
+  saved: true,
+  dragging: false,
+};
+
+function setScore(value) {
+  value = Math.max(1, Math.min(10, Math.round(value)));
+  reviewState.score = value;
+  reviewState.saved = false;
+
+  var numEl = document.getElementById('scoreNumber');
+  var moodEl = document.getElementById('scoreMood');
+  var knob = document.getElementById('scoreKnob');
+  var fill = document.getElementById('scoreFill');
+
+  if (numEl) {
+    numEl.textContent = value;
+    numEl.classList.remove('changing');
+    void numEl.offsetWidth; // force reflow
+    numEl.classList.add('changing');
+    numEl.style.color = SCORE_COLORS[value - 1];
+  }
+  if (moodEl) moodEl.textContent = SCORE_MOODS[value - 1];
+  if (knob) {
+    knob.textContent = value;
+    knob.style.borderColor = SCORE_COLORS[value - 1];
+    knob.style.color = SCORE_COLORS[value - 1];
+  }
+
+  // 更新滑块位置
+  var pct = ((value - 1) / 9) * 100;
+  if (knob) knob.style.left = pct + '%';
+  if (fill) fill.style.width = pct + '%';
+}
+
+// 加载复盘
+async function loadReview() {
+  var token = getToken();
+  if (!token) return;
+
+  // 加载今天的任务
+  var todayTasks = [];
+  try {
+    var res = await fetch('/api/data?token=' + encodeURIComponent(token));
+    if (res.status === 401) { handleAuthError(); return; }
+    var data = await res.json();
+    todayTasks = (data && data.tasks) || [];
+  } catch(e) { todayTasks = []; }
+
+  // 加载已有复盘数据
+  var reviewData = {};
+  try {
+    var r = await fetch('/api/review?token=' + encodeURIComponent(token));
+    if (r.ok) reviewData = await r.json();
+  } catch(e) {}
+
+  renderReview(todayTasks, reviewData);
+}
+
+function renderReview(todayTasks, reviewData) {
+  var completed = todayTasks.filter(function(t) { return t.completed; });
+  var uncompleted = todayTasks.filter(function(t) { return !t.completed; });
+
+  // 恢复评分
+  var savedScore = reviewData.score || 5;
+  reviewState.score = savedScore;
+
+  // 恢复未完成任务反思
+  reviewState.uncompletedItems = [];
+  uncompleted.forEach(function(t) {
+    var saved = (reviewData.uncompletedTasks || []).find(function(s) {
+      return s.taskId === t.id;
+    });
+    reviewState.uncompletedItems.push({
+      taskId: t.id,
+      title: t.title,
+      difficulty: (saved && saved.difficulty) || '',
+      solution: (saved && saved.solution) || '',
+    });
+  });
+
+  // 渲染评分
+  setScore(savedScore);
+
+  // 渲染已完成任务
+  var doneList = document.getElementById('reviewCompletedList');
+  if (completed.length > 0) {
+    var doneHtml = '<div class="review-task-list">';
+    completed.forEach(function(t) {
+      doneHtml += '<div class="review-task-item done">'
+        + '<span class="review-task-bullet">✓</span>'
+        + '<span class="review-task-title">' + escapeHtml(t.title) + '</span>'
+        + '</div>';
+    });
+    doneHtml += '</div>';
+    doneList.innerHTML = doneHtml;
+    document.getElementById('reviewCompletedSection').style.display = '';
+  } else {
+    doneList.innerHTML = '<div class="review-task-list"><div class="review-task-item" style="color:var(--text-muted);font-size:0.95rem;">还没有完成的任务</div></div>';
+    document.getElementById('reviewCompletedSection').style.display = '';
+  }
+
+  // 渲染未完成任务
+  var unList = document.getElementById('reviewUncompletedList');
+  var allDone = document.getElementById('reviewAllDone');
+
+  if (uncompleted.length > 0) {
+    unList.style.display = '';
+    allDone.style.display = 'none';
+    var unHtml = '<div class="review-task-list">';
+    reviewState.uncompletedItems.forEach(function(item, idx) {
+      unHtml += '<div class="review-task-item pending" data-idx="' + idx + '">'
+        + '<span class="review-task-bullet">' + (idx + 1) + '</span>'
+        + '<span class="review-task-title">' + escapeHtml(item.title) + '</span>'
+        + '</div>'
+        + '<div class="review-reflection" data-idx="' + idx + '">'
+          + '<div class="review-reflection-field">'
+            + '<label>🤔 遇到了什么困难？</label>'
+            + '<textarea data-difficulty="' + idx + '" placeholder="描述一下遇到的困难…" rows="2">' + escAttr(item.difficulty) + '</textarea>'
+          + '</div>'
+          + '<div class="review-reflection-field">'
+            + '<label>💡 打算怎么解决？</label>'
+            + '<textarea data-solution="' + idx + '" placeholder="想一下解决计划…" rows="2">' + escAttr(item.solution) + '</textarea>'
+          + '</div>'
+        + '</div>';
+    });
+    unHtml += '</div>';
+    unList.innerHTML = unHtml;
+
+    // 绑定 textarea 变化监听
+    unList.querySelectorAll('textarea[data-difficulty]').forEach(function(ta) {
+      ta.addEventListener('input', function() {
+        var idx = parseInt(this.dataset.difficulty);
+        if (reviewState.uncompletedItems[idx]) {
+          reviewState.uncompletedItems[idx].difficulty = this.value;
+          reviewState.saved = false;
+        }
+      });
+    });
+    unList.querySelectorAll('textarea[data-solution]').forEach(function(ta) {
+      ta.addEventListener('input', function() {
+        var idx = parseInt(this.dataset.solution);
+        if (reviewState.uncompletedItems[idx]) {
+          reviewState.uncompletedItems[idx].solution = this.value;
+          reviewState.saved = false;
+        }
+      });
+    });
+  } else {
+    unList.style.display = 'none';
+    allDone.style.display = '';
+  }
+
+  // 如果已有保存记录，标记已保存状态
+  if (reviewData.score) {
+    reviewState.saved = true;
+    document.querySelectorAll('.review-section').forEach(function(el) {
+      el.classList.add('saved-indicator');
+    });
+    document.getElementById('reviewSaveStatus').textContent = '已保存 ✓';
+    document.getElementById('reviewSaveStatus').classList.add('show');
+  } else {
+    document.querySelectorAll('.review-section').forEach(function(el) {
+      el.classList.remove('saved-indicator');
+    });
+  }
+}
+
+function escAttr(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// 保存复盘
+async function saveReview() {
+  var btn = document.getElementById('btnReviewSave');
+  if (btn) btn.disabled = true;
+
+  // 收集 textarea 最新值
+  reviewState.uncompletedItems.forEach(function(item, idx) {
+    var diffTa = document.querySelector('textarea[data-difficulty="' + idx + '"]');
+    var solTa = document.querySelector('textarea[data-solution="' + idx + '"]');
+    if (diffTa) item.difficulty = diffTa.value;
+    if (solTa) item.solution = solTa.value;
+  });
+
+  var payload = {
+    score: reviewState.score,
+    uncompletedTasks: reviewState.uncompletedItems.map(function(item) {
+      return {
+        taskId: item.taskId,
+        title: item.title,
+        difficulty: item.difficulty,
+        solution: item.solution,
+      };
+    }),
+  };
+
+  var token = getToken();
+  try {
+    var res = await fetch('/api/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token, review: payload }),
+    });
+    if (res.status === 401) { handleAuthError(); return; }
+    if (res.ok) {
+      reviewState.saved = true;
+      var statusEl = document.getElementById('reviewSaveStatus');
+      statusEl.textContent = '已保存 ✓';
+      statusEl.classList.add('show');
+      document.querySelectorAll('.review-section').forEach(function(el) {
+        el.classList.add('saved-indicator');
+      });
+      setTimeout(function() {
+        statusEl.classList.remove('show');
+      }, 3000);
+    }
+  } catch(e) {
+    var statusEl = document.getElementById('reviewSaveStatus');
+    statusEl.textContent = '保存失败';
+    statusEl.style.color = '#c85555';
+    statusEl.classList.add('show');
+    setTimeout(function() {
+      statusEl.classList.remove('show');
+      statusEl.style.color = '';
+    }, 3000);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// 评分滑块交互
+(function initScoreSlider() {
+  var track = document.getElementById('scoreTrack');
+  if (!track) return;
+
+  function getScoreFromEvent(e) {
+    var rect = track.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var pct = Math.max(0, Math.min(1, x / rect.width));
+    return Math.round(pct * 9 + 1);
+  }
+
+  function onPointerDown(e) {
+    e.preventDefault();
+    reviewState.dragging = true;
+    var score = getScoreFromEvent(e);
+    setScore(score);
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointercancel', onPointerUp);
+    document.getElementById('scoreKnob').classList.add('dragging');
+  }
+
+  function onPointerMove(e) {
+    e.preventDefault();
+    if (!reviewState.dragging) return;
+    var score = getScoreFromEvent(e);
+    setScore(score);
+  }
+
+  function onPointerUp(e) {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
+    reviewState.dragging = false;
+    document.getElementById('scoreKnob').classList.remove('dragging');
+    // 松开时自动保存
+    if (!reviewState.saved) {
+      saveReview();
+    }
+  }
+
+  track.addEventListener('pointerdown', onPointerDown);
+})();
+
+// 保存按钮
+document.getElementById('btnReviewSave').addEventListener('click', saveReview);
 
 // ==================== 初始化 ====================
 (async function init() {
