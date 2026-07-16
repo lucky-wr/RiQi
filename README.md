@@ -222,7 +222,7 @@ netsh advfirewall firewall add rule name="RiQi" dir=in action=allow program="C:\
 - 打卡成功粒子动画（12 颗彩色粒子 360° 扩散）
 - 卡片入场/删除/完成动画
 - 响应式布局适配手机端
-- 字体搭配：Caveat（英文手写）+ Noto Serif SC（宋体中文）
+- 字体搭配：Caveat（英文手写）+ LXGW WenKai（霞鹜文楷中文手写）
 
 ---
 
