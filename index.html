@@ -3393,7 +3393,7 @@ async function loadReview() {
   // 加载已有复盘数据
   var reviewData = {};
   try {
-    var r = await fetch('/api/review?token=' + encodeURIComponent(token));
+    var r = await fetch('/api/review?token=' + encodeURIComponent(token) + '&_t=' + Date.now());
     if (r.ok) reviewData = await r.json();
   } catch(e) {}
 
