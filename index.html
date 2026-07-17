@@ -1922,29 +1922,55 @@ body {
   letter-spacing:0.5px;
   margin-bottom:12px;
 }
-.library-add-hint code {
-  background:rgba(201,168,124,0.12);
-  padding:1px 8px;
-  border-radius:6px;
-  color:var(--accent);
-  font-size:0.9rem;
-}
 .library-add-row {
   display:flex;
-  gap:10px;
+  gap:8px;
 }
 .library-add-row input {
   flex:1;
+  min-width:0;
   padding:10px 14px;
   border-radius:12px;
   border:1px solid var(--card-border);
   background:rgba(255,255,255,0.2);
   font-family:var(--font-hand);
-  font-size:1rem;
+  font-size:0.95rem;
   color:var(--text);
   outline:none;
+  transition:border-color 0.25s;
 }
 .library-add-row input:focus { border-color:var(--accent); }
+.library-add-row input::placeholder {
+  color:var(--text-muted);
+  opacity:0.7;
+}
+.library-add-options {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:10px;
+}
+.library-toggle {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+  user-select:none;
+}
+.library-toggle input[type="checkbox"] {
+  width:18px;
+  height:18px;
+  border-radius:5px;
+  border:2px solid var(--accent);
+  accent-color:var(--accent);
+  cursor:pointer;
+}
+.library-toggle span {
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-secondary);
+  letter-spacing:0.5px;
+}
 
 .library-list {
   display:flex;
@@ -2034,6 +2060,54 @@ body {
   animation:slideDownOut 0.35s cubic-bezier(0.5,0,0.75,0) forwards;
   pointer-events:none;
 }
+
+/* 视觉填空位 */
+.lib-visual-blank {
+  display:inline-block;
+  color:var(--accent);
+  font-weight:500;
+  opacity:0.6;
+  margin:0 2px;
+  letter-spacing:1px;
+}
+
+/* 编辑模式布局 */
+.lib-edit-group {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:8px;
+  flex-wrap:wrap;
+}
+.lib-edit-group input {
+  flex:1;
+  min-width:60px;
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.12);
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  color:var(--text);
+  outline:none;
+}
+.lib-edit-group input:focus { border-color:var(--accent); }
+.lib-edit-group .lib-edit-blank-hint {
+  flex-shrink:0;
+  color:var(--accent);
+  font-size:0.9rem;
+  opacity:0.5;
+}
+.lib-edit-toggle {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+  font-size:0.85rem;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+}
+.lib-edit-toggle input { width:16px; height:16px; accent-color:var(--accent); }
 
 @media (max-width:480px) {
   .library-modal-card { padding:20px 16px; }
@@ -2284,9 +2358,16 @@ body {
       <div class="page-content">
         <div class="library-add-section">
           <div class="library-add-title">➕ 添加新条目</div>
-          <div class="library-add-hint">用 <code>__</code> 表示每次要填的部分，比如「语文古文__」</div>
+          <div class="library-add-hint">勾选「需要填空」后，分别填可变部分前后的固定内容</div>
           <div class="library-add-row">
-            <input type="text" id="libraryAddInput" placeholder="输入任务模式..." autocomplete="off">
+            <input type="text" id="libraryAddPrefix" placeholder="填空前（如：语文古文）" autocomplete="off">
+            <input type="text" id="libraryAddSuffix" placeholder="填空后（可选）" autocomplete="off">
+          </div>
+          <div class="library-add-options">
+            <label class="library-toggle">
+              <input type="checkbox" id="libraryAddHasBlank" checked>
+              <span>✏️ 需要填空</span>
+            </label>
             <button class="btn-add-member" id="libraryAddBtn">添加</button>
           </div>
         </div>
@@ -3746,6 +3827,17 @@ async function loadLibraryManage() {
   renderLibraryManage();
 }
 
+function parsePattern(pattern) {
+  var idx = pattern.indexOf('__');
+  if (idx === -1) return { prefix: pattern, suffix: '', hasBlank: false };
+  return { prefix: pattern.substring(0, idx), suffix: pattern.substring(idx + 2), hasBlank: true };
+}
+
+function buildPattern(prefix, suffix, hasBlank) {
+  if (!hasBlank) return prefix || '(空)';
+  return (prefix || '') + '__' + (suffix || '');
+}
+
 function renderLibraryManage() {
   var list = document.getElementById('libraryList');
   var empty = document.getElementById('libraryEmpty');
@@ -3760,10 +3852,25 @@ function renderLibraryManage() {
   empty.style.display = 'none';
   var html = '';
   libraryItems.forEach(function(item, idx) {
+    var p = parsePattern(item.pattern);
+    var displayParts = '';
+    if (p.hasBlank) {
+      displayParts = escapeHtml(p.prefix)
+        + '<span class="lib-visual-blank"> ⬜ </span>'
+        + escapeHtml(p.suffix);
+    } else {
+      displayParts = escapeHtml(p.prefix);
+    }
+
     html += '<div class="library-item-card" data-idx="' + idx + '">'
-      + '<div class="library-item-text" data-display="' + idx + '">' + escapeHtml(item.pattern) + '</div>'
+      + '<div class="library-item-text" data-display="' + idx + '">' + displayParts + '</div>'
       + '<div class="library-item-text editing" data-edit="' + idx + '" style="display:none;">'
-        + '<input type="text" value="' + escAttr(item.pattern) + '" data-edit-input="' + idx + '">'
+        + '<span class="lib-edit-group">'
+          + '<input type="text" class="lib-edit-prefix" value="' + escAttr(p.prefix) + '" placeholder="填空前" data-epp="' + idx + '">'
+          + '<span class="lib-edit-blank-hint">⬜</span>'
+          + '<input type="text" class="lib-edit-suffix" value="' + escAttr(p.suffix) + '" placeholder="填空后" data-ess="' + idx + '">'
+        + '</span>'
+        + '<label class="lib-edit-toggle"><input type="checkbox" class="lib-edit-hasblank" data-ehb="' + idx + '"' + (p.hasBlank ? ' checked' : '') + '> <span>需要填空</span></label>'
       + '</div>'
       + '<div class="library-item-actions">'
         + '<button class="btn-lib-edit" data-edit-btn="' + idx + '" title="编辑">&#9998;</button>'
@@ -3777,17 +3884,38 @@ function renderLibraryManage() {
 
 // 添加条目
 document.getElementById('libraryAddBtn').addEventListener('click', function() {
-  var input = document.getElementById('libraryAddInput');
-  var text = input.value.trim();
-  if (!text) return;
-  libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: text });
-  input.value = '';
+  var prefix = document.getElementById('libraryAddPrefix').value.trim();
+  var suffix = document.getElementById('libraryAddSuffix').value.trim();
+  var hasBlank = document.getElementById('libraryAddHasBlank').checked;
+  var combined = buildPattern(prefix, suffix, hasBlank);
+  if (!prefix && !hasBlank) { alert('请输入任务内容'); return; }
+  if (!prefix && hasBlank) { alert('请填写填空前的内容'); return; }
+  libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: combined });
+  document.getElementById('libraryAddPrefix').value = '';
+  document.getElementById('libraryAddSuffix').value = '';
   saveLibrary().then(function() { loadLibraryManage(); });
 });
 
-document.getElementById('libraryAddInput').addEventListener('keydown', function(e) {
+document.getElementById('libraryAddPrefix').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('libraryAddBtn').click();
 });
+document.getElementById('libraryAddSuffix').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('libraryAddBtn').click();
+});
+
+// 切换填空时显示/隐藏后缀输入框
+document.getElementById('libraryAddHasBlank').addEventListener('change', function() {
+  var suffixInput = document.getElementById('libraryAddSuffix');
+  suffixInput.style.display = this.checked ? '' : 'none';
+  var toggle = document.querySelector('.library-add-row .lib-suffix-label');
+  if (toggle) toggle.style.display = this.checked ? '' : 'none';
+});
+// 初始：如果勾选了填空才显示后缀
+(function() {
+  var cb = document.getElementById('libraryAddHasBlank');
+  var suffixInput = document.getElementById('libraryAddSuffix');
+  if (suffixInput) suffixInput.style.display = cb.checked ? '' : 'none';
+})();
 
 // 条目操作（事件委托）
 document.getElementById('libraryList').addEventListener('click', function(e) {
@@ -3803,7 +3931,7 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
     if (display) display.style.display = 'none';
     if (edit) {
       edit.style.display = '';
-      var inp = edit.querySelector('input');
+      var inp = edit.querySelector('.lib-edit-prefix');
       if (inp) { inp.focus(); inp.select(); }
     }
     if (editBtn) editBtn.style.display = 'none';
@@ -3813,14 +3941,18 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
   // 保存按钮
   if (target.classList.contains('btn-lib-save')) {
     var idx = parseInt(target.dataset.saveBtn);
-    var inp = document.querySelector('[data-edit-input="' + idx + '"]');
-    var text = inp ? inp.value.trim() : '';
-    if (text && libraryItems[idx]) {
-      libraryItems[idx].pattern = text;
-      saveLibrary().then(function() { loadLibraryManage(); });
-    } else {
-      loadLibraryManage();
-    }
+    var item = libraryItems[idx];
+    if (!item) { loadLibraryManage(); return; }
+    var pInp = document.querySelector('[data-epp="' + idx + '"]');
+    var sInp = document.querySelector('[data-ess="' + idx + '"]');
+    var hb = document.querySelector('[data-ehb="' + idx + '"]');
+    var prefix = pInp ? pInp.value.trim() : '';
+    var suffix = sInp ? sInp.value.trim() : '';
+    var hasBlank = hb ? hb.checked : false;
+    var combined = buildPattern(prefix, suffix, hasBlank);
+    if (!prefix && !hasBlank) { loadLibraryManage(); return; }
+    item.pattern = combined;
+    saveLibrary().then(function() { loadLibraryManage(); });
   }
 
   // 删除按钮
@@ -3840,12 +3972,21 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
 // 编辑框回车保存
 document.getElementById('libraryList').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
-    var inp = e.target.closest('[data-edit-input]');
+    var inp = e.target.closest('[data-epp]') || e.target.closest('[data-ess]');
     if (inp) {
-      var idx = parseInt(inp.dataset.editInput);
+      var idx = inp.dataset.epp || inp.dataset.ess;
       var saveBtn = document.querySelector('[data-save-btn="' + idx + '"]');
       if (saveBtn) saveBtn.click();
     }
+  }
+});
+
+// 编辑时切换填空的显示
+document.getElementById('libraryList').addEventListener('change', function(e) {
+  if (e.target.classList.contains('lib-edit-hasblank')) {
+    var idx = e.target.dataset.ehb;
+    var sInp = document.querySelector('[data-ess="' + idx + '"]');
+    if (sInp) sInp.style.display = e.target.checked ? '' : 'none';
   }
 });
 
