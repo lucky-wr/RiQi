@@ -1944,32 +1944,44 @@ body {
   color:var(--text-muted);
   opacity:0.7;
 }
-.library-add-options {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+.btn-insert-blank {
+  flex-shrink:0;
+  padding:10px 16px;
+  border-radius:12px;
+  border:2px dashed var(--accent);
+  background:rgba(201,168,124,0.08);
+  color:var(--accent);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  letter-spacing:1px;
+  white-space:nowrap;
+}
+.btn-insert-blank:hover {
+  background:rgba(201,168,124,0.18);
+  border-style:solid;
+}
+.btn-insert-blank:active {
+  transform:scale(0.95);
+}
+.library-add-actions {
   margin-top:10px;
 }
-.library-toggle {
-  display:flex;
-  align-items:center;
-  gap:6px;
-  cursor:pointer;
-  user-select:none;
-}
-.library-toggle input[type="checkbox"] {
-  width:18px;
-  height:18px;
-  border-radius:5px;
-  border:2px solid var(--accent);
-  accent-color:var(--accent);
-  cursor:pointer;
-}
-.library-toggle span {
+.library-add-preview {
+  margin-top:8px;
   font-family:var(--font-hand);
   font-size:0.9rem;
-  color:var(--text-secondary);
+  color:var(--text-muted);
   letter-spacing:0.5px;
+  min-height:1.4em;
+}
+.library-add-preview .lib-preview-text {
+  color:var(--text-secondary);
+}
+.library-add-preview .lib-preview-blank {
+  color:var(--accent);
+  font-weight:500;
 }
 
 .library-list {
@@ -2072,17 +2084,15 @@ body {
 }
 
 /* 编辑模式布局 */
-.lib-edit-group {
+.lib-edit-row {
   display:flex;
   align-items:center;
   gap:6px;
-  margin-bottom:8px;
-  flex-wrap:wrap;
 }
-.lib-edit-group input {
+.lib-edit-row input {
   flex:1;
   min-width:60px;
-  padding:6px 10px;
+  padding:8px 12px;
   border-radius:10px;
   border:1px solid var(--card-border);
   background:rgba(255,255,255,0.12);
@@ -2091,23 +2101,24 @@ body {
   color:var(--text);
   outline:none;
 }
-.lib-edit-group input:focus { border-color:var(--accent); }
-.lib-edit-group .lib-edit-blank-hint {
+.lib-edit-row input:focus { border-color:var(--accent); }
+.lib-edit-row .lib-edit-insert {
   flex-shrink:0;
+  padding:8px 12px;
+  border-radius:10px;
+  border:2px dashed var(--accent);
+  background:rgba(201,168,124,0.08);
   color:var(--accent);
-  font-size:0.9rem;
-  opacity:0.5;
-}
-.lib-edit-toggle {
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-  cursor:pointer;
-  font-size:0.85rem;
-  color:var(--text-muted);
   font-family:var(--font-hand);
+  font-size:0.95rem;
+  cursor:pointer;
+  transition:all 0.2s;
 }
-.lib-edit-toggle input { width:16px; height:16px; accent-color:var(--accent); }
+.lib-edit-row .lib-edit-insert:hover {
+  background:rgba(201,168,124,0.18);
+  border-style:solid;
+}
+.lib-edit-row .lib-edit-insert:active { transform:scale(0.92); }
 
 @media (max-width:480px) {
   .library-modal-card { padding:20px 16px; }
@@ -2358,18 +2369,15 @@ body {
       <div class="page-content">
         <div class="library-add-section">
           <div class="library-add-title">➕ 添加新条目</div>
-          <div class="library-add-hint">勾选「需要填空」后，分别填可变部分前后的固定内容</div>
+          <div class="library-add-hint">打字输入任务内容，点击「⬜ 占位」在光标位置插入填空位，想插几个插几个</div>
           <div class="library-add-row">
-            <input type="text" id="libraryAddPrefix" placeholder="填空前（如：语文古文）" autocomplete="off">
-            <input type="text" id="libraryAddSuffix" placeholder="填空后（可选）" autocomplete="off">
+            <input type="text" id="libraryAddInput" placeholder="例如：上第节课部分（光标移到需要的位置再点⬜）" autocomplete="off">
+            <button class="btn-insert-blank" id="btnInsertBlank" title="在光标位置插入占位符">⬜ 占位</button>
           </div>
-          <div class="library-add-options">
-            <label class="library-toggle">
-              <input type="checkbox" id="libraryAddHasBlank" checked>
-              <span>✏️ 需要填空</span>
-            </label>
+          <div class="library-add-actions">
             <button class="btn-add-member" id="libraryAddBtn">添加</button>
           </div>
+          <div class="library-add-preview" id="libraryAddPreview"></div>
         </div>
         <div class="library-list" id="libraryList">
           <div class="library-empty" id="libraryEmpty">
@@ -3827,15 +3835,9 @@ async function loadLibraryManage() {
   renderLibraryManage();
 }
 
-function parsePattern(pattern) {
-  var idx = pattern.indexOf('__');
-  if (idx === -1) return { prefix: pattern, suffix: '', hasBlank: false };
-  return { prefix: pattern.substring(0, idx), suffix: pattern.substring(idx + 2), hasBlank: true };
-}
-
-function buildPattern(prefix, suffix, hasBlank) {
-  if (!hasBlank) return prefix || '(空)';
-  return (prefix || '') + '__' + (suffix || '');
+function displayPattern(pattern) {
+  // 把 __ 替换为视觉占位符，用于管理页显示
+  return escapeHtml(pattern).replace(/__/g, '<span class="lib-visual-blank"> ⬜ </span>');
 }
 
 function renderLibraryManage() {
@@ -3852,25 +3854,13 @@ function renderLibraryManage() {
   empty.style.display = 'none';
   var html = '';
   libraryItems.forEach(function(item, idx) {
-    var p = parsePattern(item.pattern);
-    var displayParts = '';
-    if (p.hasBlank) {
-      displayParts = escapeHtml(p.prefix)
-        + '<span class="lib-visual-blank"> ⬜ </span>'
-        + escapeHtml(p.suffix);
-    } else {
-      displayParts = escapeHtml(p.prefix);
-    }
-
     html += '<div class="library-item-card" data-idx="' + idx + '">'
-      + '<div class="library-item-text" data-display="' + idx + '">' + displayParts + '</div>'
+      + '<div class="library-item-text" data-display="' + idx + '">' + displayPattern(item.pattern) + '</div>'
       + '<div class="library-item-text editing" data-edit="' + idx + '" style="display:none;">'
-        + '<span class="lib-edit-group">'
-          + '<input type="text" class="lib-edit-prefix" value="' + escAttr(p.prefix) + '" placeholder="填空前" data-epp="' + idx + '">'
-          + '<span class="lib-edit-blank-hint">⬜</span>'
-          + '<input type="text" class="lib-edit-suffix" value="' + escAttr(p.suffix) + '" placeholder="填空后" data-ess="' + idx + '">'
-        + '</span>'
-        + '<label class="lib-edit-toggle"><input type="checkbox" class="lib-edit-hasblank" data-ehb="' + idx + '"' + (p.hasBlank ? ' checked' : '') + '> <span>需要填空</span></label>'
+        + '<div class="lib-edit-row">'
+          + '<input type="text" class="lib-edit-input" value="' + escAttr(item.pattern.replace(/__/g, '⬜')) + '" data-ei="' + idx + '" placeholder="编辑任务内容…">'
+          + '<button class="btn-insert-blank lib-edit-insert" data-ei-insert="' + idx + '" title="插入占位符">⬜</button>'
+        + '</div>'
       + '</div>'
       + '<div class="library-item-actions">'
         + '<button class="btn-lib-edit" data-edit-btn="' + idx + '" title="编辑">&#9998;</button>'
@@ -3882,40 +3872,59 @@ function renderLibraryManage() {
   list.innerHTML = html;
 }
 
-// 添加条目
+// 在输入框光标位置插入占位符
+function insertBlankAtCursor(input) {
+  var pos = input.selectionStart || input.value.length;
+  var end = input.selectionEnd || pos;
+  var val = input.value;
+  input.value = val.substring(0, pos) + '⬜' + val.substring(end);
+  input.focus();
+  // 把光标移到插入的占位符后面
+  var newPos = pos + 1;
+  input.selectionStart = input.selectionEnd = newPos;
+  // 触发 input 事件更新预览
+  var evt = document.createEvent('Event');
+  evt.initEvent('input', true, true);
+  input.dispatchEvent(evt);
+}
+
+// 更新预览
+function updateAddPreview() {
+  var input = document.getElementById('libraryAddInput');
+  var preview = document.getElementById('libraryAddPreview');
+  if (!input || !preview) return;
+  var val = input.value.trim();
+  if (!val) { preview.innerHTML = ''; return; }
+  // 把 ⬜ 高亮显示
+  var html = '预览：' + escapeHtml(val).replace(/⬜/g, '<span class="lib-preview-blank"> ⬜ </span>');
+  preview.innerHTML = html;
+}
+
+// 添加条目 - 添加按钮
 document.getElementById('libraryAddBtn').addEventListener('click', function() {
-  var prefix = document.getElementById('libraryAddPrefix').value.trim();
-  var suffix = document.getElementById('libraryAddSuffix').value.trim();
-  var hasBlank = document.getElementById('libraryAddHasBlank').checked;
-  var combined = buildPattern(prefix, suffix, hasBlank);
-  if (!prefix && !hasBlank) { alert('请输入任务内容'); return; }
-  if (!prefix && hasBlank) { alert('请填写填空前的内容'); return; }
-  libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: combined });
-  document.getElementById('libraryAddPrefix').value = '';
-  document.getElementById('libraryAddSuffix').value = '';
+  var input = document.getElementById('libraryAddInput');
+  var text = input.value.trim();
+  if (!text) { alert('请输入任务内容'); return; }
+  // 把 ⬜ 转为 __ 存储
+  var pattern = text.replace(/⬜/g, '__');
+  libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: pattern });
+  input.value = '';
+  updateAddPreview();
   saveLibrary().then(function() { loadLibraryManage(); });
 });
 
-document.getElementById('libraryAddPrefix').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('libraryAddBtn').click();
-});
-document.getElementById('libraryAddSuffix').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('libraryAddBtn').click();
+// 添加条目 - 插入占位按钮
+document.getElementById('btnInsertBlank').addEventListener('click', function() {
+  var input = document.getElementById('libraryAddInput');
+  insertBlankAtCursor(input);
 });
 
-// 切换填空时显示/隐藏后缀输入框
-document.getElementById('libraryAddHasBlank').addEventListener('change', function() {
-  var suffixInput = document.getElementById('libraryAddSuffix');
-  suffixInput.style.display = this.checked ? '' : 'none';
-  var toggle = document.querySelector('.library-add-row .lib-suffix-label');
-  if (toggle) toggle.style.display = this.checked ? '' : 'none';
+// 添加条目 - 快捷键：Alt+Space 插入占位
+document.getElementById('libraryAddInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('libraryAddBtn').click(); }
+  if (e.key === ' ' && e.altKey) { e.preventDefault(); insertBlankAtCursor(this); }
 });
-// 初始：如果勾选了填空才显示后缀
-(function() {
-  var cb = document.getElementById('libraryAddHasBlank');
-  var suffixInput = document.getElementById('libraryAddSuffix');
-  if (suffixInput) suffixInput.style.display = cb.checked ? '' : 'none';
-})();
+document.getElementById('libraryAddInput').addEventListener('input', updateAddPreview);
 
 // 条目操作（事件委托）
 document.getElementById('libraryList').addEventListener('click', function(e) {
@@ -3931,11 +3940,18 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
     if (display) display.style.display = 'none';
     if (edit) {
       edit.style.display = '';
-      var inp = edit.querySelector('.lib-edit-prefix');
-      if (inp) { inp.focus(); inp.select(); }
+      var inp = edit.querySelector('.lib-edit-input');
+      if (inp) { inp.focus(); inp.selectionStart = inp.selectionEnd = inp.value.length; }
     }
     if (editBtn) editBtn.style.display = 'none';
     if (saveBtn) saveBtn.style.display = '';
+  }
+
+  // 编辑模式下的插入占位按钮
+  if (target.classList.contains('lib-edit-insert')) {
+    var idx = parseInt(target.dataset.eiInsert);
+    var inp = document.querySelector('[data-ei="' + idx + '"]');
+    if (inp) insertBlankAtCursor(inp);
   }
 
   // 保存按钮
@@ -3943,15 +3959,10 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
     var idx = parseInt(target.dataset.saveBtn);
     var item = libraryItems[idx];
     if (!item) { loadLibraryManage(); return; }
-    var pInp = document.querySelector('[data-epp="' + idx + '"]');
-    var sInp = document.querySelector('[data-ess="' + idx + '"]');
-    var hb = document.querySelector('[data-ehb="' + idx + '"]');
-    var prefix = pInp ? pInp.value.trim() : '';
-    var suffix = sInp ? sInp.value.trim() : '';
-    var hasBlank = hb ? hb.checked : false;
-    var combined = buildPattern(prefix, suffix, hasBlank);
-    if (!prefix && !hasBlank) { loadLibraryManage(); return; }
-    item.pattern = combined;
+    var inp = document.querySelector('[data-ei="' + idx + '"]');
+    var text = inp ? inp.value.trim() : '';
+    if (!text) { loadLibraryManage(); return; }
+    item.pattern = text.replace(/⬜/g, '__');
     saveLibrary().then(function() { loadLibraryManage(); });
   }
 
