@@ -779,6 +779,56 @@ body {
   letter-spacing:1px;
 }
 
+/* ====== 上午/下午标记 ====== */
+.ampm-btn {
+  flex-shrink:0;
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.08);
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.8rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  letter-spacing:0.5px;
+  white-space:nowrap;
+  line-height:1;
+}
+.ampm-btn:hover { background:rgba(255,255,255,0.18); }
+.ampm-btn.active-am {
+  background:rgba(201,168,124,0.15);
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.ampm-btn.active-pm {
+  background:rgba(122,158,126,0.12);
+  border-color:var(--green);
+  color:var(--green);
+}
+
+.ampm-badge {
+  flex-shrink:0;
+  font-size:1rem;
+  line-height:1;
+  opacity:0.7;
+  margin-right:-4px;
+}
+
+/* 任务分组标题 */
+.task-section-header {
+  font-family:var(--font-hand);
+  font-size:1rem;
+  color:var(--text-muted);
+  letter-spacing:2px;
+  padding:10px 4px 6px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  margin-bottom:4px;
+}
+.task-section-header:first-of-type {
+  padding-top:0;
+}
+
 /* ====== 排序模式通知 ====== */
 .sort-notice {
   text-align:center;
@@ -2218,6 +2268,8 @@ body {
       <div class="input-bar" id="inputBar">
         <div class="bar-inner">
           <input type="text" id="taskInput" placeholder="输入今天要做的事..." autocomplete="off">
+          <button class="ampm-btn" data-target="task" data-ampm="am" title="标记为上午">☀上午</button>
+          <button class="ampm-btn" data-target="task" data-ampm="pm" title="标记为下午">🌙下午</button>
           <button class="btn-bar-add" id="btnAddTask">添加</button>
           <button class="btn-bar-close" id="btnCloseBar">&#10003;</button>
         </div>
@@ -2248,6 +2300,8 @@ body {
       <div class="input-bar" id="tomorrowInputBar">
         <div class="bar-inner">
           <input type="text" id="tomorrowTaskInput" placeholder="输入明天的计划..." autocomplete="off">
+          <button class="ampm-btn" data-target="tomorrow" data-ampm="am" title="标记为上午">☀上午</button>
+          <button class="ampm-btn" data-target="tomorrow" data-ampm="pm" title="标记为下午">🌙下午</button>
           <button class="btn-bar-add" id="btnAddTomorrowTask">添加</button>
           <button class="btn-bar-close" id="btnCloseTomorrowBar">&#10003;</button>
         </div>
@@ -2434,6 +2488,8 @@ const state = {
   tomorrowSorting: false,
   tomorrowDragState: null,
   tomorrowSaveTimer: null,
+  inputAMPM: '',          // '' | 'am' | 'pm'
+  tomorrowInputAMPM: '',  // '' | 'am' | 'pm'
 };
 
 // ==================== 日期 ====================
@@ -2685,14 +2741,17 @@ function renderTasks() {
 
   if (empty) empty.remove();
 
-  list.innerHTML = state.tasks.map(t => {
+  function cardHtml(t) {
     const completed = t.completed ? 'completed' : '';
     const doneSettled = t.doneSettled ? 'done-settled' : '';
     const animStyle = t._fresh ? 'animation:slideUp 1s cubic-bezier(0.22,1,0.36,1) backwards;' : '';
+    const badge = t.ampm === 'am' ? '<span class="ampm-badge am">☀</span>'
+               : t.ampm === 'pm' ? '<span class="ampm-badge pm">🌙</span>' : '';
 
     return '<div class="task-card ' + completed + ' ' + doneSettled + '" data-id="' + t.id + '" style="' + animStyle + '">'
       + '<div class="card-main">'
         + '<div class="drag-handle" data-handle="' + t.id + '"><span></span><span></span><span></span></div>'
+        + badge
         + '<div class="task-title">' + escapeHtml(t.title) + '</div>'
         + '<button class="delete-btn" data-delete="' + t.id + '" title="删除">&#10005;</button>'
       + '</div>'
@@ -2705,7 +2764,30 @@ function renderTasks() {
         + '<div class="sparkle-container" data-sparkle="' + t.id + '"></div>'
       + '</div>'
     + '</div>';
-  }).join('');
+  }
+
+  var allDay = state.tasks.filter(function(t) { return !t.ampm; });
+  var amTasks = state.tasks.filter(function(t) { return t.ampm === 'am'; });
+  var pmTasks = state.tasks.filter(function(t) { return t.ampm === 'pm'; });
+
+  var html = '';
+  var sections = 0;
+  if (amTasks.length > 0 || pmTasks.length > 0) sections++;
+
+  if (allDay.length > 0) {
+    if (sections > 0) html += '<div class="task-section-header">📋 其他</div>';
+    allDay.forEach(function(t) { html += cardHtml(t); });
+  }
+  if (amTasks.length > 0) {
+    html += '<div class="task-section-header">☀️ 上午</div>';
+    amTasks.forEach(function(t) { html += cardHtml(t); });
+  }
+  if (pmTasks.length > 0) {
+    html += '<div class="task-section-header">🌙 下午</div>';
+    pmTasks.forEach(function(t) { html += cardHtml(t); });
+  }
+
+  list.innerHTML = html;
 
   updateSortMode();
   updateCount();
@@ -2768,6 +2850,7 @@ function addTaskFromInput() {
     title: title,
     completed: false,
     doneSettled: false,
+    ampm: state.inputAMPM || '',
     _fresh: true,
   });
   renderTasks();
@@ -3120,6 +3203,19 @@ document.getElementById('taskInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') { e.preventDefault(); addTaskFromInput(); }
 });
 
+// 上午/下午按钮切换
+document.querySelectorAll('.ampm-btn[data-target="task"]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var ampm = this.dataset.ampm;
+    state.inputAMPM = (state.inputAMPM === ampm) ? '' : ampm;
+    document.querySelectorAll('.ampm-btn[data-target="task"]').forEach(function(b) {
+      b.classList.remove('active-am', 'active-pm');
+    });
+    if (state.inputAMPM === 'am') document.querySelector('.ampm-btn[data-target="task"][data-ampm="am"]').classList.add('active-am');
+    else if (state.inputAMPM === 'pm') document.querySelector('.ampm-btn[data-target="task"][data-ampm="pm"]').classList.add('active-pm');
+  });
+});
+
 document.addEventListener('click', function(e) {
   var bar = document.getElementById('inputBar');
   if (!bar.classList.contains('show')) return;
@@ -3186,20 +3282,45 @@ function renderTomorrowTasks() {
 
   if (empty) empty.remove();
 
-  list.innerHTML = state.tomorrowTasks.map(function(t) {
+  function cardHtml(t) {
     var completed = t.completed ? 'completed' : '';
     var doneSettled = t.doneSettled ? 'done-settled' : '';
     var animStyle = t._fresh ? 'animation:slideUp 1s cubic-bezier(0.22,1,0.36,1) backwards;' : '';
+    var badge = t.ampm === 'am' ? '<span class="ampm-badge am">☀</span>'
+               : t.ampm === 'pm' ? '<span class="ampm-badge pm">🌙</span>' : '';
 
     return '<div class="task-card ' + completed + ' ' + doneSettled + '" data-tid="' + t.id + '" style="' + animStyle + '">'
       + '<div class="card-main">'
         + '<div class="drag-handle" data-thandle="' + t.id + '"><span></span><span></span><span></span></div>'
+        + badge
         + '<div class="task-title">' + escapeHtml(t.title) + '</div>'
         + '<button class="delete-btn" data-tdelete="' + t.id + '" title="删除">&#10005;</button>'
       + '</div>'
       + '<div style="font-family:var(--font-hand);font-size:0.85rem;color:var(--text-muted);letter-spacing:1px;padding:2px 0 0 42px;">&#128221; 已规划</div>'
     + '</div>';
-  }).join('');
+  }
+
+  var allDay = state.tomorrowTasks.filter(function(t) { return !t.ampm; });
+  var amTasks = state.tomorrowTasks.filter(function(t) { return t.ampm === 'am'; });
+  var pmTasks = state.tomorrowTasks.filter(function(t) { return t.ampm === 'pm'; });
+
+  var html = '';
+  var sections = (amTasks.length > 0 || pmTasks.length > 0) ? 1 : 0;
+
+  if (allDay.length > 0) {
+    if (sections > 0) html += '<div class="task-section-header">📋 其他</div>';
+    allDay.forEach(function(t) { html += cardHtml(t); });
+  }
+  if (amTasks.length > 0) {
+    html += '<div class="task-section-header">☀️ 上午</div>';
+    amTasks.forEach(function(t) { html += cardHtml(t); });
+  }
+  if (pmTasks.length > 0) {
+    html += '<div class="task-section-header">🌙 下午</div>';
+    pmTasks.forEach(function(t) { html += cardHtml(t); });
+  }
+
+  list.innerHTML = html;
 
   updateTomorrowSortMode();
   updateTomorrowCount();
@@ -3235,6 +3356,7 @@ function addTomorrowTask(title) {
     title: title,
     completed: false,
     doneSettled: false,
+    ampm: state.tomorrowInputAMPM || '',
     _fresh: true,
   });
   renderTomorrowTasks();
@@ -3393,6 +3515,19 @@ document.getElementById('tomorrowTaskInput').addEventListener('keydown', functio
     addTomorrowTask(this.value.trim());
     this.value = '';
   }
+});
+
+// 上午/下午按钮切换（明日）
+document.querySelectorAll('.ampm-btn[data-target="tomorrow"]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var ampm = this.dataset.ampm;
+    state.tomorrowInputAMPM = (state.tomorrowInputAMPM === ampm) ? '' : ampm;
+    document.querySelectorAll('.ampm-btn[data-target="tomorrow"]').forEach(function(b) {
+      b.classList.remove('active-am', 'active-pm');
+    });
+    if (state.tomorrowInputAMPM === 'am') document.querySelector('.ampm-btn[data-target="tomorrow"][data-ampm="am"]').classList.add('active-am');
+    else if (state.tomorrowInputAMPM === 'pm') document.querySelector('.ampm-btn[data-target="tomorrow"][data-ampm="pm"]').classList.add('active-pm');
+  });
 });
 
 document.getElementById('tomorrowTaskList').addEventListener('click', function(e) {
