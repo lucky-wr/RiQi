@@ -2860,14 +2860,9 @@ function bindDividerDrag() {
   var divider = document.getElementById('taskDivider');
   if (!divider) return;
 
-  var startY, startPos;
-  var cards = document.querySelectorAll('.task-card');
-
   function onPointerDown(e) {
     if (e.target.closest('.divider-handle') || e.target.closest('.divider-grip') || e.target.closest('.divider-label-left') || e.target.closest('.divider-label-right')) {
       e.preventDefault();
-      startY = e.clientY;
-      startPos = state.dividerPos;
       divider.classList.add('dragging');
       document.addEventListener('pointermove', onPointerMove);
       document.addEventListener('pointerup', onPointerUp);
@@ -2876,15 +2871,19 @@ function bindDividerDrag() {
   }
 
   function onPointerMove(e) {
-    e.preventDefault();
-    var dy = e.clientY - startY;
-    // 计算应该移动几个任务
-    var cardHeight = cards.length > 0 ? cards[0].offsetHeight : 50;
-    var moveBy = Math.round(dy / (cardHeight + 14)); // 14 = gap
-    var newPos = Math.max(0, Math.min(state.tasks.length, startPos + moveBy));
+    var cards = document.querySelectorAll('.task-card');
+    if (cards.length === 0) return;
+    var pointerY = e.clientY;
+    var newPos = 0;
+    cards.forEach(function(card, i) {
+      var rect = card.getBoundingClientRect();
+      var midY = rect.top + rect.height / 2;
+      if (pointerY > midY) newPos = i + 1;
+    });
+    newPos = Math.max(0, Math.min(state.tasks.length, newPos));
     if (newPos !== state.dividerPos) {
       state.dividerPos = newPos;
-      renderTasks(); // 重新渲染
+      renderTasks();
     }
   }
 
@@ -2892,7 +2891,7 @@ function bindDividerDrag() {
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
     document.removeEventListener('pointercancel', onPointerUp);
-    if (divider) divider.classList.remove('dragging');
+    divider.classList.remove('dragging');
     if (!state.saved) debouncedSave();
   }
 
@@ -3443,14 +3442,9 @@ function bindTomorrowDividerDrag() {
   var divider = document.getElementById('tomorrowDivider');
   if (!divider) return;
 
-  var startY, startPos;
-  var cards = document.querySelectorAll('#tomorrowTaskList .task-card');
-
   function onPointerDown(e) {
     if (e.target.closest('.divider-handle') || e.target.closest('.divider-grip')) {
       e.preventDefault();
-      startY = e.clientY;
-      startPos = state.tomorrowDividerPos;
       divider.classList.add('dragging');
       document.addEventListener('pointermove', onPointerMove);
       document.addEventListener('pointerup', onPointerUp);
@@ -3459,11 +3453,16 @@ function bindTomorrowDividerDrag() {
   }
 
   function onPointerMove(e) {
-    e.preventDefault();
-    var dy = e.clientY - startY;
-    var cardHeight = cards.length > 0 ? cards[0].offsetHeight : 50;
-    var moveBy = Math.round(dy / (cardHeight + 14));
-    var newPos = Math.max(0, Math.min(state.tomorrowTasks.length, startPos + moveBy));
+    var cards = document.querySelectorAll('#tomorrowTaskList .task-card');
+    if (cards.length === 0) return;
+    var pointerY = e.clientY;
+    var newPos = 0;
+    cards.forEach(function(card, i) {
+      var rect = card.getBoundingClientRect();
+      var midY = rect.top + rect.height / 2;
+      if (pointerY > midY) newPos = i + 1;
+    });
+    newPos = Math.max(0, Math.min(state.tomorrowTasks.length, newPos));
     if (newPos !== state.tomorrowDividerPos) {
       state.tomorrowDividerPos = newPos;
       renderTomorrowTasks();
@@ -3474,7 +3473,7 @@ function bindTomorrowDividerDrag() {
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
     document.removeEventListener('pointercancel', onPointerUp);
-    if (divider) divider.classList.remove('dragging');
+    divider.classList.remove('dragging');
     debouncedSaveTomorrow();
   }
 
