@@ -1774,8 +1774,38 @@ body {
 }
 .library-modal-actions {
   display:flex;
-  gap:10px;
+  gap:8px;
 }
+.library-modal-actions button {
+  padding:10px 22px;
+  border-radius:12px;
+  border:none;
+  font-family:var(--font-hand);
+  font-size:1rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  letter-spacing:1px;
+  white-space:nowrap;
+}
+.library-modal-actions .lib-btn-import {
+  background:linear-gradient(135deg, var(--accent), var(--accent-soft));
+  color:#fff;
+  box-shadow:0 2px 12px var(--accent-glow);
+}
+.library-modal-actions .lib-btn-import:hover:not(:disabled) { opacity:0.85; transform:translateY(-1px); }
+.library-modal-actions .lib-btn-import:active:not(:disabled) { transform:scale(0.96); }
+.library-modal-actions .lib-btn-import:disabled {
+  opacity:0.35;
+  cursor:default;
+  box-shadow:none;
+}
+.library-modal-actions .lib-btn-cancel {
+  background:rgba(255,255,255,0.12);
+  color:var(--text-secondary);
+  border:1px solid var(--card-border);
+}
+.library-modal-actions .lib-btn-cancel:hover { background:rgba(255,255,255,0.22); }
+.library-modal-actions .lib-btn-cancel:active { transform:scale(0.96); }
 
 /* 导入弹窗-条目 */
 .library-import-item {
@@ -2245,11 +2275,32 @@ body {
         <div id="historyList"></div>
       </div>
     </div>
+    <!-- 页面：任务库管理 -->
+    <div class="page" id="page-library">
+      <div class="header">
+        <h1>任务库</h1>
+        <div class="date">管理你的常用任务</div>
+      </div>
+      <div class="page-content">
+        <div class="library-add-section">
+          <div class="library-add-title">➕ 添加新条目</div>
+          <div class="library-add-hint">用 <code>__</code> 表示每次要填的部分，比如「语文古文__」</div>
+          <div class="library-add-row">
+            <input type="text" id="libraryAddInput" placeholder="输入任务模式..." autocomplete="off">
+            <button class="btn-add-member" id="libraryAddBtn">添加</button>
+          </div>
+        </div>
+        <div class="library-list" id="libraryList">
+          <div class="library-empty" id="libraryEmpty">
+            <div class="review-empty-icon">📖</div>
+            <div>还没有任务条目，在上面添加吧</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
-
-<!-- ====== 重置密码弹窗 ====== -->
 <div class="modal-overlay hidden" id="pwdModal">
   <div class="modal-card">
     <h3 id="pwdModalTitle">重置密码</h3>
@@ -2271,32 +2322,8 @@ body {
     <div class="library-modal-footer">
       <div class="library-modal-count" id="libraryModalCount">已选 0 项</div>
       <div class="library-modal-actions">
-        <button class="btn-cancel" id="libraryModalCancel">取消</button>
-        <button class="btn-confirm" id="libraryModalImport" disabled>导入选中</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ====== 页面：任务库管理 ====== -->
-<div class="page" id="page-library">
-  <div class="header">
-    <h1>任务库</h1>
-    <div class="date">管理你的常用任务</div>
-  </div>
-  <div class="page-content">
-    <div class="library-add-section">
-      <div class="library-add-title">➕ 添加新条目</div>
-      <div class="library-add-hint">用 <code>__</code> 表示每次要填的部分，比如「语文古文__」</div>
-      <div class="library-add-row">
-        <input type="text" id="libraryAddInput" placeholder="输入任务模式..." autocomplete="off">
-        <button class="btn-add-member" id="libraryAddBtn">添加</button>
-      </div>
-    </div>
-    <div class="library-list" id="libraryList">
-      <div class="library-empty" id="libraryEmpty">
-        <div class="review-empty-icon">📖</div>
-        <div>还没有任务条目，在上面添加吧</div>
+        <button class="lib-btn-cancel" id="libraryModalCancel">取消</button>
+        <button class="lib-btn-import" id="libraryModalImport" disabled>导入选中</button>
       </div>
     </div>
   </div>
