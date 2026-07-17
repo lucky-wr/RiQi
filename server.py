@@ -139,6 +139,27 @@ def review_file(username, date_str=None):
     return os.path.join(d, f"review_{date_str}.json")
 
 
+# ==================== 任务库管理 ====================
+
+def library_file(username):
+    d = os.path.join(DATA_DIR, username)
+    os.makedirs(d, exist_ok=True)
+    return os.path.join(d, "library.json")
+
+
+def load_library(username):
+    try:
+        with open(library_file(username), "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"items": []}
+
+
+def save_library(username, data):
+    with open(library_file(username), "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 def compute_stats(username):
     """计算用户统计，自动处理保护卡"""
     today = date.today()
@@ -437,6 +458,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             name = user["name"]
             self._send_json(200, compute_stats(name))
 
+        elif path == "/api/library":
+            token = get_first("token")
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            self._send_json(200, load_library(user["name"]))
+
         elif path == "/api/review":
             token = get_first("token")
             user = self._auth(token)
@@ -527,7 +556,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         body = self._read_body()
 
-        if self.path == "/api/review":
+        if self.path == "/api/library":
+            token = body.get("token", "")
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            library_data = body.get("library", {})
+            save_library(user["name"], library_data)
+            self._send_json(200, {"ok": True})
+
+        elif self.path == "/api/review":
             token = body.get("token", "")
             user = self._auth(token)
             if not user:

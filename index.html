@@ -386,6 +386,24 @@ body {
   transform:scale(1.08);
 }
 .fab-edit:active { transform:scale(0.92); }
+
+.fab-library {
+  top:80px;
+  right:20px;
+  background:var(--card-bg);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--card-border);
+  color:var(--text-secondary);
+  box-shadow:0 4px 20px var(--card-shadow);
+  font-size:1.2rem;
+}
+.fab-library:hover {
+  background:rgba(255,255,255,0.28);
+  transform:scale(1.08);
+}
+.fab-library:active { transform:scale(0.92); }
+
 .fab-edit.active {
   background:rgba(201,168,124,0.2);
   border-color:var(--accent);
@@ -1708,6 +1726,290 @@ body {
   .btn-review-save { padding:10px 28px; font-size:1.05rem; }
 }
 
+/* ====== 任务库 ====== */
+/* 导入弹窗 */
+.library-modal-card {
+  width:480px;
+  max-width:92vw;
+  max-height:80vh;
+  display:flex;
+  flex-direction:column;
+  padding:28px 24px 20px;
+}
+.library-modal-card h3 {
+  font-family:var(--font-hand);
+  font-size:1.4rem;
+  color:var(--text);
+  letter-spacing:2px;
+  margin-bottom:16px;
+  text-align:center;
+}
+.library-modal-body {
+  flex:1;
+  overflow-y:auto;
+  margin:0 -8px;
+  padding:0 8px;
+  min-height:80px;
+}
+.library-modal-empty {
+  text-align:center;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  padding:32px 16px;
+}
+.library-modal-footer {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--card-border);
+}
+.library-modal-count {
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  color:var(--text-muted);
+  letter-spacing:1px;
+}
+.library-modal-actions {
+  display:flex;
+  gap:10px;
+}
+
+/* 导入弹窗-条目 */
+.library-import-item {
+  background:rgba(255,255,255,0.08);
+  border:1px solid var(--card-border);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:8px;
+  transition:background 0.2s, border-color 0.2s;
+}
+.library-import-item.checked {
+  background:rgba(122,158,126,0.08);
+  border-color:var(--green-soft);
+}
+.library-import-top {
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+}
+.library-import-check {
+  flex-shrink:0;
+  width:22px;
+  height:22px;
+  margin-top:2px;
+  border-radius:5px;
+  border:2px solid var(--text-muted);
+  background:transparent;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:0.7rem;
+  color:transparent;
+  transition:all 0.2s;
+}
+.library-import-check.checked {
+  background:var(--green);
+  border-color:var(--green);
+  color:#fff;
+}
+.library-import-text {
+  flex:1;
+  font-family:var(--font-hand);
+  font-size:1.05rem;
+  color:var(--text);
+  letter-spacing:0.5px;
+  line-height:1.5;
+  word-break:break-word;
+}
+.library-import-text .lib-blank {
+  display:inline-block;
+  border-bottom:2px dashed var(--accent);
+  min-width:80px;
+  padding:0 4px;
+  margin:0 2px;
+  color:var(--accent);
+  font-weight:500;
+}
+.library-import-text .lib-blank-input {
+  display:inline-block;
+  margin:0 2px;
+}
+.library-import-text .lib-blank-input input {
+  width:80px;
+  padding:2px 6px;
+  border:none;
+  border-bottom:2px solid var(--accent);
+  background:rgba(201,168,124,0.08);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  color:var(--accent);
+  outline:none;
+  border-radius:0;
+  font-weight:500;
+}
+.library-import-text .lib-blank-input input:focus {
+  border-bottom-color:var(--accent);
+  background:rgba(201,168,124,0.15);
+}
+.library-import-text .lib-fixed {
+  color:var(--text);
+}
+.library-import-preview {
+  font-family:var(--font-hand);
+  font-size:0.85rem;
+  color:var(--text-muted);
+  margin:6px 0 0 32px;
+  letter-spacing:0.5px;
+  opacity:0.8;
+}
+
+/* 任务库管理页面 */
+.library-add-section {
+  background:var(--card-bg);
+  backdrop-filter:blur(20px) saturate(1.2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.2);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-card);
+  padding:20px 22px;
+  margin-bottom:16px;
+  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+}
+.library-add-title {
+  font-family:var(--font-hand);
+  font-size:1.1rem;
+  color:var(--text);
+  letter-spacing:1px;
+  margin-bottom:4px;
+}
+.library-add-hint {
+  font-family:var(--font-hand);
+  font-size:0.85rem;
+  color:var(--text-muted);
+  letter-spacing:0.5px;
+  margin-bottom:12px;
+}
+.library-add-hint code {
+  background:rgba(201,168,124,0.12);
+  padding:1px 8px;
+  border-radius:6px;
+  color:var(--accent);
+  font-size:0.9rem;
+}
+.library-add-row {
+  display:flex;
+  gap:10px;
+}
+.library-add-row input {
+  flex:1;
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.2);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  color:var(--text);
+  outline:none;
+}
+.library-add-row input:focus { border-color:var(--accent); }
+
+.library-list {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.library-item-card {
+  background:var(--card-bg);
+  backdrop-filter:blur(20px) saturate(1.2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.2);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-card);
+  padding:14px 18px;
+  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  animation:slideUp 0.3s cubic-bezier(0.22,1,0.36,1) backwards;
+}
+.library-item-text {
+  flex:1;
+  font-family:var(--font-hand);
+  font-size:1.1rem;
+  color:var(--text);
+  letter-spacing:0.5px;
+  word-break:break-word;
+  cursor:pointer;
+  padding:2px 6px;
+  border-radius:8px;
+  transition:background 0.2s;
+}
+.library-item-text:hover { background:rgba(255,255,255,0.1); }
+.library-item-text.editing {
+  background:rgba(201,168,124,0.08);
+}
+.library-item-text input {
+  width:100%;
+  padding:4px 8px;
+  border:none;
+  border-bottom:2px solid var(--accent);
+  background:transparent;
+  font-family:var(--font-hand);
+  font-size:1.1rem;
+  color:var(--text);
+  outline:none;
+}
+.library-item-actions {
+  display:flex;
+  gap:6px;
+  flex-shrink:0;
+}
+.library-item-actions button {
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  border:none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:0.9rem;
+  transition:all 0.2s;
+}
+.btn-lib-edit {
+  background:rgba(201,168,124,0.1);
+  color:var(--accent);
+}
+.btn-lib-edit:hover { background:rgba(201,168,124,0.25); }
+.btn-lib-del {
+  background:rgba(200,80,80,0.08);
+  color:#c85555;
+}
+.btn-lib-del:hover { background:rgba(200,80,80,0.18); }
+.btn-lib-save {
+  background:rgba(122,158,126,0.12);
+  color:var(--green);
+}
+.btn-lib-save:hover { background:rgba(122,158,126,0.25); }
+.library-empty {
+  text-align:center;
+  padding:40px 16px;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:1rem;
+}
+.library-item-card.deleting {
+  animation:slideDownOut 0.35s cubic-bezier(0.5,0,0.75,0) forwards;
+  pointer-events:none;
+}
+
+@media (max-width:480px) {
+  .library-modal-card { padding:20px 16px; }
+  .library-add-row { flex-direction:column; }
+}
+
 /* ====== 适配 ====== */
 @media (max-width:480px) {
   .header h1 { font-size:2.2rem; letter-spacing:6px; }
@@ -1760,6 +2062,7 @@ body {
       <button class="nav-item" data-page="history">&#128197; 历史任务</button>
       <button class="nav-item" data-page="stats">&#128200; 数据看板</button>
 <button class="nav-item" data-page="review">&#128214; 每日复盘</button>
+<button class="nav-item" data-page="library">&#128218; 任务库</button>
       <button class="nav-item" data-page="members" data-admin>&#128101; 管理成员</button>
       <button class="nav-item" data-page="progress" data-admin>&#128200; 全局进度</button>
     </div>
@@ -1784,6 +2087,7 @@ body {
       </div>
 
       <button class="fab fab-add" id="btnAdd" title="添加任务">+</button>
+      <button class="fab fab-library" id="btnLibrary" title="从任务库导入">&#128218;</button>
       <button class="fab fab-edit" id="btnEdit" title="编辑排序">&#9998;</button>
 
       <div class="task-list" id="taskList">
@@ -1953,6 +2257,47 @@ body {
     <div class="modal-actions">
       <button class="btn-confirm" id="pwdModalConfirm">确认</button>
       <button class="btn-cancel" id="pwdModalCancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 任务库导入弹窗 ====== -->
+<div class="modal-overlay hidden" id="libraryModal">
+  <div class="modal-card library-modal-card">
+    <h3>📖 从任务库导入</h3>
+    <div class="library-modal-body" id="libraryModalBody">
+      <div class="library-modal-empty">加载中...</div>
+    </div>
+    <div class="library-modal-footer">
+      <div class="library-modal-count" id="libraryModalCount">已选 0 项</div>
+      <div class="library-modal-actions">
+        <button class="btn-cancel" id="libraryModalCancel">取消</button>
+        <button class="btn-confirm" id="libraryModalImport" disabled>导入选中</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 页面：任务库管理 ====== -->
+<div class="page" id="page-library">
+  <div class="header">
+    <h1>任务库</h1>
+    <div class="date">管理你的常用任务</div>
+  </div>
+  <div class="page-content">
+    <div class="library-add-section">
+      <div class="library-add-title">➕ 添加新条目</div>
+      <div class="library-add-hint">用 <code>__</code> 表示每次要填的部分，比如「语文古文__」</div>
+      <div class="library-add-row">
+        <input type="text" id="libraryAddInput" placeholder="输入任务模式..." autocomplete="off">
+        <button class="btn-add-member" id="libraryAddBtn">添加</button>
+      </div>
+    </div>
+    <div class="library-list" id="libraryList">
+      <div class="library-empty" id="libraryEmpty">
+        <div class="review-empty-icon">📖</div>
+        <div>还没有任务条目，在上面添加吧</div>
+      </div>
     </div>
   </div>
 </div>
@@ -2151,6 +2496,7 @@ function switchPage(page) {
   if (page === 'progress') { loadProgress(); }
   if (page === 'history') { loadHistory(); }
   if (page === 'review') { loadReview(); }
+  if (page === 'library') { loadLibraryManage(); }
 }
 
 // 侧栏导航点击
@@ -3337,6 +3683,383 @@ function formatReviewDate() {
   var el = document.getElementById('reviewDateDisplay');
   if (el) el.textContent = formatReviewDate();
 })();
+
+// ==================== 任务库 ====================
+
+var libraryItems = []; // [{id, pattern}]
+
+async function loadLibrary() {
+  var token = getToken();
+  if (!token) return [];
+  try {
+    var r = await fetch('/api/library?token=' + encodeURIComponent(token) + '&_t=' + Date.now());
+    if (r.status === 401) { handleAuthError(); return []; }
+    var data = await r.json();
+    libraryItems = (data && data.items) || [];
+    return libraryItems;
+  } catch(e) { return []; }
+}
+
+async function saveLibrary() {
+  var token = getToken();
+  if (!token) return;
+  try {
+    await fetch('/api/library', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token, library: { items: libraryItems } }),
+    });
+  } catch(e) {}
+}
+
+// ===== 管理页面 =====
+
+async function loadLibraryManage() {
+  await loadLibrary();
+  renderLibraryManage();
+}
+
+function renderLibraryManage() {
+  var list = document.getElementById('libraryList');
+  var empty = document.getElementById('libraryEmpty');
+
+  if (!libraryItems || libraryItems.length === 0) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    empty.style.display = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+  var html = '';
+  libraryItems.forEach(function(item, idx) {
+    html += '<div class="library-item-card" data-idx="' + idx + '">'
+      + '<div class="library-item-text" data-display="' + idx + '">' + escapeHtml(item.pattern) + '</div>'
+      + '<div class="library-item-text editing" data-edit="' + idx + '" style="display:none;">'
+        + '<input type="text" value="' + escAttr(item.pattern) + '" data-edit-input="' + idx + '">'
+      + '</div>'
+      + '<div class="library-item-actions">'
+        + '<button class="btn-lib-edit" data-edit-btn="' + idx + '" title="编辑">&#9998;</button>'
+        + '<button class="btn-lib-save" data-save-btn="' + idx + '" title="保存" style="display:none;">&#10003;</button>'
+        + '<button class="btn-lib-del" data-del-btn="' + idx + '" title="删除">&#10005;</button>'
+      + '</div>'
+    + '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// 添加条目
+document.getElementById('libraryAddBtn').addEventListener('click', function() {
+  var input = document.getElementById('libraryAddInput');
+  var text = input.value.trim();
+  if (!text) return;
+  libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: text });
+  input.value = '';
+  saveLibrary().then(function() { loadLibraryManage(); });
+});
+
+document.getElementById('libraryAddInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('libraryAddBtn').click();
+});
+
+// 条目操作（事件委托）
+document.getElementById('libraryList').addEventListener('click', function(e) {
+  var target = e.target;
+
+  // 编辑按钮
+  if (target.classList.contains('btn-lib-edit')) {
+    var idx = parseInt(target.dataset.editBtn);
+    var display = document.querySelector('[data-display="' + idx + '"]');
+    var edit = document.querySelector('[data-edit="' + idx + '"]');
+    var editBtn = target;
+    var saveBtn = document.querySelector('[data-save-btn="' + idx + '"]');
+    if (display) display.style.display = 'none';
+    if (edit) {
+      edit.style.display = '';
+      var inp = edit.querySelector('input');
+      if (inp) { inp.focus(); inp.select(); }
+    }
+    if (editBtn) editBtn.style.display = 'none';
+    if (saveBtn) saveBtn.style.display = '';
+  }
+
+  // 保存按钮
+  if (target.classList.contains('btn-lib-save')) {
+    var idx = parseInt(target.dataset.saveBtn);
+    var inp = document.querySelector('[data-edit-input="' + idx + '"]');
+    var text = inp ? inp.value.trim() : '';
+    if (text && libraryItems[idx]) {
+      libraryItems[idx].pattern = text;
+      saveLibrary().then(function() { loadLibraryManage(); });
+    } else {
+      loadLibraryManage();
+    }
+  }
+
+  // 删除按钮
+  if (target.classList.contains('btn-lib-del')) {
+    var idx = parseInt(target.dataset.delBtn);
+    var card = target.closest('.library-item-card');
+    if (card) card.classList.add('deleting');
+    setTimeout(function() {
+      if (libraryItems[idx]) {
+        libraryItems.splice(idx, 1);
+        saveLibrary().then(function() { loadLibraryManage(); });
+      }
+    }, 350);
+  }
+});
+
+// 编辑框回车保存
+document.getElementById('libraryList').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    var inp = e.target.closest('[data-edit-input]');
+    if (inp) {
+      var idx = parseInt(inp.dataset.editInput);
+      var saveBtn = document.querySelector('[data-save-btn="' + idx + '"]');
+      if (saveBtn) saveBtn.click();
+    }
+  }
+});
+
+// ===== 导入弹窗 =====
+
+// 弹窗条目的填空数据
+var importBlanks = {};
+
+function openImportModal() {
+  loadLibrary().then(function(items) {
+    renderImportModal(items);
+    document.getElementById('libraryModal').classList.remove('hidden');
+  });
+}
+
+function renderImportModal(items) {
+  var body = document.getElementById('libraryModalBody');
+
+  if (!items || items.length === 0) {
+    body.innerHTML = '<div class="library-modal-empty">📖 任务库还是空的，先去「任务库」页面添加条目吧</div>';
+    document.getElementById('libraryModalCount').textContent = '已选 0 项';
+    document.getElementById('libraryModalImport').disabled = true;
+    return;
+  }
+
+  importBlanks = {};
+  var html = '';
+  items.forEach(function(item, idx) {
+    importBlanks[idx] = { id: item.id, checked: false, fills: {} };
+    // 分解 pattern，把 __ 替换为输入框
+    var parts = splitPattern(item.pattern);
+    var textHtml = '';
+    var hasBlank = false;
+    parts.forEach(function(p, pi) {
+      if (p === '__') {
+        hasBlank = true;
+        textHtml += '<span class="lib-blank-input"><input type="text" data-fill="' + idx + '-' + pi + '" placeholder="填空" autocomplete="off"></span>';
+      } else if (p) {
+        textHtml += '<span class="lib-fixed">' + escapeHtml(p) + '</span>';
+      }
+    });
+
+    html += '<div class="library-import-item" data-item-idx="' + idx + '">'
+      + '<div class="library-import-top">'
+        + '<div class="library-import-check" data-check="' + idx + '" data-hasblank="' + (hasBlank ? '1' : '0') + '">&#10003;</div>'
+        + '<div class="library-import-text">' + textHtml + '</div>'
+      + '</div>'
+      + '<div class="library-import-preview" data-preview="' + idx + '" style="display:none;"></div>'
+    + '</div>';
+  });
+
+  body.innerHTML = html;
+
+  // 绑定输入变化
+  body.querySelectorAll('input[data-fill]').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var key = this.dataset.fill;
+      var parts = key.split('-');
+      var idx = parseInt(parts[0]);
+      var pi = parseInt(parts[1]);
+      if (importBlanks[idx]) {
+        importBlanks[idx].fills[pi] = this.value;
+        updatePreview(idx);
+        updateImportCount();
+      }
+    });
+    inp.addEventListener('focus', function() {
+      this.select();
+    });
+  });
+
+  updateImportCount();
+}
+
+function splitPattern(pattern) {
+  // 把 "语文古文__" 分成 ["语文古文", "__"]
+  // 把 "数学第__课" 分成 ["数学第", "__", "课"]
+  var parts = [];
+  var remaining = pattern;
+  while (remaining.length > 0) {
+    var idx = remaining.indexOf('__');
+    if (idx === -1) {
+      parts.push(remaining);
+      break;
+    }
+    if (idx > 0) parts.push(remaining.substring(0, idx));
+    parts.push('__');
+    remaining = remaining.substring(idx + 2);
+  }
+  return parts;
+}
+
+function buildTitleFromParts(pattern, fills) {
+  var parts = splitPattern(pattern);
+  var fi = 0;
+  var title = '';
+  parts.forEach(function(p) {
+    if (p === '__') {
+      title += (fills[fi] && fills[fi].trim()) || '__';
+      fi++;
+    } else {
+      title += p;
+    }
+  });
+  return title;
+}
+
+function updatePreview(idx) {
+  var item = libraryItems[idx];
+  if (!item) return;
+  var blank = importBlanks[idx];
+  if (!blank) return;
+  var previewEl = document.querySelector('[data-preview="' + idx + '"]');
+  if (!previewEl) return;
+
+  var hasFill = false;
+  var parts = splitPattern(item.pattern);
+  var fi = 0;
+  var previewParts = [];
+  parts.forEach(function(p) {
+    if (p === '__') {
+      var val = (blank.fills[fi] && blank.fills[fi].trim()) || '';
+      if (val) { hasFill = true; previewParts.push(val); }
+      else { previewParts.push('___'); }
+      fi++;
+    } else {
+      previewParts.push(p);
+    }
+  });
+
+  if (hasFill) {
+    previewEl.textContent = '→ ' + previewParts.join('');
+    previewEl.style.display = '';
+  } else {
+    previewEl.style.display = 'none';
+  }
+}
+
+function updateImportCount() {
+  var checked = 0;
+  var total = libraryItems.length;
+  for (var key in importBlanks) {
+    if (importBlanks[key].checked) checked++;
+  }
+
+  var countEl = document.getElementById('libraryModalCount');
+  var importBtn = document.getElementById('libraryModalImport');
+
+  countEl.textContent = '已选 ' + checked + ' / ' + total + ' 项';
+  importBtn.disabled = checked === 0;
+  importBtn.textContent = checked > 0 ? '导入选中 ' + checked + ' 项' : '导入选中';
+}
+
+// 弹窗复选框点击
+document.getElementById('libraryModalBody').addEventListener('click', function(e) {
+  var check = e.target.closest('[data-check]');
+  if (!check) return;
+
+  var idx = parseInt(check.dataset.check);
+  if (importBlanks[idx] === undefined) return;
+
+  // 切换选中状态
+  importBlanks[idx].checked = !importBlanks[idx].checked;
+  check.classList.toggle('checked');
+
+  // 高亮条目背景
+  var item = check.closest('.library-import-item');
+  if (item) item.classList.toggle('checked');
+
+  updateImportCount();
+});
+
+// 取消
+document.getElementById('libraryModalCancel').addEventListener('click', function() {
+  document.getElementById('libraryModal').classList.add('hidden');
+});
+
+// 导入
+document.getElementById('libraryModalImport').addEventListener('click', function() {
+  var newTasks = [];
+
+  libraryItems.forEach(function(item, idx) {
+    var blank = importBlanks[idx];
+    if (!blank || !blank.checked) return;
+
+    var title = item.pattern;
+    // 如果有 __，替换为填写的内容
+    if (item.pattern.indexOf('__') !== -1) {
+      var parts = splitPattern(item.pattern);
+      var fi = 0;
+      var filled = '';
+      parts.forEach(function(p) {
+        if (p === '__') {
+          filled += (blank.fills[fi] && blank.fills[fi].trim()) || '__';
+          fi++;
+        } else {
+          filled += p;
+        }
+      });
+      title = filled;
+    }
+
+    // 跳过还有未填 __ 的
+    if (title.indexOf('__') !== -1) return;
+
+    newTasks.push({
+      id: Date.now() + Math.random() * 1000 + idx,
+      title: title,
+      completed: false,
+      doneSettled: false,
+      _fresh: true,
+    });
+  });
+
+  if (newTasks.length === 0) return;
+
+  // 添加到今天的任务
+  state.tasks = state.tasks.concat(newTasks);
+  renderTasks();
+  debouncedSave();
+  document.getElementById('libraryModal').classList.add('hidden');
+
+  // 切换到任务页
+  switchPage('tasks');
+
+  // 滚动到最新任务
+  setTimeout(function() {
+    var cards = document.querySelectorAll('.task-card');
+    if (cards.length > 0) {
+      cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, 200);
+});
+
+// 点击弹窗外部关闭
+document.getElementById('libraryModal').addEventListener('click', function(e) {
+  if (e.target === this) document.getElementById('libraryModal').classList.add('hidden');
+});
+
+// 任务页导入按钮
+document.getElementById('btnLibrary').addEventListener('click', openImportModal);
 
 // 复盘状态
 var reviewState = {
