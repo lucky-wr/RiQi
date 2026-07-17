@@ -780,31 +780,74 @@ body {
 }
 
 /* ====== 上午/下午标记 ====== */
-.ampm-btn {
-  flex-shrink:0;
-  padding:6px 10px;
-  border-radius:10px;
-  border:1px solid var(--card-border);
-  background:rgba(255,255,255,0.08);
-  color:var(--text-muted);
-  font-family:var(--font-hand);
-  font-size:0.8rem;
-  cursor:pointer;
-  transition:all 0.2s;
-  letter-spacing:0.5px;
-  white-space:nowrap;
-  line-height:1;
+
+/* 可拖动的上下午分界线 */
+.task-divider {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:8px 0;
+  cursor:default;
+  user-select:none;
+  position:relative;
+  z-index:10;
+  touch-action:none;
 }
-.ampm-btn:hover { background:rgba(255,255,255,0.18); }
-.ampm-btn.active-am {
+.task-divider .divider-line {
+  width:100%;
+  height:2px;
+  background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity:0.25;
+  border-radius:1px;
+  transition:opacity 0.3s, height 0.3s;
+}
+.task-divider .divider-handle {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:4px 18px;
+  border-radius:20px;
+  background:rgba(255,255,255,0.10);
+  border:1px solid rgba(255,255,255,0.08);
+  cursor:ns-resize;
+  transition:all 0.2s;
+  touch-action:none;
+}
+.task-divider .divider-handle:hover {
+  background:rgba(255,255,255,0.18);
+  border-color:var(--accent);
+}
+.task-divider.dragging .divider-handle {
   background:rgba(201,168,124,0.15);
   border-color:var(--accent);
-  color:var(--accent);
+  box-shadow:0 0 20px var(--accent-glow);
+  transform:scale(1.05);
 }
-.ampm-btn.active-pm {
-  background:rgba(122,158,126,0.12);
-  border-color:var(--green);
+.task-divider.dragging .divider-line {
+  opacity:0.5;
+  height:3px;
+}
+.divider-label-left {
+  font-family:var(--font-hand);
+  font-size:0.85rem;
+  color:var(--accent);
+  letter-spacing:1px;
+  pointer-events:none;
+}
+.divider-label-right {
+  font-family:var(--font-hand);
+  font-size:0.85rem;
   color:var(--green);
+  letter-spacing:1px;
+  pointer-events:none;
+}
+.divider-grip {
+  font-size:1.2rem;
+  color:var(--text-muted);
+  line-height:1;
+  pointer-events:none;
+  letter-spacing:4px;
 }
 
 .ampm-badge {
@@ -2268,8 +2311,6 @@ body {
       <div class="input-bar" id="inputBar">
         <div class="bar-inner">
           <input type="text" id="taskInput" placeholder="输入今天要做的事..." autocomplete="off">
-          <button class="ampm-btn" data-target="task" data-ampm="am" title="标记为上午">☀上午</button>
-          <button class="ampm-btn" data-target="task" data-ampm="pm" title="标记为下午">🌙下午</button>
           <button class="btn-bar-add" id="btnAddTask">添加</button>
           <button class="btn-bar-close" id="btnCloseBar">&#10003;</button>
         </div>
@@ -2300,8 +2341,6 @@ body {
       <div class="input-bar" id="tomorrowInputBar">
         <div class="bar-inner">
           <input type="text" id="tomorrowTaskInput" placeholder="输入明天的计划..." autocomplete="off">
-          <button class="ampm-btn" data-target="tomorrow" data-ampm="am" title="标记为上午">☀上午</button>
-          <button class="ampm-btn" data-target="tomorrow" data-ampm="pm" title="标记为下午">🌙下午</button>
           <button class="btn-bar-add" id="btnAddTomorrowTask">添加</button>
           <button class="btn-bar-close" id="btnCloseTomorrowBar">&#10003;</button>
         </div>
@@ -2488,8 +2527,8 @@ const state = {
   tomorrowSorting: false,
   tomorrowDragState: null,
   tomorrowSaveTimer: null,
-  inputAMPM: '',          // '' | 'am' | 'pm'
-  tomorrowInputAMPM: '',  // '' | 'am' | 'pm'
+  dividerPos: -1,         // 分界线位置：第N个任务之后（-1=自动）
+  tomorrowDividerPos: -1,
 };
 
 // ==================== 日期 ====================
@@ -2741,12 +2780,29 @@ function renderTasks() {
 
   if (empty) empty.remove();
 
+  // 确定分界线位置
+  var pos = state.dividerPos;
+  if (pos < 0 || pos > state.tasks.length) {
+    // 自动：根据已保存的 ampm 推算
+    var amCount = state.tasks.filter(function(t) { return t.ampm === 'am'; }).length;
+    pos = (amCount > 0) ? amCount : Math.ceil(state.tasks.length / 2);
+    if (pos === state.tasks.length) pos = Math.max(0, state.tasks.length - 1);
+    if (pos < 0) pos = 0;
+  }
+  state.dividerPos = pos;
+
+  // 同步 ampm 到实际位置
+  state.tasks.forEach(function(t, i) {
+    var shouldBeAM = i < pos;
+    var target = shouldBeAM ? 'am' : 'pm';
+    if (t.ampm !== target) { t.ampm = target; state.saved = false; }
+  });
+
   function cardHtml(t) {
     const completed = t.completed ? 'completed' : '';
     const doneSettled = t.doneSettled ? 'done-settled' : '';
     const animStyle = t._fresh ? 'animation:slideUp 1s cubic-bezier(0.22,1,0.36,1) backwards;' : '';
-    const badge = t.ampm === 'am' ? '<span class="ampm-badge am">☀</span>'
-               : t.ampm === 'pm' ? '<span class="ampm-badge pm">🌙</span>' : '';
+    const badge = '<span class="ampm-badge ' + (t.ampm === 'am' ? 'am' : 'pm') + '">' + (t.ampm === 'am' ? '☀' : '🌙') + '</span>';
 
     return '<div class="task-card ' + completed + ' ' + doneSettled + '" data-id="' + t.id + '" style="' + animStyle + '">'
       + '<div class="card-main">'
@@ -2766,25 +2822,28 @@ function renderTasks() {
     + '</div>';
   }
 
-  var allDay = state.tasks.filter(function(t) { return !t.ampm; });
-  var amTasks = state.tasks.filter(function(t) { return t.ampm === 'am'; });
-  var pmTasks = state.tasks.filter(function(t) { return t.ampm === 'pm'; });
-
   var html = '';
-  var sections = 0;
-  if (amTasks.length > 0 || pmTasks.length > 0) sections++;
-
-  if (allDay.length > 0) {
-    if (sections > 0) html += '<div class="task-section-header">📋 其他</div>';
-    allDay.forEach(function(t) { html += cardHtml(t); });
-  }
-  if (amTasks.length > 0) {
+  // 上午任务
+  if (pos > 0) {
     html += '<div class="task-section-header">☀️ 上午</div>';
-    amTasks.forEach(function(t) { html += cardHtml(t); });
+    for (var i = 0; i < pos; i++) { html += cardHtml(state.tasks[i]); }
   }
-  if (pmTasks.length > 0) {
+
+  // 分界线
+  html += '<div class="task-divider" id="taskDivider">'
+    + '<div class="divider-line"></div>'
+    + '<div class="divider-handle">'
+      + '<span class="divider-label-left">☀️ 上午</span>'
+      + '<span class="divider-grip">⠿</span>'
+      + '<span class="divider-label-right">🌙 下午</span>'
+    + '</div>'
+    + '<div class="divider-line"></div>'
+  + '</div>';
+
+  // 下午任务
+  if (pos < state.tasks.length) {
     html += '<div class="task-section-header">🌙 下午</div>';
-    pmTasks.forEach(function(t) { html += cardHtml(t); });
+    for (var i = pos; i < state.tasks.length; i++) { html += cardHtml(state.tasks[i]); }
   }
 
   list.innerHTML = html;
@@ -2792,6 +2851,52 @@ function renderTasks() {
   updateSortMode();
   updateCount();
   state.tasks.forEach(t => { delete t._fresh; });
+
+  // 绑定分界线拖动
+  bindDividerDrag();
+}
+
+function bindDividerDrag() {
+  var divider = document.getElementById('taskDivider');
+  if (!divider) return;
+
+  var startY, startPos;
+  var cards = document.querySelectorAll('.task-card');
+
+  function onPointerDown(e) {
+    if (e.target.closest('.divider-handle') || e.target.closest('.divider-grip') || e.target.closest('.divider-label-left') || e.target.closest('.divider-label-right')) {
+      e.preventDefault();
+      startY = e.clientY;
+      startPos = state.dividerPos;
+      divider.classList.add('dragging');
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerUp);
+    }
+  }
+
+  function onPointerMove(e) {
+    e.preventDefault();
+    var dy = e.clientY - startY;
+    // 计算应该移动几个任务
+    var cardHeight = cards.length > 0 ? cards[0].offsetHeight : 50;
+    var moveBy = Math.round(dy / (cardHeight + 14)); // 14 = gap
+    var newPos = Math.max(0, Math.min(state.tasks.length, startPos + moveBy));
+    if (newPos !== state.dividerPos) {
+      state.dividerPos = newPos;
+      renderTasks(); // 重新渲染
+    }
+  }
+
+  function onPointerUp() {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
+    if (divider) divider.classList.remove('dragging');
+    if (!state.saved) debouncedSave();
+  }
+
+  divider.addEventListener('pointerdown', onPointerDown);
 }
 
 function updateCount() {
@@ -2850,7 +2955,6 @@ function addTaskFromInput() {
     title: title,
     completed: false,
     doneSettled: false,
-    ampm: state.inputAMPM || '',
     _fresh: true,
   });
   renderTasks();
@@ -3203,19 +3307,6 @@ document.getElementById('taskInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') { e.preventDefault(); addTaskFromInput(); }
 });
 
-// 上午/下午按钮切换
-document.querySelectorAll('.ampm-btn[data-target="task"]').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    var ampm = this.dataset.ampm;
-    state.inputAMPM = (state.inputAMPM === ampm) ? '' : ampm;
-    document.querySelectorAll('.ampm-btn[data-target="task"]').forEach(function(b) {
-      b.classList.remove('active-am', 'active-pm');
-    });
-    if (state.inputAMPM === 'am') document.querySelector('.ampm-btn[data-target="task"][data-ampm="am"]').classList.add('active-am');
-    else if (state.inputAMPM === 'pm') document.querySelector('.ampm-btn[data-target="task"][data-ampm="pm"]').classList.add('active-pm');
-  });
-});
-
 document.addEventListener('click', function(e) {
   var bar = document.getElementById('inputBar');
   if (!bar.classList.contains('show')) return;
@@ -3282,12 +3373,28 @@ function renderTomorrowTasks() {
 
   if (empty) empty.remove();
 
+  // 分界线位置
+  var pos = state.tomorrowDividerPos;
+  if (pos < 0 || pos > state.tomorrowTasks.length) {
+    var amCount = state.tomorrowTasks.filter(function(t) { return t.ampm === 'am'; }).length;
+    pos = (amCount > 0) ? amCount : Math.ceil(state.tomorrowTasks.length / 2);
+    if (pos === state.tomorrowTasks.length) pos = Math.max(0, state.tomorrowTasks.length - 1);
+    if (pos < 0) pos = 0;
+  }
+  state.tomorrowDividerPos = pos;
+
+  // 同步 ampm
+  state.tomorrowTasks.forEach(function(t, i) {
+    var shouldBeAM = i < pos;
+    var target = shouldBeAM ? 'am' : 'pm';
+    if (t.ampm !== target) { t.ampm = target; }
+  });
+
   function cardHtml(t) {
     var completed = t.completed ? 'completed' : '';
     var doneSettled = t.doneSettled ? 'done-settled' : '';
     var animStyle = t._fresh ? 'animation:slideUp 1s cubic-bezier(0.22,1,0.36,1) backwards;' : '';
-    var badge = t.ampm === 'am' ? '<span class="ampm-badge am">☀</span>'
-               : t.ampm === 'pm' ? '<span class="ampm-badge pm">🌙</span>' : '';
+    var badge = '<span class="ampm-badge ' + (t.ampm === 'am' ? 'am' : 'pm') + '">' + (t.ampm === 'am' ? '☀' : '🌙') + '</span>';
 
     return '<div class="task-card ' + completed + ' ' + doneSettled + '" data-tid="' + t.id + '" style="' + animStyle + '">'
       + '<div class="card-main">'
@@ -3300,24 +3407,26 @@ function renderTomorrowTasks() {
     + '</div>';
   }
 
-  var allDay = state.tomorrowTasks.filter(function(t) { return !t.ampm; });
-  var amTasks = state.tomorrowTasks.filter(function(t) { return t.ampm === 'am'; });
-  var pmTasks = state.tomorrowTasks.filter(function(t) { return t.ampm === 'pm'; });
-
   var html = '';
-  var sections = (amTasks.length > 0 || pmTasks.length > 0) ? 1 : 0;
-
-  if (allDay.length > 0) {
-    if (sections > 0) html += '<div class="task-section-header">📋 其他</div>';
-    allDay.forEach(function(t) { html += cardHtml(t); });
-  }
-  if (amTasks.length > 0) {
+  if (pos > 0) {
     html += '<div class="task-section-header">☀️ 上午</div>';
-    amTasks.forEach(function(t) { html += cardHtml(t); });
+    for (var i = 0; i < pos; i++) { html += cardHtml(state.tomorrowTasks[i]); }
   }
-  if (pmTasks.length > 0) {
+
+  // 分界线
+  html += '<div class="task-divider" id="tomorrowDivider">'
+    + '<div class="divider-line"></div>'
+    + '<div class="divider-handle">'
+      + '<span class="divider-label-left">☀️ 上午</span>'
+      + '<span class="divider-grip">⠿</span>'
+      + '<span class="divider-label-right">🌙 下午</span>'
+    + '</div>'
+    + '<div class="divider-line"></div>'
+  + '</div>';
+
+  if (pos < state.tomorrowTasks.length) {
     html += '<div class="task-section-header">🌙 下午</div>';
-    pmTasks.forEach(function(t) { html += cardHtml(t); });
+    for (var i = pos; i < state.tomorrowTasks.length; i++) { html += cardHtml(state.tomorrowTasks[i]); }
   }
 
   list.innerHTML = html;
@@ -3325,6 +3434,51 @@ function renderTomorrowTasks() {
   updateTomorrowSortMode();
   updateTomorrowCount();
   state.tomorrowTasks.forEach(function(t) { delete t._fresh; });
+
+  // 绑定分界线拖动
+  bindTomorrowDividerDrag();
+}
+
+function bindTomorrowDividerDrag() {
+  var divider = document.getElementById('tomorrowDivider');
+  if (!divider) return;
+
+  var startY, startPos;
+  var cards = document.querySelectorAll('#tomorrowTaskList .task-card');
+
+  function onPointerDown(e) {
+    if (e.target.closest('.divider-handle') || e.target.closest('.divider-grip')) {
+      e.preventDefault();
+      startY = e.clientY;
+      startPos = state.tomorrowDividerPos;
+      divider.classList.add('dragging');
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerUp);
+    }
+  }
+
+  function onPointerMove(e) {
+    e.preventDefault();
+    var dy = e.clientY - startY;
+    var cardHeight = cards.length > 0 ? cards[0].offsetHeight : 50;
+    var moveBy = Math.round(dy / (cardHeight + 14));
+    var newPos = Math.max(0, Math.min(state.tomorrowTasks.length, startPos + moveBy));
+    if (newPos !== state.tomorrowDividerPos) {
+      state.tomorrowDividerPos = newPos;
+      renderTomorrowTasks();
+    }
+  }
+
+  function onPointerUp() {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
+    if (divider) divider.classList.remove('dragging');
+    debouncedSaveTomorrow();
+  }
+
+  divider.addEventListener('pointerdown', onPointerDown);
 }
 
 function updateTomorrowCount() {
@@ -3356,7 +3510,6 @@ function addTomorrowTask(title) {
     title: title,
     completed: false,
     doneSettled: false,
-    ampm: state.tomorrowInputAMPM || '',
     _fresh: true,
   });
   renderTomorrowTasks();
@@ -3515,19 +3668,6 @@ document.getElementById('tomorrowTaskInput').addEventListener('keydown', functio
     addTomorrowTask(this.value.trim());
     this.value = '';
   }
-});
-
-// 上午/下午按钮切换（明日）
-document.querySelectorAll('.ampm-btn[data-target="tomorrow"]').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    var ampm = this.dataset.ampm;
-    state.tomorrowInputAMPM = (state.tomorrowInputAMPM === ampm) ? '' : ampm;
-    document.querySelectorAll('.ampm-btn[data-target="tomorrow"]').forEach(function(b) {
-      b.classList.remove('active-am', 'active-pm');
-    });
-    if (state.tomorrowInputAMPM === 'am') document.querySelector('.ampm-btn[data-target="tomorrow"][data-ampm="am"]').classList.add('active-am');
-    else if (state.tomorrowInputAMPM === 'pm') document.querySelector('.ampm-btn[data-target="tomorrow"][data-ampm="pm"]').classList.add('active-pm');
-  });
 });
 
 document.getElementById('tomorrowTaskList').addEventListener('click', function(e) {
