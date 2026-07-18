@@ -605,6 +605,75 @@ body {
   word-break:break-word;
 }
 
+/* ====== 计时器 ====== */
+.timer-area {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 0 2px 42px;
+  font-family:var(--font-hand);
+  font-size:0.85rem;
+  color:var(--text-muted);
+  opacity:0.8;
+  transition:opacity 0.3s;
+}
+.timer-area:hover { opacity:1; }
+.timer-icon { font-size:0.9rem; }
+.timer-display {
+  cursor:pointer;
+  padding:2px 6px;
+  border-radius:8px;
+  transition:background 0.2s;
+  min-width:50px;
+}
+.timer-display:hover { background:rgba(255,255,255,0.15); }
+.timer-btn {
+  background:none;
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px;
+  padding:1px 8px;
+  cursor:pointer;
+  font-size:0.8rem;
+  line-height:1.5;
+  color:var(--text-muted);
+  transition:all 0.2s;
+}
+.timer-btn:hover {
+  background:rgba(255,255,255,0.15);
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.timer-btn.active {
+  background:rgba(200,80,80,0.12);
+  border-color:#c85555;
+  color:#c85555;
+  animation:timerPulse 1.5s ease-in-out infinite;
+}
+@keyframes timerPulse {
+  0%,100% { opacity:1; }
+  50% { opacity:0.5; }
+}
+.timer-edit {
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-size:0.8rem;
+  color:var(--text-muted);
+  opacity:0.4;
+  padding:2px;
+  transition:opacity 0.2s;
+}
+.timer-edit:hover { opacity:1; color:var(--accent); }
+
+.total-time {
+  font-family:var(--font-hand);
+  font-size:0.8rem;
+  color:var(--text-muted);
+  margin-left:auto;
+  white-space:nowrap;
+  opacity:0.8;
+}
+
 /* ====== 滑动打卡 ====== */
 .slider-container {
   position:relative;
@@ -1496,6 +1565,41 @@ body {
   color:var(--accent);
 }
 
+/* 统计卡片（今日用时等） */
+.stats-card {
+  background:var(--card-bg);
+  backdrop-filter:blur(20px) saturate(1.2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.2);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-card);
+  padding:16px 20px;
+  margin-bottom:14px;
+  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.stats-card-icon {
+  font-size:1.6rem;
+  flex-shrink:0;
+}
+.stats-card-body {
+  flex:1;
+}
+.stats-card-label {
+  font-family:var(--font-hand);
+  font-size:0.85rem;
+  color:var(--text-muted);
+  letter-spacing:0.5px;
+}
+.stats-card-value {
+  font-family:var(--font-hand);
+  font-size:1.4rem;
+  color:var(--accent);
+  font-weight:500;
+  letter-spacing:1px;
+}
+
 /* 头部徽章 */
 .streak-badge {
   display:inline-flex;
@@ -2292,6 +2396,7 @@ body {
         <h1>日 砌</h1>
         <div class="date" id="dateDisplay"></div>
         <span class="streak-badge" id="streakBadge"></span>
+        <span class="total-time" id="totalTimeDisplay"></span>
       </div>
 
       <button class="fab fab-add" id="btnAdd" title="添加任务">+</button>
@@ -2392,6 +2497,9 @@ body {
           <div class="review-section-title done-title">✅ 今天完成了</div>
           <div class="review-task-list" id="reviewCompletedList"></div>
         </div>
+
+        <!-- 今日总用时 -->
+        <div class="review-section" id="reviewTotalTime" style="display:none;font-family:var(--font-hand);font-size:1rem;color:var(--accent);padding:0 10px 10px;">🕐 今日总用时：</div>
 
         <!-- 未完成任务（含反思） -->
         <div class="review-section" id="reviewUncompletedSection">
@@ -2530,6 +2638,9 @@ const state = {
   tomorrowSaveTimer: null,
   dividerPos: -1,         // 分界线位置：第N个任务之后（-1=自动）
   tomorrowDividerPos: -1,
+  activeTimer: null,      // 正在计时的 task id
+  activeTimerStart: null, // 计时开始的 Date.now()
+  timerInterval: null,    // setInterval 句柄
 };
 
 // ==================== 日期 ====================
@@ -2777,6 +2888,7 @@ function renderTasks() {
     }
     document.getElementById('taskCount').textContent = '';
     document.getElementById('sortNotice').classList.remove('show');
+    updateTotalTime();
     return;
   }
 
@@ -2820,6 +2932,12 @@ function renderTasks() {
           + '<div class="slider-knob" data-knob="' + t.id + '" style="left:' + (t.completed ? 'calc(100% - 36px)' : '4px') + '"></div>'
         + '</div>'
         + '<div class="sparkle-container" data-sparkle="' + t.id + '"></div>'
+      + '</div>'
+      + '<div class="timer-area">'
+        + '<span class="timer-icon">⏱</span>'
+        + '<span class="timer-display" data-timer-display="' + t.id + '">' + formatDuration(t.duration || 0) + '</span>'
+        + '<button class="timer-btn' + (state.activeTimer === t.id ? ' active' : '') + '" data-timer-btn="' + t.id + '" title="' + (state.activeTimer === t.id ? '停止计时' : '开始计时') + '">' + (state.activeTimer === t.id ? '⏹' : '▶') + '</button>'
+        + '<button class="timer-edit" data-timer-edit="' + t.id + '" title="手动修改用时">✎</button>'
       + '</div>'
     + '</div>';
   }
@@ -2905,7 +3023,131 @@ function updateCount() {
   const done = state.tasks.filter(t => t.completed).length;
   document.getElementById('taskCount').textContent =
     done > 0 ? '已完成 ' + done + '/' + total : '共 ' + total + ' 项';
+  updateTotalTime();
 }
+
+// ==================== 计时器 ====================
+
+function formatDuration(seconds) {
+  if (!seconds || seconds < 0) seconds = 0;
+  if (seconds < 60) return seconds + '秒';
+  var mins = Math.floor(seconds / 60);
+  var secs = seconds % 60;
+  if (mins < 60) return mins + '分' + (secs > 0 ? secs + '秒' : '');
+  var hours = Math.floor(mins / 60);
+  mins = mins % 60;
+  return hours + '小时' + (mins > 0 ? mins + '分' : '');
+}
+
+function formatDurationShort(seconds) {
+  if (!seconds || seconds < 0) seconds = 0;
+  if (seconds < 60) return seconds + '秒';
+  var mins = Math.floor(seconds / 60);
+  if (mins < 60) return mins + '分钟';
+  var hours = Math.floor(mins / 60);
+  mins = mins % 60;
+  return hours + '小时' + (mins > 0 ? mins + '分' : '');
+}
+
+function getTimerDuration(t) {
+  // 获取任务当前计时（含活跃计时的实时时长）
+  var dur = t.duration || 0;
+  if (state.activeTimer === t.id && state.activeTimerStart) {
+    dur += Math.floor((Date.now() - state.activeTimerStart) / 1000);
+  }
+  return dur;
+}
+
+function getTotalTodaySeconds() {
+  var total = 0;
+  state.tasks.forEach(function(t) {
+    total += getTimerDuration(t);
+  });
+  return total;
+}
+
+function updateTotalTime() {
+  var el = document.getElementById('totalTimeDisplay');
+  if (!el) return;
+  var total = getTotalTodaySeconds();
+  el.textContent = total > 0 ? '🕐 ' + formatDurationShort(total) : '';
+}
+
+function startTimer(taskId) {
+  // 先停掉当前活跃的
+  if (state.activeTimer !== null) {
+    stopTimer();
+  }
+  state.activeTimer = taskId;
+  state.activeTimerStart = Date.now();
+  if (!state.timerInterval) {
+    state.timerInterval = setInterval(timerTick, 1000);
+  }
+  // 刷新卡片 UI
+  refreshTimerUI(taskId);
+  debouncedSave();
+}
+
+function stopTimer(saveAfter) {
+  if (state.activeTimer === null) return;
+  var task = state.tasks.find(function(t) { return t.id === state.activeTimer; });
+  if (task) {
+    var elapsed = Math.floor((Date.now() - state.activeTimerStart) / 1000);
+    task.duration = (task.duration || 0) + elapsed;
+  }
+  var stoppedId = state.activeTimer;
+  state.activeTimer = null;
+  state.activeTimerStart = null;
+  refreshTimerUI(stoppedId);
+  if (saveAfter !== false) debouncedSave();
+}
+
+function timerTick() {
+  if (state.activeTimer !== null) {
+    refreshTimerUI(state.activeTimer);
+    updateTotalTime();
+  } else if (state.timerInterval) {
+    // 没有活跃计时时清除 interval
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+  }
+}
+
+function refreshTimerUI(taskId) {
+  var card = document.querySelector('.task-card[data-id="' + taskId + '"]');
+  if (!card) return;
+  var display = card.querySelector('.timer-display');
+  var btn = card.querySelector('.timer-btn');
+  if (!display) return;
+  var task = state.tasks.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+  var dur = getTimerDuration(task);
+  display.textContent = formatDuration(dur);
+  if (btn) {
+    var isActive = state.activeTimer === taskId;
+    btn.textContent = isActive ? '⏹' : '▶';
+    btn.title = isActive ? '停止计时' : '开始计时';
+    btn.classList.toggle('active', isActive);
+  }
+  updateTotalTime();
+}
+
+function editTimer(taskId) {
+  var task = state.tasks.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+  // 如果正在计时，先停止
+  if (state.activeTimer === taskId) stopTimer();
+  var currentMin = Math.round((task.duration || 0) / 60);
+  var input = prompt('修改用时（分钟）：', currentMin || '0');
+  if (input === null) return;
+  var mins = parseInt(input, 10);
+  if (isNaN(mins) || mins < 0) { alert('请输入有效的分钟数'); return; }
+  task.duration = mins * 60;
+  refreshTimerUI(taskId);
+  debouncedSave();
+}
+
+// ==================== 编辑排序 ====================
 
 function updateSortMode() {
   const handles = document.querySelectorAll('.drag-handle');
@@ -2956,6 +3198,7 @@ function addTaskFromInput() {
     title: title,
     completed: false,
     doneSettled: false,
+    duration: 0,
     _fresh: true,
   });
   renderTasks();
@@ -3320,6 +3563,19 @@ document.getElementById('taskList').addEventListener('click', function(e) {
     var id = parseFloat(delBtn.dataset.delete);
     if (id) deleteTask(id);
   }
+  var timerBtn = e.target.closest('.timer-btn');
+  if (timerBtn) {
+    var id = parseFloat(timerBtn.dataset.timerBtn);
+    if (id) {
+      if (state.activeTimer === id) { stopTimer(); }
+      else { startTimer(id); }
+    }
+  }
+  var timerEdit = e.target.closest('.timer-edit');
+  if (timerEdit) {
+    var id = parseFloat(timerEdit.dataset.timerEdit);
+    if (id) editTimer(id);
+  }
 });
 
 // ==================== 明日任务 ====================
@@ -3511,6 +3767,7 @@ function addTomorrowTask(title) {
     title: title,
     completed: false,
     doneSettled: false,
+    duration: 0,
     _fresh: true,
   });
   renderTomorrowTasks();
@@ -3994,6 +4251,15 @@ function renderStatsDashboard(stats) {
       + '<span class="streak-number">' + stats.streak + '</span>'
       + '<span class="streak-label">连续不断电</span>'
       + '<span class="streak-sub">🏆 最长 <span class="num">' + stats.longestStreak + '</span> 天</span>'
+    + '</div>'
+
+    // 今日用时
+    + '<div class="stats-card time-card">'
+      + '<div class="stats-card-icon">🕐</div>'
+      + '<div class="stats-card-body">'
+        + '<div class="stats-card-label">今日总用时</div>'
+        + '<div class="stats-card-value" id="todayDurationDisplay">' + formatDurationShort(stats.todayDuration || 0) + '</div>'
+      + '</div>'
     + '</div>'
 
     // 月历
@@ -4488,6 +4754,7 @@ document.getElementById('libraryModalImport').addEventListener('click', function
       title: title,
       completed: false,
       doneSettled: false,
+      duration: 0,
       _fresh: true,
     });
   });
@@ -4630,6 +4897,17 @@ function renderReview(todayTasks, reviewData) {
   } else {
     doneList.innerHTML = '<div class="review-task-list"><div class="review-task-item" style="color:var(--text-muted);font-size:0.95rem;">还没有完成的任务</div></div>';
     document.getElementById('reviewCompletedSection').style.display = '';
+  }
+
+  // 今日总用时
+  var totalSecs = 0;
+  todayTasks.forEach(function(t) { totalSecs += (t.duration || 0); });
+  var timeEl = document.getElementById('reviewTotalTime');
+  if (totalSecs > 0) {
+    timeEl.textContent = '🕐 今日总用时：' + formatDurationShort(totalSecs);
+    timeEl.style.display = '';
+  } else {
+    timeEl.style.display = 'none';
   }
 
   // 渲染未完成任务
