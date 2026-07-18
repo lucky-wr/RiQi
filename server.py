@@ -258,7 +258,7 @@ def compute_stats(username):
                 streak += 1
             elif ds in protected_set:
                 streak += 1
-            elif cards > 0:
+            elif cards > 0 and len(tasks) - done >= 2:
                 cards -= 1
                 used_cards += 1
                 protected_set.add(ds)
