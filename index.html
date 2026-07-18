@@ -4184,7 +4184,8 @@ document.getElementById('libraryAddBtn').addEventListener('click', function() {
   libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: pattern });
   input.value = '';
   updateAddPreview();
-  saveLibrary().then(function() { loadLibraryManage(); });
+  saveLibrary();
+  renderLibraryManage();
 });
 
 // 添加条目 - 插入占位按钮
@@ -4237,7 +4238,8 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
     var text = inp ? inp.value.trim() : '';
     if (!text) { loadLibraryManage(); return; }
     item.pattern = text.replace(/⬜/g, '__');
-    saveLibrary().then(function() { loadLibraryManage(); });
+    saveLibrary();
+    renderLibraryManage();
   }
 
   // 删除按钮
@@ -4248,7 +4250,8 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
     setTimeout(function() {
       if (libraryItems[idx]) {
         libraryItems.splice(idx, 1);
-        saveLibrary().then(function() { loadLibraryManage(); });
+        saveLibrary();
+        renderLibraryManage();
       }
     }, 350);
   }
