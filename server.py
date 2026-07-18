@@ -307,9 +307,6 @@ def compute_stats(username):
     # ---- 构建日历 ----
     calendar = build_calendar(today, all_tasks, protected_set)
 
-    # ---- 今日总用时 ----
-    today_duration = sum(t.get("duration", 0) for t in today_tasks)
-
     return {
         "streak": streak,
         "longestStreak": longest,
@@ -320,7 +317,6 @@ def compute_stats(username):
         "completionRate": completion_rate,
         "monthTasks": month_tasks,
         "monthCompleted": month_completed,
-        "todayDuration": today_duration,
         "cards": cards,
         "cardsMax": cards_max,
         "cardsUsedThisRun": used_cards,

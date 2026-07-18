@@ -2802,7 +2802,10 @@ function switchPage(page) {
   if (page === 'tasks') { loadTasks(); }
   if (page === 'tomorrow') { loadTomorrowTasks(); }
   if (page === 'stats') {
-    fetchStats().then(function(s) { renderStatsDashboard(s); updateStreakBadge(s); });
+    var p = state.tasks.length > 0 ? Promise.resolve() : loadTasks();
+    p.then(function() {
+      fetchStats().then(function(s) { renderStatsDashboard(s); updateStreakBadge(s); });
+    });
   }
   if (page === 'members') { loadMembers(); }
   if (page === 'progress') { loadProgress(); }
@@ -4177,7 +4180,7 @@ function renderStatsDashboard(stats) {
       + '<div class="stats-card-icon">🕐</div>'
       + '<div class="stats-card-body">'
         + '<div class="stats-card-label">今日总用时</div>'
-        + '<div class="stats-card-value" id="todayDurationDisplay">' + formatDurationShort(stats.todayDuration || 0) + '</div>'
+        + '<div class="stats-card-value" id="todayDurationDisplay">' + formatDurationShort(getTotalTodaySeconds()) + '</div>'
       + '</div>'
     + '</div>'
 
