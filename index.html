@@ -4185,8 +4185,7 @@ document.getElementById('libraryAddBtn').addEventListener('click', function() {
   libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: pattern });
   input.value = '';
   updateAddPreview();
-  saveLibrary();
-  renderLibraryManage();
+  saveLibrary().then(function() { loadLibraryManage(); });
 });
 
 // 添加条目 - 插入占位按钮
