@@ -4494,19 +4494,19 @@ document.getElementById('libraryModalImport').addEventListener('click', function
   // 添加到今天的任务
   state.tasks = state.tasks.concat(newTasks);
   renderTasks();
-  debouncedSave();
   document.getElementById('libraryModal').classList.add('hidden');
 
-  // 切换到任务页
-  switchPage('tasks');
-
-  // 滚动到最新任务
-  setTimeout(function() {
-    var cards = document.querySelectorAll('.task-card');
-    if (cards.length > 0) {
-      cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, 200);
+  // 先保存到服务端（等待完成），再切页面，避免 loadTasks 拉取旧数据覆盖
+  saveTasks().then(function() {
+    switchPage('tasks');
+    // 滚动到最新任务
+    setTimeout(function() {
+      var cards = document.querySelectorAll('.task-card');
+      if (cards.length > 0) {
+        cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 200);
+  });
 });
 
 // 点击弹窗外部关闭
