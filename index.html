@@ -2623,8 +2623,8 @@ function showApp() {
     el.style.display = isAdmin ? '' : 'none';
   });
 
-  switchPage('tasks');
-  loadTasks();
+  var lastPage = localStorage.getItem('lastPage') || 'tasks';
+  switchPage(lastPage);
 }
 
 // ==================== 登录交互 ====================
@@ -2692,6 +2692,7 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
 // ==================== 页面路由 ====================
 function switchPage(page) {
   state.currentPage = page;
+  localStorage.setItem('lastPage', page);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
