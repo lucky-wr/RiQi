@@ -2326,6 +2326,7 @@ body {
       </div>
 
       <button class="fab fab-add" id="btnAddTomorrow" title="添加任务">+</button>
+      <button class="fab fab-library" id="btnLibraryTomorrow" title="从任务库导入">&#128218;</button>
       <button class="fab fab-edit" id="btnEditTomorrow" title="编辑排序">&#9998;</button>
 
       <div class="task-list" id="tomorrowTaskList">
@@ -4282,8 +4283,10 @@ document.getElementById('libraryList').addEventListener('change', function(e) {
 
 // 弹窗条目的填空数据
 var importBlanks = {};
+var importTarget = 'tasks'; // 'tasks' | 'tomorrow'
 
-function openImportModal() {
+function openImportModal(target) {
+  importTarget = target || 'tasks';
   loadLibrary().then(function(items) {
     renderImportModal(items);
     document.getElementById('libraryModal').classList.remove('hidden');
@@ -4491,22 +4494,28 @@ document.getElementById('libraryModalImport').addEventListener('click', function
 
   if (newTasks.length === 0) return;
 
-  // 添加到今天的任务
-  state.tasks = state.tasks.concat(newTasks);
-  renderTasks();
   document.getElementById('libraryModal').classList.add('hidden');
 
-  // 先保存到服务端（等待完成），再切页面，避免 loadTasks 拉取旧数据覆盖
-  saveTasks().then(function() {
-    switchPage('tasks');
-    // 滚动到最新任务
-    setTimeout(function() {
-      var cards = document.querySelectorAll('.task-card');
-      if (cards.length > 0) {
-        cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    }, 200);
-  });
+  if (importTarget === 'tomorrow') {
+    // 导入到明日任务
+    state.tomorrowTasks = state.tomorrowTasks.concat(newTasks);
+    renderTomorrowTasks();
+    saveTomorrowTasks();
+    switchPage('tomorrow');
+  } else {
+    // 导入到今天任务
+    state.tasks = state.tasks.concat(newTasks);
+    renderTasks();
+    saveTasks().then(function() {
+      switchPage('tasks');
+      setTimeout(function() {
+        var cards = document.querySelectorAll('.task-card');
+        if (cards.length > 0) {
+          cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 200);
+    });
+  }
 });
 
 // 点击弹窗外部关闭
@@ -4514,8 +4523,9 @@ document.getElementById('libraryModal').addEventListener('click', function(e) {
   if (e.target === this) document.getElementById('libraryModal').classList.add('hidden');
 });
 
-// 任务页导入按钮
-document.getElementById('btnLibrary').addEventListener('click', openImportModal);
+// 导入按钮
+document.getElementById('btnLibrary').addEventListener('click', function() { openImportModal('tasks'); });
+document.getElementById('btnLibraryTomorrow').addEventListener('click', function() { openImportModal('tomorrow'); });
 
 // 复盘状态
 var reviewState = {
