@@ -3187,13 +3187,63 @@ function handleBeadClick(e) {
   var newSecs = (idx + 1) * 15 * 60;
   if (task.duration === newSecs) { task.duration = 0; }
   else { task.duration = newSecs; }
-  renderTasks();
+  updateTaskTimeUI(id);
+  updateTodaySectionStats();
   debouncedSave();
 }
 
 // ==================== 计时器 ====================
 var activeTimers = {};
 var timerTick = null;
+
+// 只更新单个任务卡片的时间显示（不重绘全列表）
+function updateTaskTimeUI(taskId) {
+  var card = document.querySelector('[data-id="' + taskId + '"], [data-tid="' + taskId + '"]');
+  if (!card) return;
+  var task = state.tasks.find(function(t) { return t.id === taskId; })
+    || state.tomorrowTasks.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+  var beadsEl = card.querySelector('.time-beads');
+  if (beadsEl) beadsEl.innerHTML = renderTimeBeads(taskId, task.duration || 0);
+  var textEl = card.querySelector('.timer-text');
+  if (textEl) textEl.textContent = formatDurationShort(task.duration || 0);
+  var btn = card.querySelector('.timer-btn');
+  if (btn) {
+    var running = !!activeTimers[taskId];
+    btn.classList.toggle('running', running);
+    btn.textContent = running ? '⏹' : '▶';
+  }
+  var live = card.querySelector('.timer-live');
+  if (live) {
+    live.style.display = activeTimers[taskId] ? '' : 'none';
+    if (activeTimers[taskId]) {
+      var sec = Math.floor((Date.now() - activeTimers[taskId]) / 1000);
+      var m = Math.floor(sec / 60);
+      var s = sec % 60;
+      live.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    }
+  }
+}
+
+// 刷新今日分区标题的用时统计
+function updateTodaySectionStats() {
+  var pos = state.dividerPos;
+  if (pos < 0 || pos > state.tasks.length) return;
+  var amDone = 0, amTotal = 0, pmDone = 0, pmTotal = 0;
+  for (var i = 0; i < pos; i++) {
+    var t = state.tasks[i];
+    if (t.completed) amDone += (t.duration || 0);
+    amTotal += (t.duration || 0);
+  }
+  for (var i = pos; i < state.tasks.length; i++) {
+    var t = state.tasks[i];
+    if (t.completed) pmDone += (t.duration || 0);
+    pmTotal += (t.duration || 0);
+  }
+  var headers = document.querySelectorAll('#taskList .task-section-header');
+  if (headers[0]) headers[0].innerHTML = '☀️ 上午<span class="section-time-stats">已完成 ' + formatDurationShort(amDone) + ' · 总计 ' + formatDurationShort(amTotal) + '</span>';
+  if (headers[1]) headers[1].innerHTML = '🌙 下午<span class="section-time-stats">已完成 ' + formatDurationShort(pmDone) + ' · 总计 ' + formatDurationShort(pmTotal) + '</span>';
+}
 
 function adjustDuration(e, delta) {
   e.stopPropagation();
@@ -3203,7 +3253,8 @@ function adjustDuration(e, delta) {
   if (!task) return;
   var cur = task.duration || 0;
   task.duration = Math.max(0, Math.min(120 * 60, cur + delta * 60));
-  renderTasks();
+  updateTaskTimeUI(id);
+  updateTodaySectionStats();
   debouncedSave();
 }
 
@@ -3219,7 +3270,8 @@ function toggleTimer(e) {
       || state.tomorrowTasks.find(function(t) { return t.id === id; });
     if (task) {
       task.duration = (task.duration || 0) + elapsedMin * 60;
-      renderTasks();
+      updateTaskTimeUI(id);
+      updateTodaySectionStats();
       debouncedSave();
     }
     if (Object.keys(activeTimers).length === 0 && timerTick) {
@@ -3228,7 +3280,7 @@ function toggleTimer(e) {
     }
   } else {
     activeTimers[id] = Date.now();
-    renderTasks();
+    updateTaskTimeUI(id);
     if (!timerTick) {
       timerTick = setInterval(function() {
         var now = Date.now();
