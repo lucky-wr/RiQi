@@ -931,6 +931,14 @@ body {
 .task-section-header:first-of-type {
   padding-top:0;
 }
+.section-time-stats {
+  font-family:var(--font-ui);
+  font-size:0.75rem;
+  font-weight:400;
+  opacity:0.6;
+  margin-left:8px;
+  letter-spacing:0;
+}
 
 /* ====== 排序模式通知 ====== */
 .sort-notice {
@@ -2949,10 +2957,25 @@ function renderTasks() {
     + '</div>';
   }
 
+  // 计算上下午用时统计
+  var amDoneSecs = 0, amTotalSecs = 0, pmDoneSecs = 0, pmTotalSecs = 0;
+  for (var i = 0; i < pos; i++) {
+    var t = state.tasks[i];
+    if (t.completed) amDoneSecs += (t.duration || 0);
+    amTotalSecs += (t.duration || 0);
+  }
+  for (var i = pos; i < state.tasks.length; i++) {
+    var t = state.tasks[i];
+    if (t.completed) pmDoneSecs += (t.duration || 0);
+    pmTotalSecs += (t.duration || 0);
+  }
+
   var html = '';
   // 上午任务
   if (pos > 0) {
-    html += '<div class="task-section-header">☀️ 上午</div>';
+    html += '<div class="task-section-header">☀️ 上午'
+      + '<span class="section-time-stats">已完成 ' + formatDurationShort(amDoneSecs) + ' · 总计 ' + formatDurationShort(amTotalSecs) + '</span>'
+      + '</div>';
     for (var i = 0; i < pos; i++) { html += cardHtml(state.tasks[i]); }
   }
 
@@ -2969,7 +2992,9 @@ function renderTasks() {
 
   // 下午任务
   if (pos < state.tasks.length) {
-    html += '<div class="task-section-header">🌙 下午</div>';
+    html += '<div class="task-section-header">🌙 下午'
+      + '<span class="section-time-stats">已完成 ' + formatDurationShort(pmDoneSecs) + ' · 总计 ' + formatDurationShort(pmTotalSecs) + '</span>'
+      + '</div>';
     for (var i = pos; i < state.tasks.length; i++) { html += cardHtml(state.tasks[i]); }
   }
 
@@ -3603,9 +3628,24 @@ function renderTomorrowTasks() {
     + '</div>';
   }
 
+  // 计算上下午用时统计
+  var amDoneSecs = 0, amTotalSecs = 0, pmDoneSecs = 0, pmTotalSecs = 0;
+  for (var i = 0; i < pos; i++) {
+    var t = state.tomorrowTasks[i];
+    if (t.completed) amDoneSecs += (t.duration || 0);
+    amTotalSecs += (t.duration || 0);
+  }
+  for (var i = pos; i < state.tomorrowTasks.length; i++) {
+    var t = state.tomorrowTasks[i];
+    if (t.completed) pmDoneSecs += (t.duration || 0);
+    pmTotalSecs += (t.duration || 0);
+  }
+
   var html = '';
   if (pos > 0) {
-    html += '<div class="task-section-header">☀️ 上午</div>';
+    html += '<div class="task-section-header">☀️ 上午'
+      + '<span class="section-time-stats">已完成 ' + formatDurationShort(amDoneSecs) + ' · 总计 ' + formatDurationShort(amTotalSecs) + '</span>'
+      + '</div>';
     for (var i = 0; i < pos; i++) { html += cardHtml(state.tomorrowTasks[i]); }
   }
 
@@ -3621,7 +3661,9 @@ function renderTomorrowTasks() {
   + '</div>';
 
   if (pos < state.tomorrowTasks.length) {
-    html += '<div class="task-section-header">🌙 下午</div>';
+    html += '<div class="task-section-header">🌙 下午'
+      + '<span class="section-time-stats">已完成 ' + formatDurationShort(pmDoneSecs) + ' · 总计 ' + formatDurationShort(pmTotalSecs) + '</span>'
+      + '</div>';
     for (var i = pos; i < state.tomorrowTasks.length; i++) { html += cardHtml(state.tomorrowTasks[i]); }
   }
 
