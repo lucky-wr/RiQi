@@ -624,6 +624,67 @@ body {
   color:var(--text-muted);
   min-width:40px;
 }
+/* 微调按钮 ▼▲ */
+.timer-adjust {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:18px;height:18px;
+  border:none;border-radius:50%;
+  cursor:pointer;
+  font-size:0.5rem;
+  background:rgba(255,255,255,0.06);
+  color:var(--text-muted);
+  transition:all 0.15s;
+  opacity:0.4;
+  padding:0;line-height:1;
+  margin-left:1px;
+}
+.timer-adjust:hover {
+  opacity:1;
+  background:rgba(255,255,255,0.15);
+  transform:scale(1.2);
+}
+.timer-adjust:active { transform:scale(0.9); }
+/* 计时器按钮 ▶⏹ */
+.timer-btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;height:24px;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:0.7rem;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  color:var(--text-muted);
+  transition:all 0.2s;
+  margin-left:5px;
+  padding:0;line-height:1;
+}
+.timer-btn:hover {
+  background:rgba(255,255,255,0.2);
+  transform:scale(1.15);
+}
+.timer-btn.running {
+  background:rgba(255,80,80,0.2);
+  border-color:rgba(255,80,80,0.3);
+  color:#ff6b6b;
+  animation:timerPulse 1.5s infinite;
+}
+@keyframes timerPulse {
+  0%,100% { box-shadow:0 0 4px rgba(255,80,80,0.15); }
+  50% { box-shadow:0 0 12px rgba(255,80,80,0.35); }
+}
+/* 计时器实时数字 */
+.timer-live {
+  font-family:var(--font-ui);
+  font-size:0.78rem;
+  color:#ff6b6b;
+  min-width:40px;
+  font-variant-numeric:tabular-nums;
+  margin-left:2px;
+}
 .time-beads {
   display:inline-flex;
   gap:4px;
@@ -2953,6 +3014,10 @@ function renderTasks() {
         + '<span class="timer-icon">⏱</span>'
         + '<span class="time-beads">' + renderTimeBeads(t.id, t.duration || 0) + '</span>'
         + '<span class="timer-text">' + formatDurationShort(t.duration || 0) + '</span>'
+        + '<button class="timer-adjust" onclick="adjustDuration(event,-5)" data-task-id="' + t.id + '">▼</button>'
+        + '<button class="timer-adjust" onclick="adjustDuration(event,5)" data-task-id="' + t.id + '">▲</button>'
+        + '<button class="timer-btn' + (activeTimers[t.id] ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (activeTimers[t.id] ? '⏹' : '▶') + '</button>'
+        + '<span class="timer-live" data-timer-display="' + t.id + '" style="display:' + (activeTimers[t.id] ? '' : 'none') + '"></span>'
       + '</div>'
     + '</div>';
   }
@@ -3116,14 +3181,81 @@ function handleBeadClick(e) {
   var id = parseFloat(bead.dataset.taskId);
   var idx = parseInt(bead.dataset.beadIdx, 10);
   if (!id || isNaN(idx)) return;
-  var task = state.tasks.find(function(t) { return t.id === id; });
+  var task = state.tasks.find(function(t) { return t.id === id; })
+    || state.tomorrowTasks.find(function(t) { return t.id === id; });
   if (!task) return;
   var newSecs = (idx + 1) * 15 * 60;
   if (task.duration === newSecs) { task.duration = 0; }
   else { task.duration = newSecs; }
   renderTasks();
   debouncedSave();
-}// ==================== 编辑排序 ====================
+}
+
+// ==================== 计时器 ====================
+var activeTimers = {};
+var timerTick = null;
+
+function adjustDuration(e, delta) {
+  e.stopPropagation();
+  var id = parseFloat(e.currentTarget.dataset.taskId);
+  var task = state.tasks.find(function(t) { return t.id === id; })
+    || state.tomorrowTasks.find(function(t) { return t.id === id; });
+  if (!task) return;
+  var cur = task.duration || 0;
+  task.duration = Math.max(0, Math.min(120 * 60, cur + delta * 60));
+  renderTasks();
+  debouncedSave();
+}
+
+function toggleTimer(e) {
+  e.stopPropagation();
+  var id = parseFloat(e.currentTarget.dataset.taskId);
+  if (activeTimers[id]) {
+    var startTime = activeTimers[id];
+    delete activeTimers[id];
+    var elapsedMin = Math.round((Date.now() - startTime) / 60000 / 5) * 5;
+    if (elapsedMin < 5) elapsedMin = 5;
+    var task = state.tasks.find(function(t) { return t.id === id; })
+      || state.tomorrowTasks.find(function(t) { return t.id === id; });
+    if (task) {
+      task.duration = (task.duration || 0) + elapsedMin * 60;
+      renderTasks();
+      debouncedSave();
+    }
+    if (Object.keys(activeTimers).length === 0 && timerTick) {
+      clearInterval(timerTick);
+      timerTick = null;
+    }
+  } else {
+    activeTimers[id] = Date.now();
+    renderTasks();
+    if (!timerTick) {
+      timerTick = setInterval(function() {
+        var now = Date.now();
+        var live = document.querySelectorAll('.timer-live');
+        var anyActive = false;
+        live.forEach(function(el) {
+          var tid = parseFloat(el.dataset.timerDisplay);
+          if (activeTimers[tid]) {
+            var sec = Math.floor((now - activeTimers[tid]) / 1000);
+            var m = Math.floor(sec / 60);
+            var s = sec % 60;
+            el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+            el.style.display = '';
+            anyActive = true;
+          } else {
+            el.style.display = 'none';
+          }
+        });
+        if (!anyActive && timerTick) {
+          clearInterval(timerTick);
+          timerTick = null;
+        }
+      }, 1000);
+    }
+  }
+}
+// ==================== 编辑排序 ====================
 
 function updateSortMode() {
   const handles = document.querySelectorAll('.drag-handle');
@@ -3625,6 +3757,15 @@ function renderTomorrowTasks() {
         + '<button class="delete-btn" data-tdelete="' + t.id + '" title="删除">&#10005;</button>'
       + '</div>'
       + '<div style="font-family:var(--font-hand);font-size:0.85rem;color:var(--text-muted);letter-spacing:1px;padding:2px 0 0 42px;">&#128221; 已规划</div>'
+      + '<div class="timer-area" onclick="handleBeadClick(event)">'
+        + '<span class="timer-icon">⏱</span>'
+        + '<span class="time-beads">' + renderTimeBeads(t.id, t.duration || 0) + '</span>'
+        + '<span class="timer-text">' + formatDurationShort(t.duration || 0) + '</span>'
+        + '<button class="timer-adjust" onclick="adjustDuration(event,-5)" data-task-id="' + t.id + '">▼</button>'
+        + '<button class="timer-adjust" onclick="adjustDuration(event,5)" data-task-id="' + t.id + '">▲</button>'
+        + '<button class="timer-btn' + (activeTimers[t.id] ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (activeTimers[t.id] ? '⏹' : '▶') + '</button>'
+        + '<span class="timer-live" data-timer-display="' + t.id + '" style="display:' + (activeTimers[t.id] ? '' : 'none') + '"></span>'
+      + '</div>'
     + '</div>';
   }
 
