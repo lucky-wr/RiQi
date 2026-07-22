@@ -3265,7 +3265,6 @@ function toggleTimer(e) {
     var startTime = activeTimers[id];
     delete activeTimers[id];
     var elapsedMin = Math.round((Date.now() - startTime) / 60000 / 5) * 5;
-    if (elapsedMin < 5) elapsedMin = 5;
     var task = state.tasks.find(function(t) { return t.id === id; })
       || state.tomorrowTasks.find(function(t) { return t.id === id; });
     if (task) {
