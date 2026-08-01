@@ -160,9 +160,12 @@ def save_library(username, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def compute_stats(username):
-    """计算用户统计，自动处理保护卡"""
+def compute_stats(username, target=None):
+    """计算用户统计，自动处理保护卡。
+    target：可选，某月任一天，用于构建该月日历；默认今天。未来日期会被钳制到今天。"""
     today = date.today()
+    if target is None or target > today:
+        target = today
     yesterday = today - timedelta(days=1)
 
     # 加载保护卡数据
@@ -192,7 +195,7 @@ def compute_stats(username):
             "totalTasks": 0, "completedTasks": 0, "completionRate": 0,
             "monthTasks": 0, "monthCompleted": 0,
             "cards": 0, "cardsMax": 2, "protectedDates": [],
-            "calendar": build_calendar(today, all_tasks, protected_set)
+            "calendar": build_calendar(target, all_tasks, protected_set)
         }
 
     # 基础统计
@@ -304,8 +307,8 @@ def compute_stats(username):
     # ---- 计算最长连续（含保护） ----
     longest = compute_longest_streak(all_tasks, protected_set, today, yesterday)
 
-    # ---- 构建日历 ----
-    calendar = build_calendar(today, all_tasks, protected_set)
+    # ---- 构建日历（月份由 target 决定） ----
+    calendar = build_calendar(target, all_tasks, protected_set)
 
     return {
         "streak": streak,
@@ -456,7 +459,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
             name = user["name"]
-            self._send_json(200, compute_stats(name))
+            target = None
+            month_str = get_first("month")
+            if month_str:
+                try:
+                    parts = month_str.split("-")
+                    target = date(int(parts[0]), int(parts[1]), 1)
+                except (ValueError, IndexError):
+                    target = None
+            self._send_json(200, compute_stats(name, target))
 
         elif path == "/api/library":
             token = get_first("token")
@@ -479,6 +490,27 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             except (FileNotFoundError, json.JSONDecodeError):
                 data = {}
             self._send_json(200, data)
+
+        elif path == "/api/reviews":
+            token = get_first("token")
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            user_dir = os.path.join(DATA_DIR, user["name"])
+            reviews = {}
+            if os.path.exists(user_dir):
+                for fname in sorted(os.listdir(user_dir)):
+                    if fname.startswith("review_") and fname.endswith(".json"):
+                        date_str = fname[len("review_"):-len(".json")]
+                        try:
+                            with open(os.path.join(user_dir, fname), "r", encoding="utf-8") as f:
+                                data = json.load(f)
+                            if data.get("score"):
+                                reviews[date_str] = data
+                        except (json.JSONDecodeError, FileNotFoundError):
+                            continue
+            self._send_json(200, {"reviews": reviews})
 
         elif path == "/api/history":
             token = get_first("token")
