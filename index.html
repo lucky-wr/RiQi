@@ -25,14 +25,108 @@
   --text: #2c2418;
   --text-secondary: #5a4d3a;
   --text-muted: #8a7d6a;
+  --ring: rgba(201,168,124,0.45);
+  --danger: #c85555;
+  --success: #7a9e7e;
+  --shadow-sm: 0 2px 10px rgba(0,0,0,0.05);
+  --shadow-md: 0 10px 34px rgba(0,0,0,0.08);
+  --shadow-lg: 0 28px 80px rgba(0,0,0,0.14);
   --font-hand: 'Caveat', 'LXGW WenKai', cursive;
   --font-body: 'Caveat', 'LXGW WenKai', serif;
+  --font-ui: 'LXGW WenKai', 'Caveat', sans-serif;
   --radius-card: 22px;
   --radius-slider: 14px;
 }
 
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg1: #1b1e2b;
+  --bg2: #202335;
+  --bg3: #2a2438;
+  --bg4: #1c2a33;
+  --bg5: #261f30;
+  --card-bg: rgba(255,255,255,0.07);
+  --card-border: rgba(255,255,255,0.14);
+  --card-highlight: rgba(255,255,255,0.09);
+  --card-shadow: rgba(0,0,0,0.35);
+  --accent: #d8b47f;
+  --accent-soft: #b99a72;
+  --accent-glow: rgba(216,180,127,0.22);
+  --green: #8fbb92;
+  --green-soft: #6f9a73;
+  --green-glow: rgba(143,187,146,0.20);
+  --text: #f2eadf;
+  --text-secondary: #cfc4b5;
+  --text-muted: #9c9180;
+  --ring: rgba(216,180,127,0.5);
+  --danger: #e07b7b;
+  --success: #8fbb92;
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.25);
+  --shadow-md: 0 12px 40px rgba(0,0,0,0.35);
+  --shadow-lg: 0 30px 90px rgba(0,0,0,0.5);
+}
+
+html[data-theme="dark"] .slider-knob,
+html[data-theme="dark"] .score-knob {
+  background:#363b4b;
+  border-color:rgba(255,255,255,0.22);
+}
+
+html[data-theme="dark"] .modal-overlay {
+  background:rgba(0,0,0,0.55);
+}
+
+html[data-theme="dark"] .score-trend-day {
+  background:rgba(255,255,255,0.10);
+}
+
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .login-card,
+html[data-theme="dark"] .modal-card,
+html[data-theme="dark"] .input-bar .bar-inner {
+  background:rgba(22,24,34,0.74);
+}
+
+html[data-theme="dark"] .login-card .field input,
+html[data-theme="dark"] .modal-card input,
+html[data-theme="dark"] .member-form input,
+html[data-theme="dark"] .library-add-row input,
+html[data-theme="dark"] .review-reflection-field textarea {
+  background:rgba(255,255,255,0.08);
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body { height:100%; }
+html { scroll-behavior:smooth; }
+
+::selection {
+  background:var(--accent);
+  color:#fff;
+}
+
+button, input, textarea, select { font:inherit; }
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline:2px solid var(--ring);
+  outline-offset:2px;
+}
+input:focus, textarea:focus, select:focus {
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb {
+  background:rgba(201,168,124,0.35);
+  border-radius:8px;
+  border:2px solid transparent;
+  background-clip:padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background:rgba(201,168,124,0.55); background-clip:padding-box; }
 
 @keyframes gradientFlow {
   0% { background-position: 0% 50%; }
@@ -64,6 +158,10 @@ html, body { height:100%; }
 @keyframes loginFadeIn {
   from { opacity:0; transform: scale(0.92) translateY(20px); }
   to   { opacity:1; transform: scale(1) translateY(0); }
+}
+@keyframes pageIn {
+  from { opacity:0; transform: translateY(14px); }
+  to   { opacity:1; transform: translateY(0); }
 }
 
 body {
@@ -97,7 +195,7 @@ body {
   padding: 48px 40px 40px;
   width: 380px;
   max-width: 90vw;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.08), inset 0 1px 0 var(--card-highlight);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 var(--card-highlight);
   text-align:center;
   animation: loginFadeIn 0.6s cubic-bezier(0.22,1,0.36,1);
   position:relative;
@@ -190,6 +288,28 @@ body {
 }
 .login-toggle:hover { color:var(--accent); }
 
+.login-theme-btn {
+  position:absolute;
+  top:16px;
+  right:16px;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.12);
+  color:var(--text-secondary);
+  font-size:1rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.2s;
+}
+.login-theme-btn:hover {
+  background:rgba(255,255,255,0.22);
+  transform:rotate(20deg);
+}
+
 /* ====== 整体布局 ====== */
 #app { display:flex; min-height:100vh; }
 #app.hidden { display:none; }
@@ -201,7 +321,7 @@ body {
   width:210px;
   height:100vh;
   z-index:500;
-  background:rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.14);
   backdrop-filter:blur(24px) saturate(1.2);
   -webkit-backdrop-filter:blur(24px) saturate(1.2);
   border-right:1px solid var(--card-border);
@@ -218,9 +338,10 @@ body {
 }
 
 .sidebar-header {
-  padding:28px 20px 12px;
+  padding:28px 20px 16px;
   text-align:center;
   flex-shrink:0;
+  position:relative;
 }
 .sidebar-header .logo {
   font-family: var(--font-hand);
@@ -229,6 +350,7 @@ body {
   color:var(--text);
   letter-spacing:8px;
   opacity:0.7;
+  text-shadow:0 2px 12px var(--accent-glow);
 }
 
 .sidebar-nav {
@@ -236,7 +358,7 @@ body {
   padding:8px 12px;
   display:flex;
   flex-direction:column;
-  gap:2px;
+  gap:4px;
 }
 
 .nav-item {
@@ -251,21 +373,39 @@ body {
   text-align:left;
   border:none;
   background:transparent;
-  display:block;
+  display:flex;
+  align-items:center;
+  gap:10px;
   width:100%;
+  position:relative;
+}
+.nav-item::before {
+  content:'';
+  flex-shrink:0;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:transparent;
+  transition:background 0.2s, box-shadow 0.2s;
 }
 .nav-item:hover {
   background:rgba(255,255,255,0.15);
   color:var(--text);
+  transform:translateX(2px);
 }
 .nav-item.active {
-  background:rgba(255,255,255,0.20);
+  background:linear-gradient(135deg, rgba(201,168,124,0.20), rgba(122,158,126,0.12));
   color:var(--text);
   font-weight:500;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.14), 0 4px 16px var(--card-shadow);
+}
+.nav-item.active::before {
+  background:var(--accent);
+  box-shadow:0 0 10px var(--accent-glow);
 }
 
 .sidebar-footer {
-  padding:12px;
+  padding:14px 12px 12px;
   border-top:1px solid rgba(255,255,255,0.12);
   flex-shrink:0;
 }
@@ -288,18 +428,47 @@ body {
   letter-spacing:1px;
 }
 .sidebar-logout {
+  display:block;
+  width:100%;
   padding:8px 14px;
   border:none;
+  border-radius:10px;
   background:transparent;
   font-family: var(--font-hand);
   font-size:0.9rem;
   color:var(--text-muted);
   cursor:pointer;
-  transition:color 0.2s;
+  transition:color 0.2s, background 0.2s;
   letter-spacing:1px;
   text-align:left;
 }
-.sidebar-logout:hover { color:#c85555; }
+.sidebar-logout:hover {
+  color:var(--danger);
+  background:rgba(200,80,80,0.08);
+}
+
+.sidebar-theme {
+  position:absolute;
+  top:14px;
+  right:14px;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.12);
+  color:var(--text-secondary);
+  font-size:1rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  transition:all 0.2s;
+}
+.sidebar-theme:hover {
+  background:rgba(255,255,255,0.22);
+  transform:rotate(20deg);
+}
 
 /* ====== 主内容区 ====== */
 .main-area {
@@ -316,7 +485,12 @@ body {
 
 /* ====== 页面容器 ====== */
 .page { display:none; }
-.page.active { display:flex; flex-direction:column; flex:1; }
+.page.active {
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  animation:pageIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+}
 
 /* ====== 头部 ====== */
 .header {
@@ -332,6 +506,21 @@ body {
   color:var(--text);
   letter-spacing:10px;
   margin-bottom:4px;
+  position:relative;
+  display:inline-block;
+  padding-bottom:8px;
+}
+.header h1::after {
+  content:'';
+  position:absolute;
+  left:50%;
+  bottom:0;
+  width:42%;
+  height:3px;
+  border-radius:2px;
+  transform:translateX(-50%);
+  background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity:0.7;
 }
 .header .date {
   font-family: var(--font-hand);
@@ -378,7 +567,7 @@ body {
   -webkit-backdrop-filter:blur(16px);
   border:1px solid var(--card-border);
   color:var(--text-secondary);
-  box-shadow:0 4px 20px var(--card-shadow);
+  box-shadow:var(--shadow-md);
   font-size:1.3rem;
 }
 .fab-edit:hover {
@@ -395,7 +584,7 @@ body {
   -webkit-backdrop-filter:blur(16px);
   border:1px solid var(--card-border);
   color:var(--text-secondary);
-  box-shadow:0 4px 20px var(--card-shadow);
+  box-shadow:var(--shadow-md);
   font-size:1.2rem;
 }
 .fab-library:hover {
@@ -410,6 +599,41 @@ body {
   color:var(--accent);
   box-shadow:0 4px 20px var(--accent-glow);
 }
+
+.undo-toast {
+  position:fixed;
+  left:50%;
+  bottom:28px;
+  transform:translateX(-50%);
+  z-index:4000;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:12px 18px;
+  border-radius:16px;
+  background:rgba(30,32,44,0.94);
+  border:1px solid rgba(255,255,255,0.16);
+  color:#f2eadf;
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  letter-spacing:1px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.3);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.undo-toast.hidden { display:none; }
+.undo-toast button {
+  border:none;
+  background:var(--accent);
+  color:#fff;
+  padding:6px 16px;
+  border-radius:10px;
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  cursor:pointer;
+  transition:opacity 0.2s;
+}
+.undo-toast button:hover { opacity:0.85; }
 
 /* ====== 任务列表 ====== */
 .task-list {
@@ -453,7 +677,7 @@ body {
   border:1px solid var(--card-border);
   border-radius:var(--radius-card);
   box-shadow:
-    0 4px 24px var(--card-shadow),
+    var(--shadow-md),
     inset 0 1px 0 var(--card-highlight);
   padding:20px 20px 16px;
   position:relative;
@@ -461,6 +685,12 @@ body {
   transition:opacity 0.5s, transform 0.5s;
   user-select:none;
   touch-action:pan-y;
+}
+@media (hover:hover) {
+  .task-card:not(.completed):not(.done-settled):not(.deleting):hover {
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-lg), inset 0 1px 0 var(--card-highlight);
+  }
 }
 .task-card::before {
   content:'';
@@ -1053,7 +1283,7 @@ body {
   padding:20px;
   margin-bottom:20px;
   display:none;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
 }
 .member-form.show { display:block; }
 .member-form input {
@@ -1177,7 +1407,7 @@ body {
   padding:32px 28px 24px;
   width:340px;
   max-width:90vw;
-  box-shadow:0 20px 60px rgba(0,0,0,0.12);
+  box-shadow:var(--shadow-lg);
   animation:loginFadeIn 0.3s cubic-bezier(0.22,1,0.36,1);
 }
 .modal-card h3 {
@@ -1201,6 +1431,10 @@ body {
   margin-bottom:16px;
 }
 .modal-card input:focus { border-color:var(--accent); }
+.modal-card input:focus,
+.modal-card textarea:focus {
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
 .modal-actions {
   display:flex;
   gap:10px;
@@ -1235,7 +1469,7 @@ body {
   border-radius:var(--radius-card);
   padding:20px;
   margin-bottom:14px;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
   position:relative;
   overflow:hidden;
 }
@@ -1396,7 +1630,7 @@ body {
   display:flex;
   align-items:center;
   gap:18px;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
   position:relative;
   overflow:hidden;
 }
@@ -1448,7 +1682,7 @@ body {
   border-radius:var(--radius-card);
   padding:20px 20px 16px;
   margin-bottom:14px;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
   position:relative;
   overflow:hidden;
 }
@@ -1500,6 +1734,12 @@ body {
   color:var(--text-muted);
   position:relative;
   min-height:32px;
+  transition:transform 0.15s, background 0.2s, box-shadow 0.2s;
+}
+.calendar-day:not(.other-month):hover {
+  transform:scale(1.12);
+  z-index:2;
+  box-shadow:0 4px 14px var(--card-shadow);
 }
 .calendar-day.full {
   background:var(--green);
@@ -1565,7 +1805,7 @@ body {
   border-radius:var(--radius-card);
   padding:18px 22px;
   margin-bottom:14px;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
   position:relative;
   overflow:hidden;
 }
@@ -1638,7 +1878,7 @@ body {
   border-radius:var(--radius-card);
   padding:16px 20px;
   margin-bottom:14px;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
   display:flex;
   align-items:center;
   gap:14px;
@@ -1693,7 +1933,7 @@ body {
   border-radius:var(--radius-card);
   padding:20px 22px 18px;
   margin-bottom:16px;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
   position:relative;
   overflow:hidden;
   animation:slideUp 0.5s cubic-bezier(0.22,1,0.36,1) backwards;
@@ -1751,6 +1991,7 @@ body {
   color:var(--accent);
   line-height:1;
   letter-spacing:2px;
+  text-shadow:0 2px 20px var(--accent-glow);
   transition:color 0.3s, transform 0.15s;
 }
 .score-number.changing {
@@ -2224,6 +2465,250 @@ body {
 }
 .review-detail-link:hover { background:rgba(255,255,255,0.32); }
 
+/* ====== 计时页面 ====== */
+.timer-page {
+  max-width:640px;
+}
+.timer-focus-card {
+  background:var(--card-bg);
+  backdrop-filter:blur(20px) saturate(1.2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.2);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-card);
+  padding:28px 24px;
+  margin-bottom:16px;
+  text-align:center;
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
+  position:relative;
+  overflow:hidden;
+}
+.timer-focus-card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+}
+.timer-focus-label {
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-muted);
+  letter-spacing:2px;
+  margin-bottom:10px;
+}
+.timer-mode-tabs {
+  display:flex;
+  gap:6px;
+  justify-content:center;
+  margin-bottom:14px;
+}
+.timer-mode-tab {
+  padding:8px 18px;
+  border-radius:999px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.10);
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  letter-spacing:1px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.timer-mode-tab:hover { color:var(--text); }
+.timer-mode-tab.active {
+  background:rgba(201,168,124,0.18);
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.timer-mode-tab:disabled {
+  opacity:0.45;
+  cursor:default;
+}
+.timer-task-chips {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  max-height:132px;
+  overflow-y:auto;
+  margin-bottom:6px;
+}
+.timer-task-chip {
+  max-width:100%;
+  padding:7px 14px;
+  border-radius:999px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.08);
+  color:var(--text-secondary);
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  transition:all 0.2s;
+  word-break:break-word;
+}
+.timer-task-chip:hover { border-color:var(--accent); color:var(--text); }
+.timer-task-chip.active {
+  background:rgba(201,168,124,0.18);
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.timer-task-chip:disabled {
+  opacity:0.45;
+  cursor:default;
+}
+.timer-task-chip.done {
+  opacity:0.7;
+  text-decoration:line-through;
+}
+.timer-focus-time {
+  font-family:var(--font-hand);
+  font-size:3.4rem;
+  font-weight:600;
+  color:var(--accent);
+  line-height:1.1;
+  letter-spacing:2px;
+  margin:16px 0 6px;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 24px var(--accent-glow);
+}
+.timer-focus-duration {
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-muted);
+  letter-spacing:1px;
+  margin-bottom:18px;
+}
+.timer-focus-btn {
+  min-width:150px;
+  padding:12px 28px;
+  border-radius:14px;
+  border:none;
+  background:linear-gradient(135deg, var(--accent), var(--accent-soft));
+  color:#fff;
+  font-family:var(--font-hand);
+  font-size:1.1rem;
+  letter-spacing:2px;
+  cursor:pointer;
+  transition:all 0.25s;
+  box-shadow:0 4px 20px var(--accent-glow);
+}
+.timer-focus-btn:hover { opacity:0.85; transform:translateY(-1px); }
+.timer-focus-btn:active { transform:scale(0.96); }
+.timer-focus-btn.running {
+  background:linear-gradient(135deg, #c85555, #a53e3e);
+  box-shadow:0 4px 20px rgba(200,85,85,0.25);
+}
+.timer-list-title {
+  font-family:var(--font-hand);
+  font-size:1rem;
+  color:var(--text-muted);
+  letter-spacing:2px;
+  padding:4px 4px 8px;
+  border-bottom:1px solid var(--card-border);
+  margin-bottom:10px;
+}
+.timer-task-list {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.timer-task-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 18px;
+  background:var(--card-bg);
+  backdrop-filter:blur(20px) saturate(1.2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.2);
+  border:1px solid var(--card-border);
+  border-radius:18px;
+  cursor:pointer;
+  transition:border-color 0.2s, transform 0.2s;
+}
+.timer-task-row:hover, .timer-task-row.active {
+  border-color:var(--accent);
+  transform:translateY(-1px);
+}
+.timer-task-name {
+  flex:1;
+  min-width:0;
+  font-family:var(--font-hand);
+  font-size:1.05rem;
+  color:var(--text);
+  letter-spacing:0.5px;
+  word-break:break-word;
+}
+.timer-task-name.done {
+  color:var(--text-muted);
+  text-decoration:line-through;
+}
+.timer-task-time {
+  flex-shrink:0;
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-muted);
+  font-variant-numeric:tabular-nums;
+}
+.timer-task-time.running { color:#ff6b6b; }
+.timer-empty {
+  text-align:center;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  padding:36px 16px;
+}
+.timer-assign-card {
+  width:380px;
+  max-width:92vw;
+}
+.timer-assign-total {
+  text-align:center;
+  font-family:var(--font-hand);
+  font-size:1rem;
+  color:var(--accent);
+  letter-spacing:1px;
+  margin-bottom:14px;
+}
+.timer-assign-list {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:40vh;
+  overflow-y:auto;
+  margin-bottom:16px;
+}
+.timer-assign-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.08);
+  color:var(--text);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-align:left;
+}
+.timer-assign-row:hover {
+  border-color:var(--accent);
+  background:rgba(201,168,124,0.12);
+}
+.timer-assign-row .assign-name {
+  flex:1;
+  min-width:0;
+  word-break:break-word;
+}
+.timer-assign-row .assign-min {
+  flex-shrink:0;
+  color:var(--accent);
+  font-size:0.9rem;
+}
+
 /* ====== 任务库 ====== */
 /* 导入弹窗 */
 .library-modal-card {
@@ -2404,7 +2889,7 @@ body {
   border-radius:var(--radius-card);
   padding:20px 22px;
   margin-bottom:16px;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
 }
 .library-add-title {
   font-family:var(--font-hand);
@@ -2494,12 +2979,33 @@ body {
   border:1px solid var(--card-border);
   border-radius:var(--radius-card);
   padding:14px 18px;
-  box-shadow:0 4px 24px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
   display:flex;
   align-items:center;
   gap:12px;
   animation:slideUp 0.3s cubic-bezier(0.22,1,0.36,1) backwards;
 }
+.lib-drag-handle {
+  flex-shrink:0;
+  width:30px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--text-muted);
+  cursor:grab;
+  font-size:1.05rem;
+  user-select:none;
+  touch-action:none;
+}
+.lib-drag-handle:active { cursor:grabbing; }
+.library-item-card.dragging {
+  z-index:60;
+  opacity:0.95;
+  box-shadow:0 16px 48px var(--card-shadow), inset 0 1px 0 var(--card-highlight);
+  transform:scale(1.01);
+}
+.library-item-card.drag-over { border-color:var(--accent); }
 .library-item-text {
   flex:1;
   font-family:var(--font-hand);
@@ -2643,6 +3149,7 @@ body {
 <!-- ====== 登录遮罩 ====== -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
+    <button class="login-theme-btn" id="loginThemeToggle" title="切换深色/浅色模式">🌙</button>
     <form id="loginForm" autocomplete="off">
       <h1>日 砌</h1>
       <div class="subtitle">每日打卡</div>
@@ -2664,25 +3171,24 @@ body {
 <!-- ====== 主应用 ====== -->
 <div id="app" class="hidden">
 
-  <!-- 侧栏（管理员） -->
+  <!-- 侧栏 -->
   <nav class="sidebar hidden" id="sidebar">
     <div class="sidebar-header">
       <div class="logo">日砌</div>
+      <button class="sidebar-theme" id="themeToggle" title="切换深色/浅色模式">🌙</button>
     </div>
     <div class="sidebar-nav">
       <button class="nav-item active" data-page="tasks">&#128203; 任务</button>
+      <button class="nav-item" data-page="timer">&#9201; 计时</button>
       <button class="nav-item" data-page="tomorrow">&#128221; 明日任务</button>
       <button class="nav-item" data-page="history">&#128197; 历史任务</button>
       <button class="nav-item" data-page="stats">&#128200; 数据看板</button>
-<button class="nav-item" data-page="review">&#128214; 每日复盘</button>
+      <button class="nav-item" data-page="review">&#128214; 每日复盘</button>
 <button class="nav-item" data-page="library">&#128218; 任务库</button>
-      <button class="nav-item" data-page="members" data-admin>&#128101; 管理成员</button>
-      <button class="nav-item" data-page="progress" data-admin>&#128200; 全局进度</button>
     </div>
     <div class="sidebar-footer">
       <div class="sidebar-user">
         <span id="sidebarUserName"></span>
-        <span class="admin-badge" id="sidebarBadge">管理员</span>
       </div>
       <button class="sidebar-logout" id="logoutBtn">退出登录</button>
     </div>
@@ -2722,6 +3228,29 @@ body {
         </div>
       </div>
 
+    </div>
+
+    <!-- 页面：计时 -->
+    <div class="page" id="page-timer">
+      <div class="header">
+        <h1>计时</h1>
+        <div class="date" id="timerDateDisplay"></div>
+      </div>
+      <div class="page-content timer-page">
+        <div class="timer-focus-card">
+          <div class="timer-mode-tabs">
+            <button class="timer-mode-tab active" data-timer-mode="task">先选任务</button>
+            <button class="timer-mode-tab" data-timer-mode="free">自由计时</button>
+          </div>
+          <div class="timer-focus-label" id="timerFocusLabel">当前任务</div>
+          <div class="timer-task-chips" id="timerTaskChips"></div>
+          <div class="timer-focus-time" id="timerFocusTime">00:00</div>
+          <div class="timer-focus-duration" id="timerFocusDuration">已累计 0 分钟</div>
+          <button class="timer-focus-btn" id="timerFocusBtn">开始计时</button>
+        </div>
+        <div class="timer-list-title">今日任务用时</div>
+        <div class="timer-task-list" id="timerTaskList"></div>
+      </div>
     </div>
 
     <!-- 页面：明日任务 -->
@@ -2828,39 +3357,6 @@ body {
       </div>
     </div>
 
-    <!-- 页面：管理成员 -->
-    <div class="page" id="page-members">
-      <div class="header">
-        <h1>管理成员</h1>
-      </div>
-      <div class="page-content">
-        <div class="member-header-actions">
-          <span></span>
-          <button class="btn-add-member" id="btnShowAddForm">+ 添加成员</button>
-        </div>
-        <div class="member-form" id="addMemberForm">
-          <input type="text" id="newMemberName" placeholder="成员名字" autocomplete="off">
-          <input type="text" id="newMemberPwd" placeholder="登录密码" autocomplete="new-password" data-pwd="1">
-          <div class="member-form-actions">
-            <button class="btn-confirm" id="confirmAddMember">添加</button>
-            <button class="btn-cancel" id="cancelAddMember">取消</button>
-          </div>
-        </div>
-        <div id="membersList"></div>
-      </div>
-    </div>
-
-    <!-- 页面：全局进度 -->
-    <div class="page" id="page-progress">
-      <div class="header">
-        <h1>全局进度</h1>
-      </div>
-      <div class="page-content">
-        <div class="progress-summary" id="progressSummary"></div>
-        <div id="progressList"></div>
-      </div>
-    </div>
-
     <!-- 页面：历史任务 -->
     <div class="page" id="page-history">
       <div class="header">
@@ -2901,16 +3397,6 @@ body {
 
   </div>
 </div>
-<div class="modal-overlay hidden" id="pwdModal">
-  <div class="modal-card">
-    <h3 id="pwdModalTitle">重置密码</h3>
-    <input type="password" id="pwdModalInput" placeholder="输入新密码">
-    <div class="modal-actions">
-      <button class="btn-confirm" id="pwdModalConfirm">确认</button>
-      <button class="btn-cancel" id="pwdModalCancel">取消</button>
-    </div>
-  </div>
-</div>
 
 <!-- ====== 任务库导入弹窗 ====== -->
 <div class="modal-overlay hidden" id="libraryModal">
@@ -2937,11 +3423,29 @@ body {
   </div>
 </div>
 
+<!-- ====== 自由计时归属弹窗 ====== -->
+<div class="modal-overlay hidden" id="timerAssignModal">
+  <div class="modal-card timer-assign-card">
+    <h3>这次时间记到哪？</h3>
+    <div class="timer-assign-total" id="timerAssignTotal"></div>
+    <div class="timer-assign-list" id="timerAssignList"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="timerAssignDiscard">不记录</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 删除撤销提示 ====== -->
+<div class="undo-toast hidden" id="undoToast">
+  <span id="undoToastText">任务已删除</span>
+  <button id="undoBtn">撤销</button>
+</div>
+
 <script>
 // ==================== 状态 ====================
 const state = {
   token: null,
-  currentUser: null,    // { name, isAdmin }
+  currentUser: null,    // { name }
   tasks: [],
   isSorting: false,
   dragState: null,
@@ -2955,6 +3459,10 @@ const state = {
   tomorrowSaveTimer: null,
   dividerPos: -1,         // 分界线位置：第N个任务之后（-1=自动）
   tomorrowDividerPos: -1,
+  timerTaskId: null,
+  timerMode: localStorage.getItem('riqi_timer_mode') || 'task',
+  tasksLoaded: false,
+  tomorrowLoaded: false,
 };
 
 // ==================== 日期 ====================
@@ -2965,18 +3473,61 @@ const state = {
     d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 星期'+w[d.getDay()];
 })();
 
+// ==================== 主题 ====================
+function applyTheme(theme) {
+  var dark = theme === 'dark';
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  localStorage.setItem('riqi_theme', dark ? 'dark' : 'light');
+  var label = dark ? '☀️' : '🌙';
+  var title = dark ? '切换到浅色模式' : '切换到深色模式';
+  [document.getElementById('themeToggle'), document.getElementById('loginThemeToggle')].forEach(function(btn) {
+    if (btn) {
+      btn.textContent = label;
+      btn.title = title;
+    }
+  });
+}
+
+(function initTheme() {
+  var saved = localStorage.getItem('riqi_theme');
+  var urlTheme = new URLSearchParams(location.search).get('theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (urlTheme === 'dark' || urlTheme === 'light') applyTheme(urlTheme);
+  else applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+})();
+
+[document.getElementById('themeToggle'), document.getElementById('loginThemeToggle')].forEach(function(btn) {
+  if (btn) {
+    btn.addEventListener('click', function() {
+      var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      applyTheme(cur === 'dark' ? 'light' : 'dark');
+    });
+  }
+});
+
 // ==================== Auth ====================
 
 function getToken()      { return state.token || localStorage.getItem('riqi_token'); }
 function getUserName()   { return state.currentUser?.name || localStorage.getItem('riqi_user'); }
 
-function setAuth(name, token, isAdmin) {
-  state.currentUser = { name, isAdmin };
+function authHeaders(extra) {
+  var h = Object.assign({}, extra || {});
+  var token = getToken();
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  return h;
+}
+
+function apiFetch(url, options) {
+  options = options || {};
+  options.headers = authHeaders(options.headers);
+  return fetch(url, options);
+}
+
+function setAuth(name, token) {
+  state.currentUser = { name };
   state.token = token;
   localStorage.setItem('riqi_token', token);
   localStorage.setItem('riqi_user', name);
-  if (isAdmin) localStorage.setItem('riqi_admin', '1');
-  else localStorage.removeItem('riqi_admin');
 }
 
 function clearAuth() {
@@ -2984,7 +3535,6 @@ function clearAuth() {
   state.token = null;
   localStorage.removeItem('riqi_token');
   localStorage.removeItem('riqi_user');
-  localStorage.removeItem('riqi_admin');
 }
 
 async function checkAutoLogin() {
@@ -2992,10 +3542,10 @@ async function checkAutoLogin() {
   const name = getUserName();
   if (!token || !name) return false;
   try {
-    const res = await fetch('/api/users/me?token=' + encodeURIComponent(token));
+    const res = await apiFetch('/api/users/me');
     if (!res.ok) throw new Error('invalid');
     const data = await res.json();
-    setAuth(data.name, token, data.isAdmin);
+    setAuth(data.name, token);
     return true;
   } catch(e) {
     clearAuth();
@@ -3031,7 +3581,6 @@ function showApp() {
   // 切换到主界面后禁用密码字段，防止浏览器在输入任务时提示保存密码
   document.getElementById('loginPassword').type = 'text';
 
-  const isAdmin = state.currentUser?.isAdmin;
   const sidebar = document.getElementById('sidebar');
   const mainArea = document.getElementById('mainArea');
 
@@ -3039,14 +3588,6 @@ function showApp() {
   sidebar.classList.remove('hidden');
   mainArea.classList.add('has-sidebar');
   document.getElementById('sidebarUserName').textContent = state.currentUser.name;
-
-  // 管理员标记仅对管理员显示
-  document.getElementById('sidebarBadge').style.display = isAdmin ? '' : 'none';
-
-  // 管理相关的导航项仅对管理员显示
-  document.querySelectorAll('.nav-item[data-admin]').forEach(function(el) {
-    el.style.display = isAdmin ? '' : 'none';
-  });
 
   var lastPage = localStorage.getItem('lastPage') || 'tasks';
   switchPage(lastPage);
@@ -3072,17 +3613,17 @@ document.getElementById('loginBtn').addEventListener('click', async function() {
     if (loginMode === 'register') {
       // 显式注册
       const data = await doRegister(name, password);
-      setAuth(data.name, data.token, data.isAdmin);
+      setAuth(data.name, data.token);
     } else {
       // auto 模式：先尝试登录
       try {
         const data = await doLogin(name, password);
-        setAuth(data.name, data.token, data.isAdmin);
+        setAuth(data.name, data.token);
       } catch(loginErr) {
         if (loginErr.message.includes('不存在')) {
           // 用户不存在 → 自动注册
           const data = await doRegister(name, password);
-          setAuth(data.name, data.token, data.isAdmin);
+          setAuth(data.name, data.token);
         } else {
           throw loginErr;
         }
@@ -3126,6 +3667,10 @@ function switchPage(page) {
 
   // 页面切换时刷新数据
   if (page === 'tasks') { loadTasks(); }
+  if (page === 'timer') {
+    if (state.tasks.length === 0) loadTasks().then(renderTimerPage);
+    else renderTimerPage();
+  }
   if (page === 'tomorrow') { loadTomorrowTasks(); }
   if (page === 'stats') {
     var _now = new Date();
@@ -3133,8 +3678,6 @@ function switchPage(page) {
     statsViewMonth = _now.getMonth() + 1;
     loadStatsPage();
   }
-  if (page === 'members') { loadMembers(); }
-  if (page === 'progress') { loadProgress(); }
   if (page === 'history') { loadHistory(); }
   if (page === 'review') {
     if (reviewEnterDate) {
@@ -3160,7 +3703,7 @@ async function loadTasks() {
   const token = getToken();
   if (!token) return;
   try {
-    const res = await fetch('/api/data?token=' + encodeURIComponent(token));
+    const res = await apiFetch('/api/data');
     if (res.status === 401) { handleAuthError(); return; }
     const data = await res.json();
     if (data && data.tasks && data.tasks.length > 0) {
@@ -3168,6 +3711,8 @@ async function loadTasks() {
     } else {
       state.tasks = [];
     }
+    state.tasksLoaded = true;
+    restoreActiveTimer();
   } catch(e) { console.log('Load failed'); }
   renderTasks();
   // 异步更新连续打卡徽章
@@ -3177,12 +3722,12 @@ async function loadTasks() {
 async function saveTasks() {
   const token = getToken();
   if (!token) return;
-  const data = { tasks: state.tasks, token: token };
   try {
-    const res = await fetch('/api/save', {
+    const res = await apiFetch('/api/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ tasks: state.tasks }),
+      keepalive: true,
     });
     if (res.status === 401) { handleAuthError(); return; }
     // 保存后更新连续打卡徽章
@@ -3264,8 +3809,8 @@ function renderTasks() {
         + '<span class="timer-text">' + formatDurationShort(t.duration || 0) + '</span>'
         + '<button class="timer-adjust" onclick="adjustDuration(event,-5)" data-task-id="' + t.id + '">▼</button>'
         + '<button class="timer-adjust" onclick="adjustDuration(event,5)" data-task-id="' + t.id + '">▲</button>'
-        + '<button class="timer-btn' + (activeTimers[t.id] ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (activeTimers[t.id] ? '⏹' : '▶') + '</button>'
-        + '<span class="timer-live" data-timer-display="' + t.id + '" style="display:' + (activeTimers[t.id] ? '' : 'none') + '"></span>'
+        + '<button class="timer-btn' + (isTaskTimerRunning(t.id) ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (isTaskTimerRunning(t.id) ? '⏹' : '▶') + '</button>'
+        + '<span class="timer-live" data-timer-display="' + t.id + '" style="display:' + (isTaskTimerRunning(t.id) ? '' : 'none') + '"></span>'
       + '</div>'
     + '</div>';
   }
@@ -3441,8 +3986,347 @@ function handleBeadClick(e) {
 }
 
 // ==================== 计时器 ====================
-var activeTimers = {};
+var currentTimer = null;
 var timerTick = null;
+var pendingFreeMinutes = 0;
+
+function formatClock(sec) {
+  sec = Math.max(0, Math.floor(sec || 0));
+  var m = Math.floor(sec / 60);
+  var s = sec % 60;
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function findTaskById(id) {
+  return state.tasks.find(function(t) { return t.id === id; })
+    || state.tomorrowTasks.find(function(t) { return t.id === id; });
+}
+
+function isTaskTimerRunning(id) {
+  return !!(currentTimer && currentTimer.mode === 'task' && currentTimer.id === id);
+}
+
+function isFreeTimerRunning() {
+  return !!(currentTimer && currentTimer.mode === 'free');
+}
+
+function persistTimer() {
+  if (currentTimer) {
+    localStorage.setItem('riqi_active_timer', JSON.stringify({
+      mode: currentTimer.mode,
+      id: currentTimer.id,
+      start: currentTimer.start,
+    }));
+  } else {
+    localStorage.removeItem('riqi_active_timer');
+  }
+}
+
+function stopTimerTickIfIdle() {
+  if (!currentTimer && timerTick) {
+    clearInterval(timerTick);
+    timerTick = null;
+  }
+}
+
+function getTimerSelectedId() {
+  return state.timerTaskId;
+}
+
+function startTaskTimer(id) {
+  if (!id || !findTaskById(id)) return;
+  if (currentTimer) {
+    if (currentTimer.mode === 'free') return;
+    if (currentTimer.id === id) return;
+    stopCurrentTimer();
+  }
+  currentTimer = { id: id, mode: 'task', start: Date.now() };
+  persistTimer();
+  updateTaskTimeUI(id);
+  updateTimerFocus();
+  renderTimerPage();
+  ensureTimerTick();
+}
+
+function startFreeTimer() {
+  if (currentTimer) {
+    if (currentTimer.mode === 'free') return;
+    stopCurrentTimer();
+  }
+  currentTimer = { id: null, mode: 'free', start: Date.now() };
+  persistTimer();
+  updateTimerFocus();
+  renderTimerPage();
+  ensureTimerTick();
+}
+
+function stopCurrentTimer() {
+  if (!currentTimer) return;
+  var t = currentTimer;
+  var elapsedMin = Math.round((Date.now() - t.start) / 60000 / 5) * 5;
+  currentTimer = null;
+  persistTimer();
+
+  if (t.mode === 'task') {
+    var task = findTaskById(t.id);
+    if (task) {
+      task.duration = (task.duration || 0) + elapsedMin * 60;
+      updateTaskTimeUI(t.id);
+      if (state.tomorrowTasks.indexOf(task) !== -1) {
+        debouncedSaveTomorrow();
+      } else {
+        updateTodaySectionStats();
+        debouncedSave();
+      }
+    }
+    updateTimerFocus();
+  } else {
+    if (elapsedMin > 0) {
+      pendingFreeMinutes = elapsedMin;
+      openTimerAssignModal();
+    }
+    updateTimerFocus();
+  }
+  stopTimerTickIfIdle();
+  renderTimerPage();
+}
+
+function toggleTimer(e) {
+  e.stopPropagation();
+  var id = parseFloat(e.currentTarget.dataset.taskId);
+  if (isTaskTimerRunning(id)) stopCurrentTimer();
+  else startTaskTimer(id);
+}
+
+function ensureTimerTick() {
+  if (timerTick) return;
+  timerTick = setInterval(function() {
+    var now = Date.now();
+    var anyActive = false;
+    document.querySelectorAll('.timer-live').forEach(function(el) {
+      var tid = parseFloat(el.dataset.timerDisplay);
+      if (currentTimer && currentTimer.mode === 'task' && currentTimer.id === tid) {
+        el.textContent = formatClock((now - currentTimer.start) / 1000);
+        el.style.display = '';
+        anyActive = true;
+      } else {
+        el.style.display = 'none';
+      }
+    });
+    updateTimerFocus();
+    if (!anyActive && !currentTimer && timerTick) {
+      clearInterval(timerTick);
+      timerTick = null;
+    }
+  }, 1000);
+}
+
+function updateTimerFocus() {
+  var timeEl = document.getElementById('timerFocusTime');
+  var durEl = document.getElementById('timerFocusDuration');
+  var btn = document.getElementById('timerFocusBtn');
+  var labelEl = document.getElementById('timerFocusLabel');
+  if (!timeEl) return;
+
+  if (currentTimer) {
+    var elapsedSec = Math.floor((Date.now() - currentTimer.start) / 1000);
+    timeEl.textContent = formatClock(elapsedSec);
+    if (currentTimer.mode === 'task') {
+      var task = findTaskById(currentTimer.id);
+      if (labelEl) labelEl.textContent = '正在计时';
+      if (durEl) durEl.textContent = (task ? '已累计 ' + formatDurationShort(task.duration || 0) + ' · ' : '') + '本次 ' + formatClock(elapsedSec);
+    } else {
+      if (labelEl) labelEl.textContent = '自由计时';
+      if (durEl) durEl.textContent = '本次 ' + formatClock(elapsedSec) + ' · 结束后选择任务';
+    }
+    btn.textContent = '结束计时';
+    btn.classList.add('running');
+  } else {
+    if (state.timerMode === 'task') {
+      var task2 = findTaskById(state.timerTaskId);
+      if (labelEl) labelEl.textContent = task2 ? '当前任务' : '请选择任务';
+      timeEl.textContent = formatClock((task2 && task2.duration) || 0);
+      if (durEl) durEl.textContent = task2 ? '已累计 ' + formatDurationShort(task2.duration || 0) : '先选一个任务再开始';
+    } else {
+      if (labelEl) labelEl.textContent = '自由计时';
+      timeEl.textContent = '00:00';
+      if (durEl) durEl.textContent = '先开始计时，结束后再选择任务';
+    }
+    btn.textContent = '开始计时';
+    btn.classList.remove('running');
+  }
+}
+
+function renderTimerPage() {
+  var chips = document.getElementById('timerTaskChips');
+  var listEl = document.getElementById('timerTaskList');
+  if (!chips || !listEl) return;
+  var dateEl = document.getElementById('timerDateDisplay');
+  if (dateEl) {
+    var d = new Date();
+    dateEl.textContent = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
+  document.querySelectorAll('.timer-mode-tab').forEach(function(tab) {
+    tab.classList.toggle('active', tab.dataset.timerMode === state.timerMode);
+    tab.disabled = !!currentTimer;
+  });
+
+  if (!state.tasks || state.tasks.length === 0) {
+    chips.innerHTML = '<div class="timer-empty">今天还没有任务</div>';
+    listEl.innerHTML = '<div class="timer-empty">今天还没有任务，先去「任务」页添加吧</div>';
+    state.timerTaskId = null;
+    updateTimerFocus();
+    return;
+  }
+
+  var runningTaskId = (currentTimer && currentTimer.mode === 'task') ? currentTimer.id : null;
+  var currentId = runningTaskId || state.timerTaskId || state.tasks[0].id;
+  if (!findTaskById(currentId)) currentId = state.tasks[0].id;
+  state.timerTaskId = currentId;
+
+  if (state.timerMode === 'task') {
+    chips.innerHTML = state.tasks.map(function(t) {
+      return '<button class="timer-task-chip' + (t.id === currentId ? ' active' : '') + (t.completed ? ' done' : '') + '" data-timer-chip="' + t.id + '"' + (isFreeTimerRunning() ? ' disabled' : '') + '>'
+        + escapeHtml(t.title) + '</button>';
+    }).join('');
+  } else {
+    chips.innerHTML = '<div class="timer-empty">不选任务，直接开始</div>';
+  }
+
+  listEl.innerHTML = state.tasks.map(function(t) {
+    var running = isTaskTimerRunning(t.id);
+    return '<div class="timer-task-row' + (t.id === currentId ? ' active' : '') + '" data-timer-row="' + t.id + '">'
+      + '<span class="timer-task-name' + (t.completed ? ' done' : '') + '">' + escapeHtml(t.title) + '</span>'
+      + '<span class="timer-task-time' + (running ? ' running' : '') + '">'
+        + (running ? '计时中' : formatDurationShort(t.duration || 0))
+      + '</span>'
+    + '</div>';
+  }).join('');
+
+  updateTimerFocus();
+}
+
+function restoreActiveTimer() {
+  try {
+    var raw = localStorage.getItem('riqi_active_timer');
+    if (!raw) return;
+    var saved = JSON.parse(raw);
+    var start = saved.start || Date.now();
+    if (saved.mode === 'free') {
+      currentTimer = { id: null, mode: 'free', start: start };
+      state.timerMode = 'free';
+      localStorage.setItem('riqi_timer_mode', 'free');
+      ensureTimerTick();
+      updateTimerFocus();
+      renderTimerPage();
+      return;
+    }
+    var id = parseFloat(saved.id !== undefined ? saved.id : saved.taskId);
+    if (!id || isNaN(id)) return;
+    var task = findTaskById(id);
+    if (!task) {
+      if (state.tasksLoaded && state.tomorrowLoaded) localStorage.removeItem('riqi_active_timer');
+      return;
+    }
+    currentTimer = { id: id, mode: 'task', start: start };
+    state.timerTaskId = id;
+    state.timerMode = 'task';
+    localStorage.setItem('riqi_timer_mode', 'task');
+    ensureTimerTick();
+    updateTimerFocus();
+    renderTimerPage();
+  } catch(e) {}
+}
+
+document.querySelectorAll('.timer-mode-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    if (currentTimer) return;
+    state.timerMode = tab.dataset.timerMode;
+    localStorage.setItem('riqi_timer_mode', state.timerMode);
+    renderTimerPage();
+  });
+});
+
+document.getElementById('timerTaskChips').addEventListener('click', function(e) {
+  var chip = e.target.closest('[data-timer-chip]');
+  if (!chip || chip.disabled) return;
+  state.timerTaskId = parseFloat(chip.dataset.timerChip);
+  renderTimerPage();
+});
+
+document.getElementById('timerFocusBtn').addEventListener('click', function() {
+  if (currentTimer) {
+    stopCurrentTimer();
+  } else if (state.timerMode === 'free') {
+    startFreeTimer();
+  } else {
+    var id = getTimerSelectedId();
+    if (id) startTaskTimer(id);
+  }
+  renderTimerPage();
+});
+
+document.getElementById('timerTaskList').addEventListener('click', function(e) {
+  var row = e.target.closest('[data-timer-row]');
+  if (!row) return;
+  if (isFreeTimerRunning()) return;
+  state.timerTaskId = parseFloat(row.dataset.timerRow);
+  renderTimerPage();
+});
+
+function openTimerAssignModal() {
+  var totalEl = document.getElementById('timerAssignTotal');
+  var listEl = document.getElementById('timerAssignList');
+  if (totalEl) totalEl.textContent = '本次 ' + pendingFreeMinutes + ' 分钟';
+  if (!state.tasks || state.tasks.length === 0) {
+    if (listEl) listEl.innerHTML = '<div class="timer-empty">今天还没有任务，本次时间未记录</div>';
+  } else if (listEl) {
+    listEl.innerHTML = state.tasks.map(function(t) {
+      return '<button class="timer-assign-row" data-assign="' + t.id + '">'
+        + '<span class="assign-name">' + escapeHtml(t.title) + '</span>'
+        + '<span class="assign-min">+' + pendingFreeMinutes + '分钟</span>'
+        + '</button>';
+    }).join('');
+  }
+  document.getElementById('timerAssignModal').classList.remove('hidden');
+}
+
+function assignFreeTime(id) {
+  var task = findTaskById(id);
+  if (task && pendingFreeMinutes > 0) {
+    task.duration = (task.duration || 0) + pendingFreeMinutes * 60;
+    updateTaskTimeUI(id);
+    updateTodaySectionStats();
+    debouncedSave();
+  }
+  pendingFreeMinutes = 0;
+  document.getElementById('timerAssignModal').classList.add('hidden');
+  updateTimerFocus();
+  renderTimerPage();
+}
+
+document.getElementById('timerAssignList').addEventListener('click', function(e) {
+  var row = e.target.closest('[data-assign]');
+  if (!row) return;
+  assignFreeTime(parseFloat(row.dataset.assign));
+});
+
+document.getElementById('timerAssignDiscard').addEventListener('click', function() {
+  pendingFreeMinutes = 0;
+  document.getElementById('timerAssignModal').classList.add('hidden');
+  updateTimerFocus();
+  renderTimerPage();
+});
+
+document.getElementById('timerAssignModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    pendingFreeMinutes = 0;
+    document.getElementById('timerAssignModal').classList.add('hidden');
+    updateTimerFocus();
+    renderTimerPage();
+  }
+});
 
 // 只更新单个任务卡片的时间显示（不重绘全列表）
 function updateTaskTimeUI(taskId) {
@@ -3457,18 +4341,15 @@ function updateTaskTimeUI(taskId) {
   if (textEl) textEl.textContent = formatDurationShort(task.duration || 0);
   var btn = card.querySelector('.timer-btn');
   if (btn) {
-    var running = !!activeTimers[taskId];
+    var running = isTaskTimerRunning(taskId);
     btn.classList.toggle('running', running);
     btn.textContent = running ? '⏹' : '▶';
   }
   var live = card.querySelector('.timer-live');
   if (live) {
-    live.style.display = activeTimers[taskId] ? '' : 'none';
-    if (activeTimers[taskId]) {
-      var sec = Math.floor((Date.now() - activeTimers[taskId]) / 1000);
-      var m = Math.floor(sec / 60);
-      var s = sec % 60;
-      live.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    live.style.display = isTaskTimerRunning(taskId) ? '' : 'none';
+    if (currentTimer && currentTimer.mode === 'task' && currentTimer.id === taskId) {
+      live.textContent = formatClock((Date.now() - currentTimer.start) / 1000);
     }
   }
 }
@@ -3506,54 +4387,6 @@ function adjustDuration(e, delta) {
   debouncedSave();
 }
 
-function toggleTimer(e) {
-  e.stopPropagation();
-  var id = parseFloat(e.currentTarget.dataset.taskId);
-  if (activeTimers[id]) {
-    var startTime = activeTimers[id];
-    delete activeTimers[id];
-    var elapsedMin = Math.round((Date.now() - startTime) / 60000 / 5) * 5;
-    var task = state.tasks.find(function(t) { return t.id === id; })
-      || state.tomorrowTasks.find(function(t) { return t.id === id; });
-    if (task) {
-      task.duration = (task.duration || 0) + elapsedMin * 60;
-      updateTaskTimeUI(id);
-      updateTodaySectionStats();
-      debouncedSave();
-    }
-    if (Object.keys(activeTimers).length === 0 && timerTick) {
-      clearInterval(timerTick);
-      timerTick = null;
-    }
-  } else {
-    activeTimers[id] = Date.now();
-    updateTaskTimeUI(id);
-    if (!timerTick) {
-      timerTick = setInterval(function() {
-        var now = Date.now();
-        var live = document.querySelectorAll('.timer-live');
-        var anyActive = false;
-        live.forEach(function(el) {
-          var tid = parseFloat(el.dataset.timerDisplay);
-          if (activeTimers[tid]) {
-            var sec = Math.floor((now - activeTimers[tid]) / 1000);
-            var m = Math.floor(sec / 60);
-            var s = sec % 60;
-            el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-            el.style.display = '';
-            anyActive = true;
-          } else {
-            el.style.display = 'none';
-          }
-        });
-        if (!anyActive && timerTick) {
-          clearInterval(timerTick);
-          timerTick = null;
-        }
-      }, 1000);
-    }
-  }
-}
 // ==================== 编辑排序 ====================
 
 function updateSortMode() {
@@ -3623,14 +4456,53 @@ function addTaskFromInput() {
 }
 
 // ==================== 删除任务 ====================
+var pendingDelete = null;
+
+function hideUndoToast() {
+  document.getElementById('undoToast').classList.add('hidden');
+}
+
+function finalizePendingDelete() {
+  if (!pendingDelete) return;
+  clearTimeout(pendingDelete.timer);
+  var saveFn = pendingDelete.save;
+  pendingDelete = null;
+  hideUndoToast();
+  saveFn();
+}
+
+function undoDelete() {
+  if (!pendingDelete) return;
+  clearTimeout(pendingDelete.timer);
+  var p = pendingDelete;
+  pendingDelete = null;
+  hideUndoToast();
+  p.list.splice(Math.min(p.index, p.list.length), 0, p.task);
+  p.render();
+  p.save();
+}
+
+function scheduleDelete(list, task, index, render, save, label) {
+  if (pendingDelete) finalizePendingDelete();
+  pendingDelete = { list: list, task: task, index: index, render: render, save: save };
+  document.getElementById('undoToastText').textContent = label + '已删除';
+  document.getElementById('undoToast').classList.remove('hidden');
+  pendingDelete.timer = setTimeout(finalizePendingDelete, 5000);
+}
+
+document.getElementById('undoBtn').addEventListener('click', undoDelete);
+
 function deleteTask(id) {
   var cardEl = document.querySelector('.task-card[data-id="' + id + '"]');
   if (!cardEl) return;
+  var idx = state.tasks.findIndex(function(t) { return t.id === id; });
+  if (idx === -1) return;
+  var task = state.tasks[idx];
   cardEl.classList.add('deleting');
   setTimeout(function() {
-    state.tasks = state.tasks.filter(function(t) { return t.id !== id; });
+    state.tasks.splice(idx, 1);
     renderTasks();
-    debouncedSave();
+    scheduleDelete(state.tasks, task, idx, renderTasks, debouncedSave, '任务');
   }, 350);
 }
 
@@ -4002,10 +4874,12 @@ async function loadTomorrowTasks() {
   const token = getToken();
   if (!token) return;
   try {
-    const res = await fetch('/api/data?token=' + encodeURIComponent(token) + '&date=' + getTomorrowDateStr());
+    const res = await apiFetch('/api/data?date=' + getTomorrowDateStr());
     if (res.status === 401) { handleAuthError(); return; }
     const data = await res.json();
     state.tomorrowTasks = (data && data.tasks) || [];
+    state.tomorrowLoaded = true;
+    restoreActiveTimer();
   } catch(e) { state.tomorrowTasks = []; }
   renderTomorrowTasks();
 }
@@ -4062,8 +4936,8 @@ function renderTomorrowTasks() {
         + '<span class="timer-text">' + formatDurationShort(t.duration || 0) + '</span>'
         + '<button class="timer-adjust" onclick="adjustDuration(event,-5)" data-task-id="' + t.id + '">▼</button>'
         + '<button class="timer-adjust" onclick="adjustDuration(event,5)" data-task-id="' + t.id + '">▲</button>'
-        + '<button class="timer-btn' + (activeTimers[t.id] ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (activeTimers[t.id] ? '⏹' : '▶') + '</button>'
-        + '<span class="timer-live" data-timer-display="' + t.id + '" style="display:' + (activeTimers[t.id] ? '' : 'none') + '"></span>'
+        + '<button class="timer-btn' + (isTaskTimerRunning(t.id) ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (isTaskTimerRunning(t.id) ? '⏹' : '▶') + '</button>'
+        + '<span class="timer-live" data-timer-display="' + t.id + '" style="display:' + (isTaskTimerRunning(t.id) ? '' : 'none') + '"></span>'
       + '</div>'
     + '</div>';
   }
@@ -4198,11 +5072,14 @@ function addTomorrowTask(title) {
 function deleteTomorrowTask(id) {
   var cardEl = document.querySelector('.task-card[data-tid="' + id + '"]');
   if (!cardEl) return;
+  var idx = state.tomorrowTasks.findIndex(function(t) { return t.id === id; });
+  if (idx === -1) return;
+  var task = state.tomorrowTasks[idx];
   cardEl.classList.add('deleting');
   setTimeout(function() {
-    state.tomorrowTasks = state.tomorrowTasks.filter(function(t) { return t.id !== id; });
+    state.tomorrowTasks.splice(idx, 1);
     renderTomorrowTasks();
-    debouncedSaveTomorrow();
+    scheduleDelete(state.tomorrowTasks, task, idx, renderTomorrowTasks, debouncedSaveTomorrow, '任务');
   }, 350);
 }
 
@@ -4211,13 +5088,13 @@ function saveTomorrowTasks() {
   if (!token) return;
   var data = {
     tasks: state.tomorrowTasks || [],
-    token: token,
     date: getTomorrowDateStr(),
   };
-  fetch('/api/save', {
+  apiFetch('/api/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+    keepalive: true,
   }).catch(function() {});
 }
 
@@ -4225,6 +5102,24 @@ function debouncedSaveTomorrow() {
   clearTimeout(state.tomorrowSaveTimer);
   state.tomorrowSaveTimer = setTimeout(saveTomorrowTasks, 300);
 }
+
+function flushPendingSaves() {
+  if (state.saveTimer) {
+    clearTimeout(state.saveTimer);
+    state.saveTimer = null;
+    saveTasks();
+  }
+  if (state.tomorrowSaveTimer) {
+    clearTimeout(state.tomorrowSaveTimer);
+    state.tomorrowSaveTimer = null;
+    saveTomorrowTasks();
+  }
+}
+
+window.addEventListener('beforeunload', flushPendingSaves);
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden') flushPendingSaves();
+});
 
 function hideTomorrowInputBar() {
   document.getElementById('tomorrowInputBar').classList.remove('show');
@@ -4363,191 +5258,6 @@ document.addEventListener('click', function(e) {
   if (!e.target.closest('#tomorrowInputBar') && !e.target.closest('#btnAddTomorrow')) hideTomorrowInputBar();
 });
 
-// ==================== 管理成员 ====================
-
-async function loadMembers() {
-  var token = getToken();
-  try {
-    var res = await fetch('/api/users/list?token=' + encodeURIComponent(token));
-    if (res.status === 403) { document.getElementById('membersList').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-family:var(--font-hand);">仅管理员可查看</div>'; return; }
-    var data = await res.json();
-    renderMembers(data.users || []);
-  } catch(e) {
-    document.getElementById('membersList').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-family:var(--font-hand);">加载失败</div>';
-  }
-}
-
-function renderMembers(users) {
-  var html = '';
-  var currentName = state.currentUser?.name || '';
-  users.forEach(function(u) {
-    var isSelf = u.name === currentName;
-    var badge = u.isAdmin ? '<span class="member-badge admin">管理员</span>' : '<span class="member-badge member">成员</span>';
-    var actions = '';
-    if (!u.isAdmin) {
-      actions = '<button class="btn-reset-pwd" data-reset="' + escapeHtml(u.name) + '">重置密码</button>'
-        + '<button class="btn-remove-member" data-remove="' + escapeHtml(u.name) + '">移除</button>';
-    }
-    html += '<div class="member-item">'
-      + '<span class="member-name">' + escapeHtml(u.name) + '</span>'
-      + badge
-      + '<div class="member-actions">' + actions + '</div>'
-    + '</div>';
-  });
-  document.getElementById('membersList').innerHTML = html;
-}
-
-// 添加成员
-document.getElementById('btnShowAddForm').addEventListener('click', function() {
-  document.getElementById('addMemberForm').classList.add('show');
-  document.getElementById('newMemberPwd').type = 'password';
-  document.getElementById('newMemberName').focus();
-});
-document.getElementById('cancelAddMember').addEventListener('click', function() {
-  document.getElementById('addMemberForm').classList.remove('show');
-  document.getElementById('newMemberPwd').type = 'text';
-  document.getElementById('newMemberName').value = '';
-  document.getElementById('newMemberPwd').value = '';
-});
-document.getElementById('confirmAddMember').addEventListener('click', async function() {
-  var name = document.getElementById('newMemberName').value.trim();
-  var password = document.getElementById('newMemberPwd').value.trim();
-  if (!name || !password) { alert('请填写完整信息'); return; }
-  try {
-    var res = await fetch('/api/users/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, password: password, token: getToken() }),
-    });
-    var data = await res.json();
-    if (!res.ok) { alert(data.error || '添加失败'); return; }
-    document.getElementById('newMemberName').value = '';
-    document.getElementById('newMemberPwd').value = '';
-    document.getElementById('addMemberForm').classList.remove('show');
-    loadMembers();
-  } catch(e) { alert('操作失败'); }
-});
-
-// 移除和重置密码（事件委托）
-document.getElementById('membersList').addEventListener('click', function(e) {
-  var target = e.target;
-
-  if (target.classList.contains('btn-remove-member')) {
-    var name = target.dataset.remove;
-    if (!confirm('确定移除 "' + name + '" 吗？该用户的所有数据将被删除。')) return;
-    (async function() {
-      try {
-        var res = await fetch('/api/users/remove', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name, token: getToken() }),
-        });
-        var data = await res.json();
-        if (!res.ok) { alert(data.error || '移除失败'); return; }
-        loadMembers();
-      } catch(e) { alert('操作失败'); }
-    })();
-  }
-
-  if (target.classList.contains('btn-reset-pwd')) {
-    var name = target.dataset.reset;
-    showPwdModal(name);
-  }
-});
-
-// ==================== 重置密码弹窗 ====================
-var pwdModalTarget = null;
-
-function showPwdModal(name) {
-  pwdModalTarget = name;
-  document.getElementById('pwdModalTitle').textContent = '重置 ' + name + ' 的密码';
-  document.getElementById('pwdModalInput').value = '';
-  document.getElementById('pwdModal').classList.remove('hidden');
-  setTimeout(function() { document.getElementById('pwdModalInput').focus(); }, 100);
-}
-
-document.getElementById('pwdModalCancel').addEventListener('click', function() {
-  document.getElementById('pwdModal').classList.add('hidden');
-  pwdModalTarget = null;
-});
-
-document.getElementById('pwdModalConfirm').addEventListener('click', async function() {
-  var password = document.getElementById('pwdModalInput').value.trim();
-  if (!password || password.length < 3) { alert('密码至少 3 个字符'); return; }
-  try {
-    var res = await fetch('/api/users/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: pwdModalTarget, password: password, token: getToken() }),
-    });
-    var data = await res.json();
-    if (!res.ok) { alert(data.error || '重置失败'); return; }
-    document.getElementById('pwdModal').classList.add('hidden');
-    pwdModalTarget = null;
-    alert('密码已重置');
-  } catch(e) { alert('操作失败'); }
-});
-
-// ==================== 全局进度 ====================
-
-async function loadProgress() {
-  var token = getToken();
-  try {
-    var res = await fetch('/api/admin/progress?token=' + encodeURIComponent(token));
-    if (res.status === 403) {
-      document.getElementById('progressList').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-family:var(--font-hand);">仅管理员可查看</div>';
-      return;
-    }
-    var data = await res.json();
-    renderProgress(data || {});
-  } catch(e) {
-    document.getElementById('progressList').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-family:var(--font-hand);">加载失败</div>';
-  }
-}
-
-function renderProgress(data) {
-  var users = Object.keys(data);
-  var totalTasks = 0;
-  var totalDone = 0;
-  var fullyDone = 0;
-
-  var html = '';
-  users.forEach(function(name) {
-    var tasks = data[name]?.tasks || [];
-    var done = tasks.filter(function(t) { return t.completed; }).length;
-    totalTasks += tasks.length;
-    totalDone += done;
-    if (tasks.length > 0 && done === tasks.length) fullyDone++;
-
-    var pct = tasks.length > 0 ? Math.round(done / tasks.length * 100) : 0;
-    var barClass = pct === 100 && tasks.length > 0 ? 'progress-bar-fill full' : 'progress-bar-fill';
-
-    var taskHtml = '';
-    tasks.forEach(function(t) {
-      taskHtml += '<div class="progress-task' + (t.completed ? ' completed' : '') + '">' + escapeHtml(t.title) + '</div>';
-    });
-    if (tasks.length === 0) taskHtml = '<div style="color:var(--text-muted);font-family:var(--font-hand);font-size:0.9rem;padding:4px 0;">暂无任务</div>';
-
-    html += '<div class="progress-user-card">'
-      + '<div class="progress-user-header">'
-        + '<span class="progress-user-name">' + escapeHtml(name) + '</span>'
-        + '<span class="progress-user-ratio">' + done + '/' + tasks.length + '</span>'
-      + '</div>'
-      + '<div class="progress-bar"><div class="' + barClass + '" style="width:' + pct + '%"></div></div>'
-      + '<div class="progress-tasks">' + taskHtml + '</div>'
-    + '</div>';
-  });
-
-  if (users.length === 0) {
-    html = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-family:var(--font-hand);">还没有成员</div>';
-  }
-
-  document.getElementById('progressList').innerHTML = html;
-  document.getElementById('progressSummary').textContent =
-    '共 ' + users.length + ' 人，已完成 ' + totalDone + '/' + totalTasks + ' 项'
-    + (fullyDone > 0 ? '，' + fullyDone + ' 人已完成全部任务' : '');
-}
-
 // ==================== 历史任务 ====================
 
 async function loadHistory() {
@@ -4561,7 +5271,7 @@ async function loadHistory() {
   listEl.innerHTML = '';
 
   try {
-    const res = await fetch('/api/history?token=' + encodeURIComponent(token));
+    const res = await apiFetch('/api/history');
     if (res.status === 401) { handleAuthError(); return; }
     const data = await res.json();
     renderHistory(data.history || {});
@@ -4621,9 +5331,8 @@ async function fetchStats(monthStr) {
   const token = getToken();
   if (!token) return null;
   try {
-    const url = '/api/stats?token=' + encodeURIComponent(token)
-      + (monthStr ? '&month=' + encodeURIComponent(monthStr) : '');
-    const res = await fetch(url);
+    const url = '/api/stats' + (monthStr ? '?month=' + encodeURIComponent(monthStr) : '');
+    const res = await apiFetch(url);
     if (res.status === 401) { handleAuthError(); return null; }
     return await res.json();
   } catch(e) { return null; }
@@ -4633,7 +5342,7 @@ async function fetchReviews() {
   const token = getToken();
   if (!token) return {};
   try {
-    const res = await fetch('/api/reviews?token=' + encodeURIComponent(token));
+    const res = await apiFetch('/api/reviews');
     if (res.status === 401) { handleAuthError(); return {}; }
     const data = await res.json();
     return (data && data.reviews) || {};
@@ -4817,12 +5526,12 @@ async function showReviewDetail(dateStr) {
   if (!token) return;
   var reviewData = {};
   try {
-    var r = await fetch('/api/review?token=' + encodeURIComponent(token) + '&date=' + dateStr + '&_t=' + Date.now());
+    var r = await apiFetch('/api/review?date=' + dateStr + '&_t=' + Date.now());
     if (r.ok) reviewData = await r.json();
   } catch(e) {}
   var tasks = [];
   try {
-    var res = await fetch('/api/data?token=' + encodeURIComponent(token) + '&date=' + dateStr);
+    var res = await apiFetch('/api/data?date=' + dateStr);
     if (res.ok) {
       var d = await res.json();
       tasks = (d && d.tasks) || [];
@@ -4933,7 +5642,7 @@ async function loadLibrary() {
   var token = getToken();
   if (!token) return [];
   try {
-    var r = await fetch('/api/library?token=' + encodeURIComponent(token) + '&_t=' + Date.now());
+    var r = await apiFetch('/api/library?_t=' + Date.now());
     if (r.status === 401) { handleAuthError(); return []; }
     var data = await r.json();
     libraryItems = (data && data.items) || [];
@@ -4945,10 +5654,10 @@ async function saveLibrary() {
   var token = getToken();
   if (!token) return;
   try {
-    await fetch('/api/library', {
+    await apiFetch('/api/library', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: token, library: { items: libraryItems } }),
+      body: JSON.stringify({ library: { items: libraryItems } }),
     });
   } catch(e) {}
 }
@@ -4968,18 +5677,23 @@ function displayPattern(pattern) {
 function renderLibraryManage() {
   var list = document.getElementById('libraryList');
   var empty = document.getElementById('libraryEmpty');
+  if (!empty) {
+    empty = document.createElement('div');
+    empty.className = 'library-empty';
+    empty.id = 'libraryEmpty';
+    empty.innerHTML = '<div class="review-empty-icon">📖</div><div>还没有任务条目，在上面添加吧</div>';
+  }
 
   if (!libraryItems || libraryItems.length === 0) {
     list.innerHTML = '';
     list.appendChild(empty);
-    empty.style.display = '';
     return;
   }
 
-  empty.style.display = 'none';
   var html = '';
   libraryItems.forEach(function(item, idx) {
     html += '<div class="library-item-card" data-idx="' + idx + '">'
+      + '<div class="lib-drag-handle" data-lib-handle="' + idx + '" title="拖动排序">⠿</div>'
       + '<div class="library-item-text" data-display="' + idx + '">' + displayPattern(item.pattern) + '</div>'
       + '<div class="library-item-text editing" data-edit="' + idx + '" style="display:none;">'
         + '<div class="lib-edit-row">'
@@ -4996,6 +5710,88 @@ function renderLibraryManage() {
   });
   list.innerHTML = html;
 }
+
+// ===== 任务库拖拽排序 =====
+var libraryDragState = null;
+
+function libDragStart(e) {
+  var handle = e.target.closest('.lib-drag-handle');
+  if (!handle) return;
+  e.preventDefault();
+  var card = handle.closest('.library-item-card');
+  if (!card) return;
+  var idx = parseInt(card.dataset.idx, 10);
+  if (isNaN(idx) || !libraryItems[idx]) return;
+
+  var rects = [];
+  document.querySelectorAll('#libraryList .library-item-card').forEach(function(el) {
+    var r = el.getBoundingClientRect();
+    rects.push({el: el, top: r.top, height: r.height});
+  });
+
+  libraryDragState = {
+    el: card,
+    startY: e.clientY,
+    startTop: card.getBoundingClientRect().top,
+    rects: rects,
+    currentIndex: idx,
+  };
+  card.classList.add('dragging');
+  card.style.zIndex = '60';
+  document.addEventListener('pointermove', libDragMove);
+  document.addEventListener('pointerup', libDragEnd);
+  document.addEventListener('pointercancel', libDragEnd);
+}
+
+function libDragMove(e) {
+  var ds = libraryDragState;
+  if (!ds) return;
+  e.preventDefault();
+  var dy = e.clientY - ds.startY;
+  ds.el.style.transform = 'translateY(' + dy + 'px) scale(1.02)';
+
+  var cardHeight = ds.rects[0] ? ds.rects[0].height : 60;
+  var centerY = ds.startTop + dy + cardHeight / 2;
+
+  var newIndex = 0;
+  ds.rects.forEach(function(r) {
+    if (r.el === ds.el) return;
+    if (centerY > r.top + r.height / 2) newIndex++;
+  });
+  newIndex = Math.max(0, Math.min(ds.rects.length - 1, newIndex));
+
+  if (newIndex !== ds.currentIndex) {
+    var item = libraryItems.splice(ds.currentIndex, 1)[0];
+    libraryItems.splice(newIndex, 0, item);
+    var movingDown = newIndex > ds.currentIndex;
+    ds.currentIndex = newIndex;
+    var ref = movingDown
+      ? (ds.rects[newIndex + 1] ? ds.rects[newIndex + 1].el : null)
+      : ds.rects[newIndex].el;
+    ds.el.parentNode.insertBefore(ds.el, ref);
+    ds.rects = [];
+    document.querySelectorAll('#libraryList .library-item-card').forEach(function(el) {
+      var r = el.getBoundingClientRect();
+      ds.rects.push({el: el, top: r.top, height: r.height});
+    });
+  }
+}
+
+function libDragEnd(e) {
+  var ds = libraryDragState;
+  if (!ds) return;
+  document.removeEventListener('pointermove', libDragMove);
+  document.removeEventListener('pointerup', libDragEnd);
+  document.removeEventListener('pointercancel', libDragEnd);
+  ds.el.classList.remove('dragging');
+  ds.el.style.transform = '';
+  ds.el.style.zIndex = '';
+  libraryDragState = null;
+  renderLibraryManage();
+  saveLibrary();
+}
+
+document.getElementById('libraryList').addEventListener('pointerdown', libDragStart);
 
 // 在输入框光标位置插入占位符
 function insertBlankAtCursor(input) {
@@ -5132,6 +5928,7 @@ document.getElementById('libraryList').addEventListener('change', function(e) {
 
 // 弹窗条目的填空数据
 var importBlanks = {};
+var importOrder = [];
 var importTarget = 'tasks'; // 'tasks' | 'tomorrow'
 
 function openImportModal(target) {
@@ -5153,6 +5950,7 @@ function renderImportModal(items) {
   }
 
   importBlanks = {};
+  importOrder = [];
   var html = '';
   items.forEach(function(item, idx) {
     importBlanks[idx] = { id: item.id, checked: false, fills: {} };
@@ -5290,6 +6088,11 @@ document.getElementById('libraryModalBody').addEventListener('click', function(e
 
   // 切换选中状态
   importBlanks[idx].checked = !importBlanks[idx].checked;
+  if (importBlanks[idx].checked) {
+    importOrder.push(idx);
+  } else {
+    importOrder = importOrder.filter(function(i) { return i !== idx; });
+  }
   check.classList.toggle('checked');
 
   // 高亮条目背景
@@ -5308,7 +6111,8 @@ document.getElementById('libraryModalCancel').addEventListener('click', function
 document.getElementById('libraryModalImport').addEventListener('click', function() {
   var newTasks = [];
 
-  libraryItems.forEach(function(item, idx) {
+  importOrder.forEach(function(idx) {
+    var item = libraryItems[idx];
     var blank = importBlanks[idx];
     if (!blank || !blank.checked) return;
 
@@ -5459,7 +6263,7 @@ async function loadReview() {
   // 加载该日任务
   var tasks = [];
   try {
-    var res = await fetch('/api/data?token=' + encodeURIComponent(token) + '&date=' + dateStr);
+    var res = await apiFetch('/api/data?date=' + dateStr);
     if (res.status === 401) { handleAuthError(); return; }
     var data = await res.json();
     tasks = (data && data.tasks) || [];
@@ -5468,7 +6272,7 @@ async function loadReview() {
   // 加载该日复盘数据
   var reviewData = {};
   try {
-    var r = await fetch('/api/review?token=' + encodeURIComponent(token) + '&date=' + dateStr + '&_t=' + Date.now());
+    var r = await apiFetch('/api/review?date=' + dateStr + '&_t=' + Date.now());
     if (r.ok) reviewData = await r.json();
   } catch(e) {}
 
@@ -5668,12 +6472,11 @@ async function saveReview() {
     }),
   };
 
-  var token = getToken();
   try {
-    var res = await fetch('/api/review', {
+    var res = await apiFetch('/api/review', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: token, review: payload }),
+      body: JSON.stringify({ review: payload }),
     });
     if (res.status === 401) { handleAuthError(); return; }
     if (res.ok) {

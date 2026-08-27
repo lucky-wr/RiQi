@@ -4,10 +4,10 @@
 import http.server
 import json
 import os
+import re
 import sys
 import hashlib
 import secrets
-import shutil
 import urllib.parse
 import socket
 from datetime import date, datetime, timedelta
@@ -21,6 +21,48 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 USERS_FILE = os.path.join(DATA_DIR, "users.json")
 os.makedirs(DATA_DIR, exist_ok=True)
+
+INVALID_NAME_CHARS = set('\\/:*?"<>|\r\n\t')
+DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def valid_username(name):
+    """用户名不能包含路径分隔符、不能是 . / ..，避免路径穿越。"""
+    if not isinstance(name, str) or not name:
+        return False
+    if name in (".", ".."):
+        return False
+    if name != name.strip() or name.endswith((".", " ")):
+        return False
+    if any(ord(c) < 32 for c in name):
+        return False
+    if any(c in INVALID_NAME_CHARS for c in name):
+        return False
+    return len(name) <= 32
+
+
+def safe_date_str(value):
+    if not isinstance(value, str):
+        return None
+    if not DATE_PATTERN.match(value):
+        return None
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        return None
+    return value
+
+
+def user_dir_for(username):
+    """返回用户数据目录，并确保它位于 DATA_DIR 内部。"""
+    if not valid_username(username):
+        raise ValueError("invalid username")
+    base = os.path.abspath(DATA_DIR)
+    path = os.path.abspath(os.path.join(base, username))
+    if os.path.commonpath([base, path]) != base:
+        raise ValueError("invalid username")
+    return path
+
 
 # ==================== 用户管理 ====================
 
@@ -39,14 +81,31 @@ def save_users(data):
 
 def hash_password(password, salt=None):
     if salt is None:
-        salt = secrets.token_hex(8)
-    h = hashlib.sha256((salt + password).encode()).hexdigest()
-    return salt + ":" + h
+        salt = secrets.token_hex(16)
+    iterations = 200_000
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), salt.encode("utf-8"), iterations
+    ).hex()
+    return f"pbkdf2${salt}${iterations}${digest}"
+
+
+def _verify_legacy_hash(password, stored):
+    salt, h = stored.split(":", 1)
+    legacy = hashlib.sha256((salt + password).encode()).hexdigest()
+    return h == legacy
 
 
 def verify_password(password, stored):
-    salt, h = stored.split(":", 1)
-    return hash_password(password, salt) == stored
+    if not stored.startswith("pbkdf2$"):
+        return _verify_legacy_hash(password, stored)
+    try:
+        _, salt, iterations, digest = stored.split("$", 3)
+        candidate = hashlib.pbkdf2_hmac(
+            "sha256", password.encode("utf-8"), salt.encode("utf-8"), int(iterations)
+        ).hex()
+        return candidate == digest
+    except (ValueError, TypeError):
+        return False
 
 
 def generate_token():
@@ -68,10 +127,13 @@ def find_user_by_token(users_data, token):
 
 
 def user_data_file(username, date_str=None):
-    d = os.path.join(DATA_DIR, username)
-    os.makedirs(d, exist_ok=True)
     if date_str is None:
         date_str = date.today().isoformat()
+    date_str = safe_date_str(date_str)
+    if not date_str:
+        raise ValueError("invalid date")
+    d = user_dir_for(username)
+    os.makedirs(d, exist_ok=True)
     return os.path.join(d, f"tasks_{date_str}.json")
 
 
@@ -90,7 +152,7 @@ def get_lan_ip():
 # ==================== 保护卡管理 ====================
 
 def protection_file(username):
-    d = os.path.join(DATA_DIR, username)
+    d = user_dir_for(username)
     os.makedirs(d, exist_ok=True)
     return os.path.join(d, "protection.json")
 
@@ -115,7 +177,10 @@ def get_card_max(streak):
 
 
 def task_file_for_date(username, date_str):
-    d = os.path.join(DATA_DIR, username)
+    date_str = safe_date_str(date_str)
+    if not date_str:
+        raise ValueError("invalid date")
+    d = user_dir_for(username)
     return os.path.join(d, f"tasks_{date_str}.json")
 
 
@@ -132,17 +197,20 @@ def read_tasks_for_date(username, date_str):
 # ==================== 每日复盘管理 ====================
 
 def review_file(username, date_str=None):
-    d = os.path.join(DATA_DIR, username)
-    os.makedirs(d, exist_ok=True)
     if date_str is None:
         date_str = date.today().isoformat()
+    date_str = safe_date_str(date_str)
+    if not date_str:
+        raise ValueError("invalid date")
+    d = user_dir_for(username)
+    os.makedirs(d, exist_ok=True)
     return os.path.join(d, f"review_{date_str}.json")
 
 
 # ==================== 任务库管理 ====================
 
 def library_file(username):
-    d = os.path.join(DATA_DIR, username)
+    d = user_dir_for(username)
     os.makedirs(d, exist_ok=True)
     return os.path.join(d, "library.json")
 
@@ -175,7 +243,7 @@ def compute_stats(username, target=None):
     total_earned = prot["totalEarned"]
 
     # 读取用户所有任务数据
-    user_dir = os.path.join(DATA_DIR, username)
+    user_dir = user_dir_for(username)
     all_tasks = {}
     if os.path.exists(user_dir):
         for fname in sorted(os.listdir(user_dir)):
@@ -359,36 +427,36 @@ def build_calendar(today, all_tasks, protected_set):
 
 
 def compute_longest_streak(all_tasks, protected_set, today, yesterday):
-    """计算历史最长连续打卡（含保护）"""
+    """计算历史最长连续打卡（含保护）。按日历日逐个检查，缺卡的日子会中断连续。"""
     dates = sorted(all_tasks.keys())
     if not dates:
         return 0
 
     longest = 0
     current_run = 0
+    d = date.fromisoformat(dates[0])
+    end = today
+    if d > end:
+        return 0
 
-    for ds in dates:
-        if ds > today.isoformat():
-            continue
-        tasks = all_tasks.get(ds, [])
-
-        if tasks and len(tasks) > 0:
+    while d <= end:
+        ds = d.isoformat()
+        tasks = all_tasks.get(ds)
+        ok = False
+        if ds in protected_set:
+            ok = True
+        elif tasks is not None and len(tasks) > 0:
             done = sum(1 for t in tasks if t.get("completed"))
-            if done == len(tasks) or ds in protected_set:
-                current_run += 1
-                longest = max(longest, current_run)
-            else:
-                current_run = 0
-        elif tasks and len(tasks) == 0:
+            ok = done == len(tasks)
+        elif tasks is not None and len(tasks) == 0:
+            ok = True
+
+        if ok:
             current_run += 1
             longest = max(longest, current_run)
         else:
-            # 没有任务数据的日期
-            if ds in protected_set:
-                current_run += 1
-                longest = max(longest, current_run)
-            else:
-                current_run = 0
+            current_run = 0
+        d += timedelta(days=1)
 
     return longest
 
@@ -405,7 +473,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-cache")
-        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(body)
 
@@ -424,11 +491,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return None
         return find_user_by_token(load_users(), token)
 
-    def _require_admin(self, token):
-        user = self._auth(token)
-        if user and user.get("isAdmin"):
-            return user
-        return None
+    def _token_from_header(self):
+        auth = self.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            return auth[7:].strip()
+        return ""
 
     # ---- GET 请求 ----
 
@@ -437,23 +504,29 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         path = parsed.path
         params = urllib.parse.parse_qs(parsed.query)
         get_first = lambda key: (params.get(key) or [None])[0]
+        request_token = self._token_from_header() or get_first("token")
 
         if path == "/api/data":
-            token = get_first("token")
+            token = request_token
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
             date_str = get_first("date")
+            if date_str:
+                date_str = safe_date_str(date_str)
+                if not date_str:
+                    self._send_json(400, {"error": "日期格式不正确"})
+                    return
             try:
                 with open(user_data_file(user["name"], date_str), "r", encoding="utf-8") as f:
                     data = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
+            except (FileNotFoundError, json.JSONDecodeError, ValueError):
                 data = {"tasks": []}
             self._send_json(200, data)
 
         elif path == "/api/stats":
-            token = get_first("token")
+            token = request_token
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
@@ -470,7 +543,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._send_json(200, compute_stats(name, target))
 
         elif path == "/api/library":
-            token = get_first("token")
+            token = request_token
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
@@ -478,26 +551,33 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._send_json(200, load_library(user["name"]))
 
         elif path == "/api/review":
-            token = get_first("token")
+            token = request_token
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
-            date_str = get_first("date") or date.today().isoformat()
+            raw_date = get_first("date")
+            if raw_date:
+                date_str = safe_date_str(raw_date)
+                if not date_str:
+                    self._send_json(400, {"error": "日期格式不正确"})
+                    return
+            else:
+                date_str = date.today().isoformat()
             try:
                 with open(review_file(user["name"], date_str), "r", encoding="utf-8") as f:
                     data = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
+            except (FileNotFoundError, json.JSONDecodeError, ValueError):
                 data = {}
             self._send_json(200, data)
 
         elif path == "/api/reviews":
-            token = get_first("token")
+            token = request_token
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
-            user_dir = os.path.join(DATA_DIR, user["name"])
+            user_dir = user_dir_for(user["name"])
             reviews = {}
             if os.path.exists(user_dir):
                 for fname in sorted(os.listdir(user_dir)):
@@ -513,12 +593,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._send_json(200, {"reviews": reviews})
 
         elif path == "/api/history":
-            token = get_first("token")
+            token = request_token
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
-            user_dir = os.path.join(DATA_DIR, user["name"])
+            user_dir = user_dir_for(user["name"])
             history = {}
             if os.path.exists(user_dir):
                 for fname in sorted(os.listdir(user_dir)):
@@ -533,40 +613,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._send_json(200, {"history": history})
 
         elif path == "/api/users/me":
-            token = get_first("token")
+            token = request_token
             user = self._auth(token)
             if user:
-                self._send_json(200, {"name": user["name"], "isAdmin": user.get("isAdmin", False)})
+                self._send_json(200, {"name": user["name"]})
             else:
                 self._send_json(401, {"error": "无效的登录凭证"})
-
-        elif path == "/api/users/list":
-            user = self._require_admin(get_first("token"))
-            if not user:
-                self._send_json(403, {"error": "仅管理员可操作"})
-                return
-            users_data = load_users()
-            safe_list = [
-                {"name": u["name"], "isAdmin": u.get("isAdmin", False)}
-                for u in users_data["users"]
-            ]
-            self._send_json(200, {"users": safe_list})
-
-        elif path == "/api/admin/progress":
-            user = self._require_admin(get_first("token"))
-            if not user:
-                self._send_json(403, {"error": "仅管理员可查看"})
-                return
-            users_data = load_users()
-            result = {}
-            for u in users_data["users"]:
-                path_ = os.path.join(DATA_DIR, u["name"], f"tasks_{date.today().isoformat()}.json")
-                try:
-                    with open(path_, "r", encoding="utf-8") as f:
-                        result[u["name"]] = json.load(f)
-                except (FileNotFoundError, json.JSONDecodeError):
-                    result[u["name"]] = {"tasks": []}
-            self._send_json(200, result)
 
         elif path == "/" or path == "":
             try:
@@ -581,15 +633,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             except FileNotFoundError:
                 self._send_json(404, {"error": "index.html 未找到"})
         else:
-            super().do_GET()
+            self._send_json(404, {"error": "not found"})
 
     # ---- POST 请求 ----
 
     def do_POST(self):
         body = self._read_body()
+        token = self._token_from_header() or body.get("token", "")
 
         if self.path == "/api/library":
-            token = body.get("token", "")
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
@@ -599,12 +651,18 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._send_json(200, {"ok": True})
 
         elif self.path == "/api/review":
-            token = body.get("token", "")
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
-            date_str = body.get("date") or date.today().isoformat()
+            raw_date = body.get("date")
+            if raw_date:
+                date_str = safe_date_str(raw_date)
+                if not date_str:
+                    self._send_json(400, {"error": "日期格式不正确"})
+                    return
+            else:
+                date_str = date.today().isoformat()
             review_data = body.get("review", {})
             review_data["updatedAt"] = datetime.now().isoformat()
             with open(review_file(user["name"], date_str), "w", encoding="utf-8") as f:
@@ -612,12 +670,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._send_json(200, {"ok": True})
 
         elif self.path == "/api/save":
-            token = body.get("token", "")
             user = self._auth(token)
             if not user:
                 self._send_json(401, {"error": "未登录或登录已过期"})
                 return
-            filepath = user_data_file(user["name"], body.get("date"))
+            raw_date = body.get("date")
+            if raw_date:
+                date_str = safe_date_str(raw_date)
+                if not date_str:
+                    self._send_json(400, {"error": "日期格式不正确"})
+                    return
+            else:
+                date_str = date.today().isoformat()
+            filepath = user_data_file(user["name"], date_str)
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump({"tasks": body.get("tasks", [])}, f, ensure_ascii=False, indent=2)
             self._send_json(200, {"ok": True})
@@ -631,17 +696,21 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if len(password) < 3:
                 self._send_json(400, {"error": "密码至少 3 个字符"})
                 return
+            if not valid_username(name):
+                self._send_json(400, {"error": "名字不合法，请勿包含 / \\ : * ? \" < > | 等字符"})
+                return
             users_data = load_users()
             if find_user(users_data, name):
                 self._send_json(409, {"error": "该名字已被注册"})
                 return
-            is_admin = len(users_data["users"]) == 0
+            if users_data["users"]:
+                self._send_json(409, {"error": "单人模式下无法创建新账号"})
+                return
             token = generate_token()
             user = {
                 "name": name,
                 "password": hash_password(password),
                 "token": token,
-                "isAdmin": is_admin,
                 "createdAt": date.today().isoformat(),
             }
             users_data["users"].append(user)
@@ -649,7 +718,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._send_json(200, {
                 "name": name,
                 "token": token,
-                "isAdmin": is_admin,
             })
 
         elif self.path == "/api/users/login":
@@ -666,82 +734,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if not verify_password(password, user["password"]):
                 self._send_json(401, {"error": "密码错误"})
                 return
+            if not user["password"].startswith("pbkdf2$"):
+                user["password"] = hash_password(password)
             token = generate_token()
             user["token"] = token
             save_users(users_data)
             self._send_json(200, {
                 "name": name,
                 "token": token,
-                "isAdmin": user.get("isAdmin", False),
             })
-
-        elif self.path == "/api/users/create":
-            admin = self._require_admin(body.get("token", ""))
-            if not admin:
-                self._send_json(403, {"error": "仅管理员可操作"})
-                return
-            name = body.get("name", "").strip()
-            password = body.get("password", "").strip()
-            if not name or not password:
-                self._send_json(400, {"error": "名字和密码不能为空"})
-                return
-            if len(password) < 3:
-                self._send_json(400, {"error": "密码至少 3 个字符"})
-                return
-            users_data = load_users()
-            if find_user(users_data, name):
-                self._send_json(409, {"error": "该名字已被注册"})
-                return
-            user = {
-                "name": name,
-                "password": hash_password(password),
-                "token": "",
-                "isAdmin": False,
-                "createdAt": date.today().isoformat(),
-            }
-            users_data["users"].append(user)
-            save_users(users_data)
-            self._send_json(200, {"ok": True})
-
-        elif self.path == "/api/users/remove":
-            admin = self._require_admin(body.get("token", ""))
-            if not admin:
-                self._send_json(403, {"error": "仅管理员可操作"})
-                return
-            target = body.get("name", "")
-            if target == admin["name"]:
-                self._send_json(400, {"error": "不能移除自己"})
-                return
-            users_data = load_users()
-            users_data["users"] = [u for u in users_data["users"] if u["name"] != target]
-            save_users(users_data)
-            target_dir = os.path.join(DATA_DIR, target)
-            if os.path.exists(target_dir):
-                shutil.rmtree(target_dir)
-            self._send_json(200, {"ok": True})
-
-        elif self.path == "/api/users/reset-password":
-            admin = self._require_admin(body.get("token", ""))
-            if not admin:
-                self._send_json(403, {"error": "仅管理员可操作"})
-                return
-            target = body.get("name", "")
-            new_password = body.get("password", "")
-            if not target or not new_password:
-                self._send_json(400, {"error": "参数不完整"})
-                return
-            if len(new_password) < 3:
-                self._send_json(400, {"error": "密码至少 3 个字符"})
-                return
-            users_data = load_users()
-            user = find_user(users_data, target)
-            if not user:
-                self._send_json(404, {"error": "用户不存在"})
-                return
-            user["password"] = hash_password(new_password)
-            user["token"] = ""
-            save_users(users_data)
-            self._send_json(200, {"ok": True})
 
         else:
             self._send_json(404, {"error": "not found"})
@@ -749,7 +750,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         if args and args[0] != "GET /favicon.ico":
             try:
-                print("  > %s" % args[0])
+                msg = args[0]
+                if "token=" in msg:
+                    msg = re.sub(r"(token=)[^&\s]+", r"\1***", msg)
+                print("  > %s" % msg)
             except UnicodeEncodeError:
                 pass
 
@@ -782,7 +786,7 @@ if __name__ == "__main__":
     print("  == Ri Qi - Daily Check-in ==")
     print("  本机:  http://localhost:%d" % PORT)
     print("  局域网: http://%s:%d" % (lan_ip, PORT))
-    print("  第一个注册的用户自动成为管理员")
+    print("  首次登录会自动创建账号（仅支持一个账号）")
     print("  按 Ctrl+C 停止服务器")
     print()
 
