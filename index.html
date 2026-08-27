@@ -835,6 +835,53 @@ body {
   word-break:break-word;
 }
 
+.task-detail {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:-8px 0 12px 42px;
+  padding:6px 10px;
+  border-radius:10px;
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  line-height:1.45;
+  color:var(--text-secondary);
+  cursor:pointer;
+  transition:background 0.2s, color 0.2s;
+  word-break:break-word;
+}
+.task-detail:hover {
+  background:rgba(255,255,255,0.08);
+  color:var(--text);
+}
+.task-detail .task-detail-edit-hint {
+  opacity:0;
+  font-size:0.8rem;
+  transition:opacity 0.2s;
+  color:var(--accent);
+}
+.task-detail:hover .task-detail-edit-hint { opacity:1; }
+.task-detail .task-detail-placeholder {
+  color:var(--text-muted);
+  font-size:0.9rem;
+}
+.task-detail-editor {
+  margin:-8px 0 12px 42px;
+  padding:6px 10px;
+}
+.task-detail-editor input {
+  width:100%;
+  padding:7px 12px;
+  border-radius:10px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.12);
+  color:var(--text);
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  outline:none;
+}
+.task-detail-editor input:focus { border-color:var(--accent); }
+
 /* ====== 计时器 ====== */
 .timer-area {
   display:flex;
@@ -1075,6 +1122,13 @@ body {
   gap:8px;
   box-shadow:0 4px 20px rgba(0,0,0,0.06);
 }
+.bar-fields {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
 .input-bar input {
   flex:1;
   font-family:var(--font-hand);
@@ -1084,6 +1138,14 @@ body {
   border:none;
   outline:none;
   padding:8px 0;
+}
+.input-bar .bar-fields input {
+  width:100%;
+  flex:1;
+}
+.input-bar .bar-detail-input {
+  font-size:0.9rem;
+  opacity:0.75;
 }
 .input-bar input::placeholder {
   color:var(--text-muted);
@@ -1593,6 +1655,15 @@ body {
   text-decoration:line-through;
   color:var(--text-muted);
 }
+.history-task-detail,
+.review-task-detail {
+  font-family:var(--font-hand);
+  font-size:0.85rem;
+  color:var(--text-muted);
+  margin:1px 0 2px 34px;
+  letter-spacing:0.5px;
+}
+.review-task-detail { margin-left:32px; }
 .history-empty {
   text-align:center;
   color:var(--text-muted);
@@ -2871,6 +2942,17 @@ body {
 .library-import-text .lib-fixed {
   color:var(--text);
 }
+.library-import-detail {
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-muted);
+  margin:8px 0 0 32px;
+  letter-spacing:0.5px;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:2px;
+}
 .library-import-preview {
   font-family:var(--font-hand);
   font-size:0.85rem;
@@ -3006,6 +3088,13 @@ body {
   transform:scale(1.01);
 }
 .library-item-card.drag-over { border-color:var(--accent); }
+.library-item-body {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
 .library-item-text {
   flex:1;
   font-family:var(--font-hand);
@@ -3019,6 +3108,15 @@ body {
   transition:background 0.2s;
 }
 .library-item-text:hover { background:rgba(255,255,255,0.1); }
+.library-item-detail {
+  min-width:0;
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-muted);
+  padding:0 6px;
+  margin-bottom:2px;
+  word-break:break-word;
+}
 .library-item-text.editing {
   background:rgba(201,168,124,0.08);
 }
@@ -3222,7 +3320,10 @@ body {
 
       <div class="input-bar" id="inputBar">
         <div class="bar-inner">
-          <input type="text" id="taskInput" placeholder="输入今天要做的事..." autocomplete="off">
+          <div class="bar-fields">
+            <input type="text" id="taskInput" placeholder="输入今天要做的事..." autocomplete="off">
+            <input type="text" id="taskDetailInput" class="bar-detail-input" placeholder="详情（可选，如：第 3 章）" autocomplete="off">
+          </div>
           <button class="btn-bar-add" id="btnAddTask">添加</button>
           <button class="btn-bar-close" id="btnCloseBar">&#10003;</button>
         </div>
@@ -3276,7 +3377,10 @@ body {
 
       <div class="input-bar" id="tomorrowInputBar">
         <div class="bar-inner">
-          <input type="text" id="tomorrowTaskInput" placeholder="输入明天的计划..." autocomplete="off">
+          <div class="bar-fields">
+            <input type="text" id="tomorrowTaskInput" placeholder="输入明天的计划..." autocomplete="off">
+            <input type="text" id="tomorrowDetailInput" class="bar-detail-input" placeholder="详情（可选，如：第 3 章）" autocomplete="off">
+          </div>
           <button class="btn-bar-add" id="btnAddTomorrowTask">添加</button>
           <button class="btn-bar-close" id="btnCloseTomorrowBar">&#10003;</button>
         </div>
@@ -3380,6 +3484,10 @@ body {
           <div class="library-add-row">
             <input type="text" id="libraryAddInput" placeholder="例如：上第节课部分（光标移到需要的位置再点⬜）" autocomplete="off">
             <button class="btn-insert-blank" id="btnInsertBlank" title="在光标位置插入占位符">⬜ 占位</button>
+          </div>
+          <div class="library-add-row" style="margin-top:8px;">
+            <input type="text" id="libraryDetailInput" placeholder="详情模板（可选），例如：第__课 第__节" autocomplete="off">
+            <button class="btn-insert-blank" id="btnInsertDetailBlank" title="在详情光标位置插入占位符">⬜ 占位</button>
           </div>
           <div class="library-add-actions">
             <button class="btn-add-member" id="libraryAddBtn">添加</button>
@@ -3795,6 +3903,7 @@ function renderTasks() {
         + '<div class="task-title">' + escapeHtml(t.title) + '</div>'
         + '<button class="delete-btn" data-delete="' + t.id + '" title="删除">&#10005;</button>'
       + '</div>'
+      + taskDetailHtml(t.id, t.detail)
       + '<div class="slider-container">'
         + '<div class="slider-track" data-track="' + t.id + '">'
           + '<div class="slider-fill" data-fill="' + t.id + '" style="width:' + (t.completed ? 100 : 0) + '%"></div>'
@@ -4423,19 +4532,81 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function taskDetailHtml(taskId, detail) {
+  var text = (detail && detail.trim()) ? escapeHtml(detail.trim()) : '';
+  return '<div class="task-detail" data-detail-edit="' + taskId + '">'
+    + (text
+        ? '<span class="task-detail-text">' + text + '</span><span class="task-detail-edit-hint">✎</span>'
+        : '<span class="task-detail-placeholder">＋ 添加详情</span>')
+    + '</div>'
+    + '<div class="task-detail-editor" data-detail-editor="' + taskId + '" style="display:none;">'
+      + '<input type="text" class="task-detail-input" data-detail-input="' + taskId + '" value="' + escAttr(detail || '') + '" placeholder="补写详情，如：第 3 章" maxlength="120" autocomplete="off">'
+    + '</div>';
+}
+
+function openTaskDetailEditor(id) {
+  var line = document.querySelector('[data-detail-edit="' + id + '"]');
+  var editor = document.querySelector('[data-detail-editor="' + id + '"]');
+  if (!line || !editor) return;
+  line.style.display = 'none';
+  editor.style.display = '';
+  var inp = editor.querySelector('.task-detail-input');
+  if (inp) {
+    inp.focus();
+    inp.select();
+  }
+}
+
+function commitTaskDetail(id) {
+  var editor = document.querySelector('[data-detail-editor="' + id + '"]');
+  if (!editor) return;
+  var inp = editor.querySelector('.task-detail-input');
+  var task = findTaskById(id);
+  if (!task) return;
+  task.detail = inp ? inp.value.trim() : '';
+  var line = document.querySelector('[data-detail-edit="' + id + '"]');
+  if (line) {
+    line.innerHTML = task.detail
+      ? '<span class="task-detail-text">' + escapeHtml(task.detail) + '</span><span class="task-detail-edit-hint">✎</span>'
+      : '<span class="task-detail-placeholder">＋ 添加详情</span>';
+    line.style.display = '';
+  }
+  editor.style.display = 'none';
+  if (state.tasks.indexOf(task) !== -1) debouncedSave();
+  else if (state.tomorrowTasks.indexOf(task) !== -1) debouncedSaveTomorrow();
+}
+
+document.addEventListener('keydown', function(e) {
+  var inp = e.target.closest('.task-detail-input');
+  if (inp && e.key === 'Enter') {
+    e.preventDefault();
+    commitTaskDetail(parseFloat(inp.dataset.detailInput));
+  }
+});
+
+document.addEventListener('focusout', function(e) {
+  var inp = e.target.closest('.task-detail-input');
+  if (inp) commitTaskDetail(parseFloat(inp.dataset.detailInput));
+});
+
 // ==================== 添加任务 ====================
 function hideInputBar() {
   document.getElementById('inputBar').classList.remove('show');
+  document.getElementById('taskInput').value = '';
+  var d = document.getElementById('taskDetailInput');
+  if (d) d.value = '';
 }
 
 function addTaskFromInput() {
   var input = document.getElementById('taskInput');
   var title = input.value.trim();
   if (!title) return;
+  var detailInput = document.getElementById('taskDetailInput');
 
   state.tasks.push({
     id: Date.now() + Math.random() * 1000,
     title: title,
+    detail: detailInput ? detailInput.value.trim() : '',
     completed: false,
     doneSettled: false,
     duration: 0,
@@ -4445,6 +4616,7 @@ function addTaskFromInput() {
   debouncedSave();
 
   input.value = '';
+  if (detailInput) detailInput.value = '';
   input.focus();
 
   setTimeout(function() {
@@ -4843,6 +5015,10 @@ document.getElementById('taskList').addEventListener('click', function(e) {
     if (id) deleteTask(id);
   }
 
+  var detailEdit = e.target.closest('[data-detail-edit]');
+  if (detailEdit) {
+    openTaskDetailEditor(parseFloat(detailEdit.dataset.detailEdit));
+  }
 });
 
 // ==================== 明日任务 ====================
@@ -4929,6 +5105,7 @@ function renderTomorrowTasks() {
         + '<div class="task-title">' + escapeHtml(t.title) + '</div>'
         + '<button class="delete-btn" data-tdelete="' + t.id + '" title="删除">&#10005;</button>'
       + '</div>'
+      + taskDetailHtml(t.id, t.detail)
       + '<div style="font-family:var(--font-hand);font-size:0.85rem;color:var(--text-muted);letter-spacing:1px;padding:2px 0 0 42px;">&#128221; 已规划</div>'
       + '<div class="timer-area" onclick="handleBeadClick(event)">'
         + '<span class="timer-icon">⏱</span>'
@@ -5054,12 +5231,13 @@ function updateTomorrowSortMode() {
   }
 }
 
-function addTomorrowTask(title) {
+function addTomorrowTask(title, detail) {
   if (!title) return;
   if (!state.tomorrowTasks) state.tomorrowTasks = [];
   state.tomorrowTasks.push({
     id: Date.now() + Math.random() * 1000,
     title: title,
+    detail: detail || '',
     completed: false,
     doneSettled: false,
     duration: 0,
@@ -5123,6 +5301,9 @@ document.addEventListener('visibilitychange', function() {
 
 function hideTomorrowInputBar() {
   document.getElementById('tomorrowInputBar').classList.remove('show');
+  document.getElementById('tomorrowTaskInput').value = '';
+  var d = document.getElementById('tomorrowDetailInput');
+  if (d) d.value = '';
 }
 
 function showTomorrowInputBar() {
@@ -5231,16 +5412,20 @@ document.getElementById('btnAddTomorrow').addEventListener('click', showTomorrow
 document.getElementById('btnEditTomorrow').addEventListener('click', toggleTomorrowSortMode);
 document.getElementById('btnAddTomorrowTask').addEventListener('click', function() {
   var input = document.getElementById('tomorrowTaskInput');
-  addTomorrowTask(input.value.trim());
+  var detailInput = document.getElementById('tomorrowDetailInput');
+  addTomorrowTask(input.value.trim(), detailInput ? detailInput.value.trim() : '');
   input.value = '';
+  if (detailInput) detailInput.value = '';
   input.focus();
 });
 document.getElementById('btnCloseTomorrowBar').addEventListener('click', hideTomorrowInputBar);
 document.getElementById('tomorrowTaskInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
     e.preventDefault();
-    addTomorrowTask(this.value.trim());
+    var detailInput = document.getElementById('tomorrowDetailInput');
+    addTomorrowTask(this.value.trim(), detailInput ? detailInput.value.trim() : '');
     this.value = '';
+    if (detailInput) detailInput.value = '';
   }
 });
 
@@ -5249,6 +5434,11 @@ document.getElementById('tomorrowTaskList').addEventListener('click', function(e
   if (delBtn) {
     var id = parseFloat(delBtn.dataset.tdelete);
     if (id) deleteTomorrowTask(id);
+  }
+
+  var detailEdit = e.target.closest('[data-detail-edit]');
+  if (detailEdit) {
+    openTaskDetailEditor(parseFloat(detailEdit.dataset.detailEdit));
   }
 });
 
@@ -5315,7 +5505,8 @@ function renderHistory(history) {
         html += '<div class="history-task-item">'
           + '<div class="history-check ' + status + '">' + (t.completed ? '✓' : '') + '</div>'
           + '<span class="' + titleClass + '">' + escapeHtml(t.title) + '</span>'
-        + '</div>';
+        + '</div>'
+        + (t.detail ? '<div class="history-task-detail">' + escapeHtml(t.detail) + '</div>' : '');
       });
     }
 
@@ -5554,6 +5745,7 @@ async function showReviewDetail(dateStr) {
     html += '<ul class="review-detail-list">';
     completed.forEach(function(t) {
       html += '<li><span class="di-bullet">✓</span><span>' + escapeHtml(t.title) + '</span></li>';
+      if (t.detail) html += '<li class="review-detail-reflection">📌 <span class="rl-label">详情：</span>' + escapeHtml(t.detail) + '</li>';
     });
     html += '</ul>';
   } else {
@@ -5566,6 +5758,7 @@ async function showReviewDetail(dateStr) {
     html += '<ul class="review-detail-list">';
     savedUn.forEach(function(item, idx) {
       html += '<li class="pending"><span class="di-bullet">' + (idx + 1) + '</span><span>' + escapeHtml(item.title) + '</span></li>'
+        + (item.detail ? '<li class="review-detail-reflection">📌 <span class="rl-label">详情：</span>' + escapeHtml(item.detail) + '</li>' : '')
         + '<li class="review-detail-reflection">🤔 <span class="rl-label">困难：</span>' + escapeHtml(item.difficulty || '—') + '</li>'
         + '<li class="review-detail-reflection">💡 <span class="rl-label">计划：</span>' + escapeHtml(item.solution || '—') + '</li>';
     });
@@ -5636,7 +5829,7 @@ function formatReviewDate() {
 
 // ==================== 任务库 ====================
 
-var libraryItems = []; // [{id, pattern}]
+var libraryItems = []; // [{id, pattern, detailPattern}]
 
 async function loadLibrary() {
   var token = getToken();
@@ -5694,11 +5887,18 @@ function renderLibraryManage() {
   libraryItems.forEach(function(item, idx) {
     html += '<div class="library-item-card" data-idx="' + idx + '">'
       + '<div class="lib-drag-handle" data-lib-handle="' + idx + '" title="拖动排序">⠿</div>'
-      + '<div class="library-item-text" data-display="' + idx + '">' + displayPattern(item.pattern) + '</div>'
-      + '<div class="library-item-text editing" data-edit="' + idx + '" style="display:none;">'
-        + '<div class="lib-edit-row">'
-          + '<input type="text" class="lib-edit-input" value="' + escAttr(item.pattern.replace(/__/g, '⬜')) + '" data-ei="' + idx + '" placeholder="编辑任务内容…">'
-          + '<button class="btn-insert-blank lib-edit-insert" data-ei-insert="' + idx + '" title="插入占位符">⬜</button>'
+      + '<div class="library-item-body">'
+        + '<div class="library-item-text" data-display="' + idx + '">' + displayPattern(item.pattern) + '</div>'
+        + (item.detailPattern ? '<div class="library-item-detail" data-detail-display="' + idx + '">详情：' + displayPattern(item.detailPattern) + '</div>' : '')
+        + '<div class="library-item-text editing" data-edit="' + idx + '" style="display:none;">'
+          + '<div class="lib-edit-row">'
+            + '<input type="text" class="lib-edit-input" value="' + escAttr(item.pattern.replace(/__/g, '⬜')) + '" data-ei="' + idx + '" placeholder="编辑任务内容…">'
+            + '<button class="btn-insert-blank lib-edit-insert" data-ei-insert="' + idx + '" title="插入占位符">⬜</button>'
+          + '</div>'
+          + '<div class="lib-edit-row" style="margin-top:6px;">'
+            + '<input type="text" class="lib-edit-detail-input" value="' + escAttr((item.detailPattern || '').replace(/__/g, '⬜')) + '" data-dei="' + idx + '" placeholder="详情模板（可选）">'
+            + '<button class="btn-insert-blank lib-edit-insert-detail" data-dei-insert="' + idx + '" title="插入占位符">⬜</button>'
+          + '</div>'
         + '</div>'
       + '</div>'
       + '<div class="library-item-actions">'
@@ -5812,24 +6012,31 @@ function insertBlankAtCursor(input) {
 // 更新预览
 function updateAddPreview() {
   var input = document.getElementById('libraryAddInput');
+  var detailInput = document.getElementById('libraryDetailInput');
   var preview = document.getElementById('libraryAddPreview');
   if (!input || !preview) return;
   var val = input.value.trim();
-  if (!val) { preview.innerHTML = ''; return; }
+  var detailVal = detailInput ? detailInput.value.trim() : '';
+  if (!val && !detailVal) { preview.innerHTML = ''; return; }
   // 把 ⬜ 高亮显示
-  var html = '预览：' + escapeHtml(val).replace(/⬜/g, '<span class="lib-preview-blank"> ⬜ </span>');
+  var html = '';
+  if (val) html += '<div class="lib-preview-text">预览：' + escapeHtml(val).replace(/⬜/g, '<span class="lib-preview-blank"> ⬜ </span>') + '</div>';
+  if (detailVal) html += '<div class="lib-preview-text" style="margin-left:34px;">详情：' + escapeHtml(detailVal).replace(/⬜/g, '<span class="lib-preview-blank"> ⬜ </span>') + '</div>';
   preview.innerHTML = html;
 }
 
 // 添加条目 - 添加按钮
 document.getElementById('libraryAddBtn').addEventListener('click', function() {
   var input = document.getElementById('libraryAddInput');
+  var detailInput = document.getElementById('libraryDetailInput');
   var text = input.value.trim();
   if (!text) { alert('请输入任务内容'); return; }
   // 把 ⬜ 转为 __ 存储
   var pattern = text.replace(/⬜/g, '__');
-  libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: pattern });
+  var detailPattern = detailInput ? detailInput.value.trim().replace(/⬜/g, '__') : '';
+  libraryItems.push({ id: Date.now() + Math.random() * 1000, pattern: pattern, detailPattern: detailPattern });
   input.value = '';
+  if (detailInput) detailInput.value = '';
   updateAddPreview();
   saveLibrary().then(function() { loadLibraryManage(); });
 });
@@ -5840,12 +6047,22 @@ document.getElementById('btnInsertBlank').addEventListener('click', function() {
   insertBlankAtCursor(input);
 });
 
+document.getElementById('btnInsertDetailBlank').addEventListener('click', function() {
+  var input = document.getElementById('libraryDetailInput');
+  insertBlankAtCursor(input);
+});
+
 // 添加条目 - 快捷键：Alt+Space 插入占位
 document.getElementById('libraryAddInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('libraryAddBtn').click(); }
   if (e.key === ' ' && e.altKey) { e.preventDefault(); insertBlankAtCursor(this); }
 });
 document.getElementById('libraryAddInput').addEventListener('input', updateAddPreview);
+document.getElementById('libraryDetailInput').addEventListener('input', updateAddPreview);
+document.getElementById('libraryDetailInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('libraryAddBtn').click(); }
+  if (e.key === ' ' && e.altKey) { e.preventDefault(); insertBlankAtCursor(this); }
+});
 
 // 条目操作（事件委托）
 document.getElementById('libraryList').addEventListener('click', function(e) {
@@ -5855,10 +6072,12 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
   if (target.classList.contains('btn-lib-edit')) {
     var idx = parseInt(target.dataset.editBtn);
     var display = document.querySelector('[data-display="' + idx + '"]');
+    var detailDisplay = document.querySelector('[data-detail-display="' + idx + '"]');
     var edit = document.querySelector('[data-edit="' + idx + '"]');
     var editBtn = target;
     var saveBtn = document.querySelector('[data-save-btn="' + idx + '"]');
     if (display) display.style.display = 'none';
+    if (detailDisplay) detailDisplay.style.display = 'none';
     if (edit) {
       edit.style.display = '';
       var inp = edit.querySelector('.lib-edit-input');
@@ -5875,6 +6094,12 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
     if (inp) insertBlankAtCursor(inp);
   }
 
+  if (target.classList.contains('lib-edit-insert-detail')) {
+    var idx = parseInt(target.dataset.deiInsert);
+    var inp = document.querySelector('[data-dei="' + idx + '"]');
+    if (inp) insertBlankAtCursor(inp);
+  }
+
   // 保存按钮
   if (target.classList.contains('btn-lib-save')) {
     var idx = parseInt(target.dataset.saveBtn);
@@ -5884,6 +6109,8 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
     var text = inp ? inp.value.trim() : '';
     if (!text) { loadLibraryManage(); return; }
     item.pattern = text.replace(/⬜/g, '__');
+    var detailInp = document.querySelector('[data-dei="' + idx + '"]');
+    item.detailPattern = detailInp ? detailInp.value.trim().replace(/⬜/g, '__') : '';
     saveLibrary();
     renderLibraryManage();
   }
@@ -5906,9 +6133,10 @@ document.getElementById('libraryList').addEventListener('click', function(e) {
 // 编辑框回车保存
 document.getElementById('libraryList').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
-    var inp = e.target.closest('[data-epp]') || e.target.closest('[data-ess]');
+    var inp = e.target.closest('[data-ei]') || e.target.closest('[data-dei]')
+      || e.target.closest('[data-epp]') || e.target.closest('[data-ess]');
     if (inp) {
-      var idx = inp.dataset.epp || inp.dataset.ess;
+      var idx = inp.dataset.ei || inp.dataset.dei || inp.dataset.epp || inp.dataset.ess;
       var saveBtn = document.querySelector('[data-save-btn="' + idx + '"]');
       if (saveBtn) saveBtn.click();
     }
@@ -5953,7 +6181,7 @@ function renderImportModal(items) {
   importOrder = [];
   var html = '';
   items.forEach(function(item, idx) {
-    importBlanks[idx] = { id: item.id, checked: false, fills: {} };
+    importBlanks[idx] = { id: item.id, checked: false, fills: {}, detailFills: {} };
     // 分解 pattern，把 __ 替换为输入框
     var parts = splitPattern(item.pattern);
     var textHtml = '';
@@ -5966,12 +6194,26 @@ function renderImportModal(items) {
         textHtml += '<span class="lib-fixed">' + escapeHtml(p) + '</span>';
       }
     });
+    var detailHtml = '';
+    if (item.detailPattern) {
+      var dParts = splitPattern(item.detailPattern);
+      detailHtml += '<div class="library-import-detail">详情：';
+      dParts.forEach(function(p, pi) {
+        if (p === '__') {
+          detailHtml += '<span class="lib-blank-input"><input type="text" data-detail-fill="' + idx + '-' + pi + '" placeholder="填空" autocomplete="off"></span>';
+        } else if (p) {
+          detailHtml += '<span class="lib-fixed">' + escapeHtml(p) + '</span>';
+        }
+      });
+      detailHtml += '</div>';
+    }
 
     html += '<div class="library-import-item" data-item-idx="' + idx + '">'
       + '<div class="library-import-top">'
         + '<div class="library-import-check" data-check="' + idx + '" data-hasblank="' + (hasBlank ? '1' : '0') + '">&#10003;</div>'
         + '<div class="library-import-text">' + textHtml + '</div>'
       + '</div>'
+      + detailHtml
       + '<div class="library-import-preview" data-preview="' + idx + '" style="display:none;"></div>'
     + '</div>';
   });
@@ -5989,6 +6231,21 @@ function renderImportModal(items) {
         importBlanks[idx].fills[pi] = this.value;
         updatePreview(idx);
         updateImportCount();
+      }
+    });
+    inp.addEventListener('focus', function() {
+      this.select();
+    });
+  });
+  body.querySelectorAll('input[data-detail-fill]').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var key = this.dataset.detailFill;
+      var parts = key.split('-');
+      var idx = parseInt(parts[0]);
+      var pi = parseInt(parts[1]);
+      if (importBlanks[idx]) {
+        importBlanks[idx].detailFills[pi] = this.value;
+        updatePreview(idx);
       }
     });
     inp.addEventListener('focus', function() {
@@ -6040,24 +6297,18 @@ function updatePreview(idx) {
   var previewEl = document.querySelector('[data-preview="' + idx + '"]');
   if (!previewEl) return;
 
-  var hasFill = false;
-  var parts = splitPattern(item.pattern);
-  var fi = 0;
-  var previewParts = [];
-  parts.forEach(function(p) {
-    if (p === '__') {
-      var val = (blank.fills[fi] && blank.fills[fi].trim()) || '';
-      if (val) { hasFill = true; previewParts.push(val); }
-      else { previewParts.push('___'); }
-      fi++;
-    } else {
-      previewParts.push(p);
-    }
-  });
+  var lines = [];
+  var titleFilled = buildTitleFromParts(item.pattern, blank.fills);
+  if (titleFilled.indexOf('__') === -1 && titleFilled.trim()) lines.push('→ ' + titleFilled);
+  if (item.detailPattern) {
+    var detailFilled = buildTitleFromParts(item.detailPattern, blank.detailFills);
+    if (detailFilled.indexOf('__') === -1 && detailFilled.trim()) lines.push('    ' + detailFilled);
+  }
 
-  if (hasFill) {
-    previewEl.textContent = '→ ' + previewParts.join('');
+  if (lines.length > 0) {
+    previewEl.textContent = lines.join('\n');
     previewEl.style.display = '';
+    previewEl.style.whiteSpace = 'pre-line';
   } else {
     previewEl.style.display = 'none';
   }
@@ -6116,29 +6367,20 @@ document.getElementById('libraryModalImport').addEventListener('click', function
     var blank = importBlanks[idx];
     if (!blank || !blank.checked) return;
 
-    var title = item.pattern;
-    // 如果有 __，替换为填写的内容
-    if (item.pattern.indexOf('__') !== -1) {
-      var parts = splitPattern(item.pattern);
-      var fi = 0;
-      var filled = '';
-      parts.forEach(function(p) {
-        if (p === '__') {
-          filled += (blank.fills[fi] && blank.fills[fi].trim()) || '__';
-          fi++;
-        } else {
-          filled += p;
-        }
-      });
-      title = filled;
-    }
+    var title = buildTitleFromParts(item.pattern, blank.fills);
 
     // 跳过还有未填 __ 的
     if (title.indexOf('__') !== -1) return;
+    var detail = '';
+    if (item.detailPattern) {
+      detail = buildTitleFromParts(item.detailPattern, blank.detailFills);
+      if (detail.indexOf('__') !== -1) detail = '';
+    }
 
     newTasks.push({
       id: Date.now() + Math.random() * 1000 + idx,
       title: title,
+      detail: detail,
       completed: false,
       doneSettled: false,
       duration: 0,
@@ -6309,6 +6551,7 @@ function renderReview(tasks, reviewData, isToday) {
     reviewState.uncompletedItems.push({
       taskId: t.id,
       title: t.title,
+      detail: t.detail || '',
       difficulty: (saved && saved.difficulty) || '',
       solution: (saved && saved.solution) || '',
     });
@@ -6325,7 +6568,8 @@ function renderReview(tasks, reviewData, isToday) {
       doneHtml += '<div class="review-task-item done">'
         + '<span class="review-task-bullet">✓</span>'
         + '<span class="review-task-title">' + escapeHtml(t.title) + '</span>'
-        + '</div>';
+        + '</div>'
+        + (t.detail ? '<div class="review-task-detail">' + escapeHtml(t.detail) + '</div>' : '');
     });
     doneHtml += '</div>';
     doneList.innerHTML = doneHtml;
@@ -6363,6 +6607,7 @@ function renderReview(tasks, reviewData, isToday) {
           + '<span class="review-task-bullet">' + (idx + 1) + '</span>'
           + '<span class="review-task-title">' + escapeHtml(item.title) + '</span>'
           + '</div>'
+          + (item.detail ? '<div class="review-task-detail">' + escapeHtml(item.detail) + '</div>' : '')
           + '<div class="review-reflection readonly">'
             + '<div class="reflect-line">🤔 <span class="reflect-label">困难：</span>' + escapeHtml(item.difficulty || '—') + '</div>'
             + '<div class="reflect-line">💡 <span class="reflect-label">计划：</span>' + escapeHtml(item.solution || '—') + '</div>'
@@ -6385,6 +6630,7 @@ function renderReview(tasks, reviewData, isToday) {
         + '<span class="review-task-bullet">' + (idx + 1) + '</span>'
         + '<span class="review-task-title">' + escapeHtml(item.title) + '</span>'
         + '</div>'
+        + (item.detail ? '<div class="review-task-detail">' + escapeHtml(item.detail) + '</div>' : '')
         + '<div class="review-reflection" data-idx="' + idx + '">'
           + '<div class="review-reflection-field">'
             + '<label>🤔 遇到了什么困难？</label>'
@@ -6466,6 +6712,7 @@ async function saveReview() {
       return {
         taskId: item.taskId,
         title: item.title,
+        detail: item.detail || '',
         difficulty: item.difficulty,
         solution: item.solution,
       };
