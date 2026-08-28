@@ -447,6 +447,60 @@ body {
   background:rgba(200,80,80,0.08);
 }
 
+.keep-awake-toggle {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:8px 14px;
+  margin:2px 0 6px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:background 0.2s;
+  user-select:none;
+}
+.keep-awake-toggle:hover { background:rgba(255,255,255,0.08); }
+.keep-awake-label {
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-secondary);
+  letter-spacing:1px;
+}
+.keep-awake-toggle input {
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.keep-awake-switch {
+  position:relative;
+  flex-shrink:0;
+  width:38px;
+  height:22px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.16);
+  border:1px solid var(--card-border);
+  transition:background 0.25s, border-color 0.25s;
+}
+.keep-awake-switch::after {
+  content:'';
+  position:absolute;
+  top:2px;
+  left:2px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:var(--text-muted);
+  transition:transform 0.25s, background 0.25s;
+}
+.keep-awake-toggle input:checked + .keep-awake-switch {
+  background:var(--green);
+  border-color:var(--green);
+}
+.keep-awake-toggle input:checked + .keep-awake-switch::after {
+  transform:translateX(16px);
+  background:#fff;
+}
+
 .sidebar-theme {
   position:absolute;
   top:14px;
@@ -881,6 +935,111 @@ body {
   outline:none;
 }
 .task-detail-editor input:focus { border-color:var(--accent); }
+
+.task-subtasks {
+  margin:-8px 0 10px 42px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.task-subtask {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:5px 10px 5px 6px;
+  border-radius:10px;
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  color:var(--text-secondary);
+  cursor:pointer;
+  transition:background 0.2s, color 0.2s;
+  word-break:break-word;
+}
+.task-subtask:hover { background:rgba(255,255,255,0.08); }
+.task-subtask.done { opacity:0.7; }
+.task-subtask.done .subtask-text {
+  color:var(--text-muted);
+  text-decoration:line-through;
+}
+.subtask-check {
+  flex-shrink:0;
+  width:20px;
+  height:20px;
+  border-radius:6px;
+  border:2px solid var(--text-muted);
+  background:transparent;
+  color:transparent;
+  font-size:0.72rem;
+  font-weight:700;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.2s;
+}
+.task-subtask.done .subtask-check {
+  background:var(--green);
+  border-color:var(--green);
+  color:#fff;
+}
+.subtask-text { flex:1; min-width:0; }
+.subtask-del {
+  flex-shrink:0;
+  width:22px;
+  height:22px;
+  border:none;
+  border-radius:50%;
+  background:transparent;
+  color:var(--text-muted);
+  font-size:0.75rem;
+  cursor:pointer;
+  opacity:0;
+  transition:opacity 0.2s, background 0.2s, color 0.2s;
+}
+.task-subtask:hover .subtask-del { opacity:1; }
+.subtask-del:hover { background:rgba(200,80,80,0.14); color:var(--danger); }
+.subtask-add-row {
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.subtask-add-row input {
+  flex:1;
+  min-width:0;
+  padding:7px 12px;
+  border-radius:10px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.12);
+  color:var(--text);
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  outline:none;
+}
+.subtask-add-row input:focus { border-color:var(--accent); }
+.subtask-add-btn,
+.subtask-add-close {
+  flex-shrink:0;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  border:none;
+  cursor:pointer;
+  font-size:0.95rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.2s;
+}
+.subtask-add-btn {
+  background:rgba(201,168,124,0.18);
+  color:var(--accent);
+}
+.subtask-add-btn:hover { background:rgba(201,168,124,0.3); }
+.subtask-add-close {
+  background:rgba(122,158,126,0.16);
+  color:var(--green);
+}
+.subtask-add-close:hover { background:rgba(122,158,126,0.3); }
 
 /* ====== 计时器 ====== */
 .timer-area {
@@ -1619,6 +1778,13 @@ body {
   border-bottom: 1px solid var(--card-border);
   margin-bottom: 6px;
 }
+.history-total-time {
+  font-size:0.85rem;
+  color:var(--accent);
+  font-weight:400;
+  margin-left:8px;
+  letter-spacing:0.5px;
+}
 .history-task-item {
   display:flex;
   align-items:center;
@@ -1664,6 +1830,26 @@ body {
   letter-spacing:0.5px;
 }
 .review-task-detail { margin-left:32px; }
+.history-subtasks,
+.review-subtasks {
+  margin:2px 0 6px 34px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.review-subtasks { margin-left:32px; }
+.history-subtask,
+.review-subtask {
+  font-family:var(--font-hand);
+  font-size:0.85rem;
+  color:var(--text-muted);
+  letter-spacing:0.5px;
+}
+.history-subtask.done,
+.review-subtask.done {
+  color:var(--green);
+  text-decoration:line-through;
+}
 .history-empty {
   text-align:center;
   color:var(--text-muted);
@@ -3288,6 +3474,11 @@ body {
       <div class="sidebar-user">
         <span id="sidebarUserName"></span>
       </div>
+      <label class="keep-awake-toggle" title="开启后阻止电脑自动休眠">
+        <span class="keep-awake-label">保持唤醒</span>
+        <input type="checkbox" id="keepAwakeToggle">
+        <span class="keep-awake-switch"></span>
+      </label>
       <button class="sidebar-logout" id="logoutBtn">退出登录</button>
     </div>
   </nav>
@@ -3696,10 +3887,43 @@ function showApp() {
   sidebar.classList.remove('hidden');
   mainArea.classList.add('has-sidebar');
   document.getElementById('sidebarUserName').textContent = state.currentUser.name;
+  loadKeepAwake();
 
   var lastPage = localStorage.getItem('lastPage') || 'tasks';
   switchPage(lastPage);
 }
+
+async function loadKeepAwake() {
+  var toggle = document.getElementById('keepAwakeToggle');
+  if (!toggle) return;
+  try {
+    var res = await apiFetch('/api/power/keep-awake');
+    if (res.ok) {
+      var data = await res.json();
+      toggle.checked = !!data.enabled;
+    }
+  } catch(e) {}
+}
+
+document.getElementById('keepAwakeToggle').addEventListener('change', async function() {
+  var toggle = this;
+  var enabled = toggle.checked;
+  try {
+    var res = await apiFetch('/api/power/keep-awake', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: enabled }),
+    });
+    if (!res.ok) {
+      toggle.checked = !enabled;
+      return;
+    }
+    var data = await res.json();
+    toggle.checked = !!data.enabled;
+  } catch(e) {
+    toggle.checked = !enabled;
+  }
+});
 
 // ==================== 登录交互 ====================
 
@@ -3819,6 +4043,7 @@ async function loadTasks() {
     } else {
       state.tasks = [];
     }
+    if (migrateTaskDetails(state.tasks)) debouncedSave();
     state.tasksLoaded = true;
     restoreActiveTimer();
   } catch(e) { console.log('Load failed'); }
@@ -3903,7 +4128,7 @@ function renderTasks() {
         + '<div class="task-title">' + escapeHtml(t.title) + '</div>'
         + '<button class="delete-btn" data-delete="' + t.id + '" title="删除">&#10005;</button>'
       + '</div>'
-      + taskDetailHtml(t.id, t.detail)
+      + taskDetailHtml(t)
       + '<div class="slider-container">'
         + '<div class="slider-track" data-track="' + t.id + '">'
           + '<div class="slider-fill" data-fill="' + t.id + '" style="width:' + (t.completed ? 100 : 0) + '%"></div>'
@@ -4532,61 +4757,216 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function taskDetailHtml(taskId, detail) {
-  var text = (detail && detail.trim()) ? escapeHtml(detail.trim()) : '';
-  return '<div class="task-detail" data-detail-edit="' + taskId + '">'
-    + (text
-        ? '<span class="task-detail-text">' + text + '</span><span class="task-detail-edit-hint">✎</span>'
-        : '<span class="task-detail-placeholder">＋ 添加详情</span>')
-    + '</div>'
-    + '<div class="task-detail-editor" data-detail-editor="' + taskId + '" style="display:none;">'
-      + '<input type="text" class="task-detail-input" data-detail-input="' + taskId + '" value="' + escAttr(detail || '') + '" placeholder="补写详情，如：第 3 章" maxlength="120" autocomplete="off">'
+function subtaskRowHtml(taskId, s) {
+  return '<div class="task-subtask' + (s.done ? ' done' : '') + '" data-subtask="' + s.id + '" data-task="' + taskId + '">'
+    + '<button class="subtask-check" data-subtask-toggle="' + s.id + '" data-task="' + taskId + '">' + (s.done ? '✓' : '') + '</button>'
+    + '<span class="subtask-text">' + escapeHtml(s.text) + '</span>'
+    + '<button class="subtask-del" data-subtask-del="' + s.id + '" data-task="' + taskId + '" title="删除">✕</button>'
     + '</div>';
 }
 
-function openTaskDetailEditor(id) {
-  var line = document.querySelector('[data-detail-edit="' + id + '"]');
-  var editor = document.querySelector('[data-detail-editor="' + id + '"]');
-  if (!line || !editor) return;
-  line.style.display = 'none';
-  editor.style.display = '';
-  var inp = editor.querySelector('.task-detail-input');
-  if (inp) {
-    inp.focus();
-    inp.select();
+function taskDetailHtml(t) {
+  var items = t.subtasks || [];
+  var html = '';
+  if (items.length) {
+    html += '<div class="task-subtasks" data-subtasks="' + t.id + '">';
+    items.forEach(function(s) { html += subtaskRowHtml(t.id, s); });
+    html += '</div>';
   }
+  html += '<div class="task-detail" data-detail-add="' + t.id + '"><span class="task-detail-placeholder">＋ 添加详情</span></div>'
+    + '<div class="task-detail-editor" data-subtask-editor="' + t.id + '" style="display:none;">'
+      + '<div class="subtask-add-row">'
+        + '<input type="text" class="task-detail-input" data-subtask-input="' + t.id + '" placeholder="添加一条详情，回车继续添加" maxlength="120" autocomplete="off">'
+        + '<button class="subtask-add-btn" data-subtask-add="' + t.id + '" title="添加">＋</button>'
+        + '<button class="subtask-add-close" data-subtask-close="' + t.id + '" title="完成">✓</button>'
+      + '</div>'
+    + '</div>';
+  return html;
 }
 
-function commitTaskDetail(id) {
-  var editor = document.querySelector('[data-detail-editor="' + id + '"]');
-  if (!editor) return;
-  var inp = editor.querySelector('.task-detail-input');
-  var task = findTaskById(id);
-  if (!task) return;
-  task.detail = inp ? inp.value.trim() : '';
-  var line = document.querySelector('[data-detail-edit="' + id + '"]');
-  if (line) {
-    line.innerHTML = task.detail
-      ? '<span class="task-detail-text">' + escapeHtml(task.detail) + '</span><span class="task-detail-edit-hint">✎</span>'
-      : '<span class="task-detail-placeholder">＋ 添加详情</span>';
-    line.style.display = '';
-  }
-  editor.style.display = 'none';
+function migrateTaskDetails(tasks) {
+  var changed = false;
+  (tasks || []).forEach(function(t) {
+    if (!Array.isArray(t.subtasks)) {
+      if (t.detail && t.detail.trim()) {
+        t.subtasks = [{ id: Date.now() + Math.random() * 1000, text: t.detail.trim(), done: false }];
+        t.detail = '';
+      } else {
+        t.subtasks = [];
+      }
+      changed = true;
+    }
+    if (allSubtasksDone(t) && !t.completed) {
+      t.completed = true;
+      t.doneSettled = true;
+      t.autoDone = true;
+      changed = true;
+    } else if (!allSubtasksDone(t) && t.completed && t.autoDone) {
+      t.completed = false;
+      t.doneSettled = false;
+      t.autoDone = false;
+      changed = true;
+    }
+  });
+  return changed;
+}
+
+function saveTaskFor(task) {
   if (state.tasks.indexOf(task) !== -1) debouncedSave();
   else if (state.tomorrowTasks.indexOf(task) !== -1) debouncedSaveTomorrow();
 }
 
+function allSubtasksDone(task) {
+  var subs = task.subtasks || [];
+  return subs.length > 0 && subs.every(function(s) { return s.done; });
+}
+
+function autoCompleteMainTask(task) {
+  task.completed = true;
+  task.doneSettled = false;
+  task.autoDone = true;
+  var id = task.id;
+  var card = document.querySelector('[data-id="' + id + '"], [data-tid="' + id + '"]');
+  if (card) {
+    var knob = card.querySelector('.slider-knob');
+    var track = card.querySelector('.slider-track');
+    if (knob && track) {
+      completeTask(task, knob, track, card);
+      task.autoDone = true;
+      return;
+    }
+  }
+  task.doneSettled = true;
+  saveTaskFor(task);
+  updateCount();
+  updateTotalTime();
+}
+
+function autoUncompleteMainTask(task) {
+  task.completed = false;
+  task.doneSettled = false;
+  task.autoDone = false;
+  var id = task.id;
+  var card = document.querySelector('[data-id="' + id + '"], [data-tid="' + id + '"]');
+  if (card) {
+    var knob = card.querySelector('.slider-knob');
+    if (knob) {
+      uncompleteTask(task, card, knob);
+      task.autoDone = false;
+    }
+  } else {
+    updateCount();
+    updateTotalTime();
+    saveTaskFor(task);
+  }
+}
+
+function syncMainTaskFromSubtasks(task) {
+  if (allSubtasksDone(task) && !task.completed) {
+    autoCompleteMainTask(task);
+  } else if (!allSubtasksDone(task) && task.completed && task.autoDone) {
+    autoUncompleteMainTask(task);
+  }
+}
+
+function openSubtaskEditor(id) {
+  document.querySelectorAll('[data-subtask-editor]').forEach(function(el) {
+    var eid = parseFloat(el.dataset.subtaskEditor);
+    if (eid !== id) {
+      el.style.display = 'none';
+      var otherAdd = document.querySelector('[data-detail-add="' + eid + '"]');
+      if (otherAdd) otherAdd.style.display = '';
+    }
+  });
+  var addLine = document.querySelector('[data-detail-add="' + id + '"]');
+  var editor = document.querySelector('[data-subtask-editor="' + id + '"]');
+  if (addLine) addLine.style.display = 'none';
+  if (editor) {
+    editor.style.display = '';
+    var inp = editor.querySelector('.task-detail-input');
+    if (inp) inp.focus();
+  }
+}
+
+function closeSubtaskEditor(id) {
+  var addLine = document.querySelector('[data-detail-add="' + id + '"]');
+  var editor = document.querySelector('[data-subtask-editor="' + id + '"]');
+  if (editor) {
+    var inp = editor.querySelector('.task-detail-input');
+    if (inp) inp.value = '';
+    editor.style.display = 'none';
+  }
+  if (addLine) addLine.style.display = '';
+}
+
+function toggleSubtask(taskId, subtaskId) {
+  var task = findTaskById(taskId);
+  if (!task || !task.subtasks) return;
+  var st = task.subtasks.find(function(s) { return s.id === subtaskId; });
+  if (!st) return;
+  st.done = !st.done;
+  var row = document.querySelector('[data-subtask="' + subtaskId + '"]');
+  if (row) {
+    row.classList.toggle('done', st.done);
+    var check = row.querySelector('.subtask-check');
+    if (check) check.textContent = st.done ? '✓' : '';
+  }
+  syncMainTaskFromSubtasks(task);
+  saveTaskFor(task);
+}
+
+function addSubtask(taskId) {
+  var task = findTaskById(taskId);
+  if (!task) return;
+  if (!task.subtasks) task.subtasks = [];
+  var inp = document.querySelector('[data-subtask-input="' + taskId + '"]');
+  var text = inp ? inp.value.trim() : '';
+  if (!text) return;
+  var st = { id: Date.now() + Math.random() * 1000, text: text, done: false };
+  task.subtasks.push(st);
+  var container = document.querySelector('[data-subtasks="' + taskId + '"]');
+  if (container) {
+    container.insertAdjacentHTML('beforeend', subtaskRowHtml(taskId, st));
+  } else {
+    var editor = document.querySelector('[data-subtask-editor="' + taskId + '"]');
+    if (editor) {
+      var wrap = document.createElement('div');
+      wrap.className = 'task-subtasks';
+      wrap.setAttribute('data-subtasks', taskId);
+      wrap.innerHTML = subtaskRowHtml(taskId, st);
+      editor.parentNode.insertBefore(wrap, editor);
+    }
+  }
+  if (inp) {
+    inp.value = '';
+    inp.focus();
+  }
+  syncMainTaskFromSubtasks(task);
+  saveTaskFor(task);
+}
+
+function deleteSubtask(taskId, subtaskId) {
+  var task = findTaskById(taskId);
+  if (!task || !task.subtasks) return;
+  task.subtasks = task.subtasks.filter(function(s) { return s.id !== subtaskId; });
+  var row = document.querySelector('[data-subtask="' + subtaskId + '"]');
+  if (row) row.remove();
+  var container = document.querySelector('[data-subtasks="' + taskId + '"]');
+  if (container && !container.children.length) container.remove();
+  syncMainTaskFromSubtasks(task);
+  saveTaskFor(task);
+}
+
 document.addEventListener('keydown', function(e) {
   var inp = e.target.closest('.task-detail-input');
-  if (inp && e.key === 'Enter') {
+  if (!inp) return;
+  var id = parseFloat(inp.dataset.subtaskInput);
+  if (e.key === 'Enter') {
     e.preventDefault();
-    commitTaskDetail(parseFloat(inp.dataset.detailInput));
+    addSubtask(id);
+  } else if (e.key === 'Escape') {
+    closeSubtaskEditor(id);
   }
-});
-
-document.addEventListener('focusout', function(e) {
-  var inp = e.target.closest('.task-detail-input');
-  if (inp) commitTaskDetail(parseFloat(inp.dataset.detailInput));
 });
 
 // ==================== 添加任务 ====================
@@ -4602,11 +4982,13 @@ function addTaskFromInput() {
   var title = input.value.trim();
   if (!title) return;
   var detailInput = document.getElementById('taskDetailInput');
+  var detailText = detailInput ? detailInput.value.trim() : '';
+  var subtasks = detailText ? [{ id: Date.now() + Math.random() * 1000, text: detailText, done: false }] : [];
 
   state.tasks.push({
     id: Date.now() + Math.random() * 1000,
     title: title,
-    detail: detailInput ? detailInput.value.trim() : '',
+    subtasks: subtasks,
     completed: false,
     doneSettled: false,
     duration: 0,
@@ -4915,6 +5297,7 @@ document.addEventListener('pointerdown', function(e) {
 function completeTask(task, knob, track, cardEl) {
   task.completed = true;
   task.doneSettled = false;
+  task.autoDone = false;
 
   var fillEl = track.querySelector('[data-fill]');
   if (fillEl) {
@@ -4944,6 +5327,7 @@ function completeTask(task, knob, track, cardEl) {
 function uncompleteTask(task, cardEl, knob) {
   task.completed = false;
   task.doneSettled = false;
+  task.autoDone = false;
 
   knob.style.transition = 'left 0.2s ease, background 0.3s, border-color 0.3s';
   knob.style.left = '4px';
@@ -5015,9 +5399,34 @@ document.getElementById('taskList').addEventListener('click', function(e) {
     if (id) deleteTask(id);
   }
 
-  var detailEdit = e.target.closest('[data-detail-edit]');
-  if (detailEdit) {
-    openTaskDetailEditor(parseFloat(detailEdit.dataset.detailEdit));
+  var detailAdd = e.target.closest('[data-detail-add]');
+  if (detailAdd) {
+    openSubtaskEditor(parseFloat(detailAdd.dataset.detailAdd));
+    return;
+  }
+  var subtaskAdd = e.target.closest('[data-subtask-add]');
+  if (subtaskAdd) {
+    addSubtask(parseFloat(subtaskAdd.dataset.subtaskAdd));
+    return;
+  }
+  var subtaskClose = e.target.closest('[data-subtask-close]');
+  if (subtaskClose) {
+    closeSubtaskEditor(parseFloat(subtaskClose.dataset.subtaskClose));
+    return;
+  }
+  var subtaskDel = e.target.closest('[data-subtask-del]');
+  if (subtaskDel) {
+    deleteSubtask(parseFloat(subtaskDel.dataset.task), parseFloat(subtaskDel.dataset.subtaskDel));
+    return;
+  }
+  var subtaskToggle = e.target.closest('[data-subtask-toggle]');
+  if (subtaskToggle) {
+    toggleSubtask(parseFloat(subtaskToggle.dataset.task), parseFloat(subtaskToggle.dataset.subtaskToggle));
+    return;
+  }
+  var subtaskRow = e.target.closest('[data-subtask]');
+  if (subtaskRow) {
+    toggleSubtask(parseFloat(subtaskRow.dataset.task), parseFloat(subtaskRow.dataset.subtask));
   }
 });
 
@@ -5054,6 +5463,7 @@ async function loadTomorrowTasks() {
     if (res.status === 401) { handleAuthError(); return; }
     const data = await res.json();
     state.tomorrowTasks = (data && data.tasks) || [];
+    if (migrateTaskDetails(state.tomorrowTasks)) debouncedSaveTomorrow();
     state.tomorrowLoaded = true;
     restoreActiveTimer();
   } catch(e) { state.tomorrowTasks = []; }
@@ -5105,7 +5515,7 @@ function renderTomorrowTasks() {
         + '<div class="task-title">' + escapeHtml(t.title) + '</div>'
         + '<button class="delete-btn" data-tdelete="' + t.id + '" title="删除">&#10005;</button>'
       + '</div>'
-      + taskDetailHtml(t.id, t.detail)
+      + taskDetailHtml(t)
       + '<div style="font-family:var(--font-hand);font-size:0.85rem;color:var(--text-muted);letter-spacing:1px;padding:2px 0 0 42px;">&#128221; 已规划</div>'
       + '<div class="timer-area" onclick="handleBeadClick(event)">'
         + '<span class="timer-icon">⏱</span>'
@@ -5234,10 +5644,13 @@ function updateTomorrowSortMode() {
 function addTomorrowTask(title, detail) {
   if (!title) return;
   if (!state.tomorrowTasks) state.tomorrowTasks = [];
+  var subtasks = (detail && detail.trim())
+    ? [{ id: Date.now() + Math.random() * 1000, text: detail.trim(), done: false }]
+    : [];
   state.tomorrowTasks.push({
     id: Date.now() + Math.random() * 1000,
     title: title,
-    detail: detail || '',
+    subtasks: subtasks,
     completed: false,
     doneSettled: false,
     duration: 0,
@@ -5436,9 +5849,34 @@ document.getElementById('tomorrowTaskList').addEventListener('click', function(e
     if (id) deleteTomorrowTask(id);
   }
 
-  var detailEdit = e.target.closest('[data-detail-edit]');
-  if (detailEdit) {
-    openTaskDetailEditor(parseFloat(detailEdit.dataset.detailEdit));
+  var detailAdd = e.target.closest('[data-detail-add]');
+  if (detailAdd) {
+    openSubtaskEditor(parseFloat(detailAdd.dataset.detailAdd));
+    return;
+  }
+  var subtaskAdd = e.target.closest('[data-subtask-add]');
+  if (subtaskAdd) {
+    addSubtask(parseFloat(subtaskAdd.dataset.subtaskAdd));
+    return;
+  }
+  var subtaskClose = e.target.closest('[data-subtask-close]');
+  if (subtaskClose) {
+    closeSubtaskEditor(parseFloat(subtaskClose.dataset.subtaskClose));
+    return;
+  }
+  var subtaskDel = e.target.closest('[data-subtask-del]');
+  if (subtaskDel) {
+    deleteSubtask(parseFloat(subtaskDel.dataset.task), parseFloat(subtaskDel.dataset.subtaskDel));
+    return;
+  }
+  var subtaskToggle = e.target.closest('[data-subtask-toggle]');
+  if (subtaskToggle) {
+    toggleSubtask(parseFloat(subtaskToggle.dataset.task), parseFloat(subtaskToggle.dataset.subtaskToggle));
+    return;
+  }
+  var subtaskRow = e.target.closest('[data-subtask]');
+  if (subtaskRow) {
+    toggleSubtask(parseFloat(subtaskRow.dataset.task), parseFloat(subtaskRow.dataset.subtask));
   }
 });
 
@@ -5487,6 +5925,9 @@ function renderHistory(history) {
   dates.forEach(function(dateStr) {
     const tasks = history[dateStr] || [];
     const done = tasks.filter(function(t) { return t.completed; }).length;
+    const totalSecs = tasks.reduce(function(s, t) {
+      return s + (t.completed ? (t.duration || 0) : 0);
+    }, 0);
 
     const d = new Date(dateStr + 'T00:00:00');
     const displayDate = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 星期' + weekDays[d.getDay()];
@@ -5494,6 +5935,7 @@ function renderHistory(history) {
     html += '<div class="history-date-group">'
       + '<div class="history-date-header">' + displayDate
       + ' <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">' + done + '/' + tasks.length + '</span>'
+      + (totalSecs > 0 ? ' <span class="history-total-time">🕐 ' + formatDurationShort(totalSecs) + '</span>' : '')
       + '</div>';
 
     if (tasks.length === 0) {
@@ -5506,7 +5948,12 @@ function renderHistory(history) {
           + '<div class="history-check ' + status + '">' + (t.completed ? '✓' : '') + '</div>'
           + '<span class="' + titleClass + '">' + escapeHtml(t.title) + '</span>'
         + '</div>'
-        + (t.detail ? '<div class="history-task-detail">' + escapeHtml(t.detail) + '</div>' : '');
+        + (t.detail ? '<div class="history-task-detail">' + escapeHtml(t.detail) + '</div>' : '')
+        + (t.subtasks && t.subtasks.length
+            ? '<div class="history-subtasks">' + t.subtasks.map(function(s) {
+                return '<div class="history-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + '</div>';
+              }).join('') + '</div>'
+            : '');
       });
     }
 
@@ -5746,6 +6193,11 @@ async function showReviewDetail(dateStr) {
     completed.forEach(function(t) {
       html += '<li><span class="di-bullet">✓</span><span>' + escapeHtml(t.title) + '</span></li>';
       if (t.detail) html += '<li class="review-detail-reflection">📌 <span class="rl-label">详情：</span>' + escapeHtml(t.detail) + '</li>';
+      if (t.subtasks && t.subtasks.length) {
+        t.subtasks.forEach(function(s) {
+          html += '<li class="review-detail-reflection">' + (s.done ? '✅ ' : '⭕ ') + escapeHtml(s.text) + '</li>';
+        });
+      }
     });
     html += '</ul>';
   } else {
@@ -5759,6 +6211,11 @@ async function showReviewDetail(dateStr) {
     savedUn.forEach(function(item, idx) {
       html += '<li class="pending"><span class="di-bullet">' + (idx + 1) + '</span><span>' + escapeHtml(item.title) + '</span></li>'
         + (item.detail ? '<li class="review-detail-reflection">📌 <span class="rl-label">详情：</span>' + escapeHtml(item.detail) + '</li>' : '')
+        + (item.subtasks && item.subtasks.length
+            ? item.subtasks.map(function(s) {
+                return '<li class="review-detail-reflection">' + (s.done ? '✅ ' : '⭕ ') + escapeHtml(s.text) + '</li>';
+              }).join('')
+            : '')
         + '<li class="review-detail-reflection">🤔 <span class="rl-label">困难：</span>' + escapeHtml(item.difficulty || '—') + '</li>'
         + '<li class="review-detail-reflection">💡 <span class="rl-label">计划：</span>' + escapeHtml(item.solution || '—') + '</li>';
     });
@@ -6376,11 +6833,18 @@ document.getElementById('libraryModalImport').addEventListener('click', function
       detail = buildTitleFromParts(item.detailPattern, blank.detailFills);
       if (detail.indexOf('__') !== -1) detail = '';
     }
+    var subtasks = [];
+    if (detail) {
+      detail.split('\n').forEach(function(line) {
+        line = line.trim();
+        if (line) subtasks.push({ id: Date.now() + Math.random() * 1000 + Math.random(), text: line, done: false });
+      });
+    }
 
     newTasks.push({
       id: Date.now() + Math.random() * 1000 + idx,
       title: title,
-      detail: detail,
+      subtasks: subtasks,
       completed: false,
       doneSettled: false,
       duration: 0,
@@ -6552,6 +7016,7 @@ function renderReview(tasks, reviewData, isToday) {
       taskId: t.id,
       title: t.title,
       detail: t.detail || '',
+      subtasks: t.subtasks || [],
       difficulty: (saved && saved.difficulty) || '',
       solution: (saved && saved.solution) || '',
     });
@@ -6569,7 +7034,12 @@ function renderReview(tasks, reviewData, isToday) {
         + '<span class="review-task-bullet">✓</span>'
         + '<span class="review-task-title">' + escapeHtml(t.title) + '</span>'
         + '</div>'
-        + (t.detail ? '<div class="review-task-detail">' + escapeHtml(t.detail) + '</div>' : '');
+        + (t.detail ? '<div class="review-task-detail">' + escapeHtml(t.detail) + '</div>' : '')
+        + (t.subtasks && t.subtasks.length
+            ? '<div class="review-subtasks">' + t.subtasks.map(function(s) {
+                return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + '</div>';
+              }).join('') + '</div>'
+            : '');
     });
     doneHtml += '</div>';
     doneList.innerHTML = doneHtml;
@@ -6608,6 +7078,11 @@ function renderReview(tasks, reviewData, isToday) {
           + '<span class="review-task-title">' + escapeHtml(item.title) + '</span>'
           + '</div>'
           + (item.detail ? '<div class="review-task-detail">' + escapeHtml(item.detail) + '</div>' : '')
+          + (item.subtasks && item.subtasks.length
+              ? '<div class="review-subtasks">' + item.subtasks.map(function(s) {
+                  return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + '</div>';
+                }).join('') + '</div>'
+              : '')
           + '<div class="review-reflection readonly">'
             + '<div class="reflect-line">🤔 <span class="reflect-label">困难：</span>' + escapeHtml(item.difficulty || '—') + '</div>'
             + '<div class="reflect-line">💡 <span class="reflect-label">计划：</span>' + escapeHtml(item.solution || '—') + '</div>'
@@ -6631,6 +7106,11 @@ function renderReview(tasks, reviewData, isToday) {
         + '<span class="review-task-title">' + escapeHtml(item.title) + '</span>'
         + '</div>'
         + (item.detail ? '<div class="review-task-detail">' + escapeHtml(item.detail) + '</div>' : '')
+        + (item.subtasks && item.subtasks.length
+            ? '<div class="review-subtasks">' + item.subtasks.map(function(s) {
+                return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + '</div>';
+              }).join('') + '</div>'
+            : '')
         + '<div class="review-reflection" data-idx="' + idx + '">'
           + '<div class="review-reflection-field">'
             + '<label>🤔 遇到了什么困难？</label>'
@@ -6713,6 +7193,7 @@ async function saveReview() {
         taskId: item.taskId,
         title: item.title,
         detail: item.detail || '',
+        subtasks: item.subtasks || [],
         difficulty: item.difficulty,
         solution: item.solution,
       };

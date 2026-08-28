@@ -149,6 +149,46 @@ def get_lan_ip():
         return "127.0.0.1"
 
 
+# ==================== 保持唤醒 ====================
+
+POWER_FILE = os.path.join(DATA_DIR, "power.json")
+KEEP_AWAKE = False
+
+
+def apply_keep_awake():
+    """防止系统自动休眠（仅 Windows；不影响用户手动睡眠）。"""
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+        ES_CONTINUOUS = 0x80000000
+        ES_SYSTEM_REQUIRED = 0x00000001
+        flag = ES_CONTINUOUS | (ES_SYSTEM_REQUIRED if KEEP_AWAKE else 0)
+        ctypes.windll.kernel32.SetThreadExecutionState(flag)
+    except Exception:
+        pass
+
+
+def load_power_state():
+    global KEEP_AWAKE
+    try:
+        with open(POWER_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        KEEP_AWAKE = bool(data.get("enabled", False))
+    except (FileNotFoundError, json.JSONDecodeError):
+        KEEP_AWAKE = False
+    apply_keep_awake()
+    return KEEP_AWAKE
+
+
+def save_power_state(enabled):
+    global KEEP_AWAKE
+    KEEP_AWAKE = bool(enabled)
+    with open(POWER_FILE, "w", encoding="utf-8") as f:
+        json.dump({"enabled": KEEP_AWAKE}, f, ensure_ascii=False, indent=2)
+    apply_keep_awake()
+
+
 # ==================== 保护卡管理 ====================
 
 def protection_file(username):
@@ -620,6 +660,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             else:
                 self._send_json(401, {"error": "无效的登录凭证"})
 
+        elif path == "/api/power/keep-awake":
+            user = self._auth(request_token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            self._send_json(200, {"enabled": KEEP_AWAKE})
+
         elif path == "/" or path == "":
             try:
                 with open("index.html", "rb") as f:
@@ -668,6 +715,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             with open(review_file(user["name"], date_str), "w", encoding="utf-8") as f:
                 json.dump(review_data, f, ensure_ascii=False, indent=2)
             self._send_json(200, {"ok": True})
+
+        elif self.path == "/api/power/keep-awake":
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            save_power_state(bool(body.get("enabled", False)))
+            self._send_json(200, {"enabled": KEEP_AWAKE})
 
         elif self.path == "/api/save":
             user = self._auth(token)
@@ -763,6 +818,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
+    load_power_state()
 
     lan_ip = get_lan_ip()
 
