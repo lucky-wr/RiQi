@@ -814,8 +814,8 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
-  opacity:0;
-  transform:scale(0.6) translateX(10px);
+  opacity:1;
+  transform:scale(1) translateX(0);
   transition:opacity 0.3s, transform 0.3s, background 0.2s;
   -webkit-tap-highlight-color:transparent;
 }
@@ -861,9 +861,9 @@ body {
   gap:4px;
   cursor:grab;
   color:var(--text-muted);
-  opacity:0;
+  opacity:1;
   transition:opacity 0.3s, transform 0.3s;
-  transform:translateX(-10px);
+  transform:translateX(0);
   -webkit-tap-highlight-color:transparent;
   touch-action:none;
 }
@@ -983,6 +983,12 @@ body {
   color:#fff;
 }
 .subtask-text { flex:1; min-width:0; }
+.subtask-duration {
+  flex-shrink:0;
+  font-size:0.8rem;
+  color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
 .subtask-del {
   flex-shrink:0;
   width:22px;
@@ -2785,8 +2791,6 @@ body {
   flex-wrap:wrap;
   gap:8px;
   justify-content:center;
-  max-height:132px;
-  overflow-y:auto;
   margin-bottom:6px;
 }
 .timer-task-chip {
@@ -2816,6 +2820,63 @@ body {
 .timer-task-chip.done {
   opacity:0.7;
   text-decoration:line-through;
+}
+.timer-detail-panel {
+  max-height:0;
+  opacity:0;
+  overflow:hidden;
+  transform:translateY(-6px);
+  transition:max-height 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease, transform 0.3s ease;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.timer-detail-panel.open {
+  max-height:260px;
+  opacity:1;
+  transform:translateY(0);
+  margin-bottom:10px;
+  overflow-y:auto;
+}
+.timer-detail-option {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  padding:9px 12px;
+  border-radius:12px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.05);
+  color:var(--text-secondary);
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-align:left;
+}
+.timer-detail-option:hover {
+  border-color:var(--accent);
+  background:rgba(201,168,124,0.10);
+}
+.timer-detail-option.active {
+  border-color:var(--accent);
+  background:rgba(201,168,124,0.16);
+  color:var(--accent);
+}
+.timer-option-time {
+  flex-shrink:0;
+  font-size:0.82rem;
+  color:var(--text-muted);
+}
+.timer-detail-option .timer-option-time {
+  font-size:0.78rem;
+}
+.timer-selector-empty {
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  color:var(--text-muted);
+  text-align:center;
+  padding:10px 0;
 }
 .timer-focus-time {
   font-family:var(--font-hand);
@@ -3497,7 +3558,6 @@ body {
 
       <button class="fab fab-add" id="btnAdd" title="添加任务">+</button>
       <button class="fab fab-library" id="btnLibrary" title="从任务库导入">&#128218;</button>
-      <button class="fab fab-edit" id="btnEdit" title="编辑排序">&#9998;</button>
 
       <div class="task-list" id="taskList">
         <div class="empty-state">
@@ -3506,7 +3566,6 @@ body {
         </div>
       </div>
 
-      <div class="sort-notice" id="sortNotice">按住左侧 &#8801; 拖动排序</div>
       <div class="task-count" id="taskCount"></div>
 
       <div class="input-bar" id="inputBar">
@@ -3536,6 +3595,7 @@ body {
           </div>
           <div class="timer-focus-label" id="timerFocusLabel">当前任务</div>
           <div class="timer-task-chips" id="timerTaskChips"></div>
+          <div class="timer-detail-panel" id="timerDetailPanel"></div>
           <div class="timer-focus-time" id="timerFocusTime">00:00</div>
           <div class="timer-focus-duration" id="timerFocusDuration">已累计 0 分钟</div>
           <button class="timer-focus-btn" id="timerFocusBtn">开始计时</button>
@@ -3554,7 +3614,6 @@ body {
 
       <button class="fab fab-add" id="btnAddTomorrow" title="添加任务">+</button>
       <button class="fab fab-library" id="btnLibraryTomorrow" title="从任务库导入">&#128218;</button>
-      <button class="fab fab-edit" id="btnEditTomorrow" title="编辑排序">&#9998;</button>
 
       <div class="task-list" id="tomorrowTaskList">
         <div class="empty-state">
@@ -3563,7 +3622,6 @@ body {
         </div>
       </div>
 
-      <div class="sort-notice" id="tomorrowSortNotice">按住左侧 &#8801; 拖动排序</div>
       <div class="task-count" id="tomorrowTaskCount"></div>
 
       <div class="input-bar" id="tomorrowInputBar">
@@ -3759,6 +3817,8 @@ const state = {
   dividerPos: -1,         // 分界线位置：第N个任务之后（-1=自动）
   tomorrowDividerPos: -1,
   timerTaskId: null,
+  timerSubtaskId: null,
+  timerExpandedTaskId: null,
   timerMode: localStorage.getItem('riqi_timer_mode') || 'task',
   tasksLoaded: false,
   tomorrowLoaded: false,
@@ -4090,7 +4150,6 @@ function renderTasks() {
       list.innerHTML = '<div class="empty-state"><div class="icon">&#127811;</div><div>点击 + 添加今日任务</div></div>';
     }
     document.getElementById('taskCount').textContent = '';
-    document.getElementById('sortNotice').classList.remove('show');
     updateTotalTime();
     return;
   }
@@ -4140,7 +4199,7 @@ function renderTasks() {
       + '<div class="timer-area" onclick="handleBeadClick(event)">'
         + '<span class="timer-icon">⏱</span>'
         + '<span class="time-beads">' + renderTimeBeads(t.id, t.duration || 0) + '</span>'
-        + '<span class="timer-text">' + formatDurationShort(t.duration || 0) + '</span>'
+        + '<span class="timer-text">' + formatDurationShort(getTaskTotalDuration(t)) + '</span>'
         + '<button class="timer-adjust" onclick="adjustDuration(event,-5)" data-task-id="' + t.id + '">▼</button>'
         + '<button class="timer-adjust" onclick="adjustDuration(event,5)" data-task-id="' + t.id + '">▲</button>'
         + '<button class="timer-btn' + (isTaskTimerRunning(t.id) ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (isTaskTimerRunning(t.id) ? '⏹' : '▶') + '</button>'
@@ -4153,13 +4212,13 @@ function renderTasks() {
   var amDoneSecs = 0, amTotalSecs = 0, pmDoneSecs = 0, pmTotalSecs = 0;
   for (var i = 0; i < pos; i++) {
     var t = state.tasks[i];
-    if (t.completed) amDoneSecs += (t.duration || 0);
-    amTotalSecs += (t.duration || 0);
+    if (t.completed) amDoneSecs += getTaskTotalDuration(t);
+    amTotalSecs += getTaskTotalDuration(t);
   }
   for (var i = pos; i < state.tasks.length; i++) {
     var t = state.tasks[i];
-    if (t.completed) pmDoneSecs += (t.duration || 0);
-    pmTotalSecs += (t.duration || 0);
+    if (t.completed) pmDoneSecs += getTaskTotalDuration(t);
+    pmTotalSecs += getTaskTotalDuration(t);
   }
 
   var html = '';
@@ -4192,7 +4251,7 @@ function renderTasks() {
 
   list.innerHTML = html;
 
-  updateSortMode();
+  bindDragHandles();
   updateCount();
   state.tasks.forEach(t => { delete t._fresh; });
 
@@ -4273,10 +4332,21 @@ function formatDurationShort(seconds) {
   return hours + '小时' + (mins > 0 ? mins + '分' : '');
 }
 
+function getTaskTotalDuration(task) {
+  var total = task.duration || 0;
+  (task.subtasks || []).forEach(function(s) {
+    total += (s.duration || 0);
+  });
+  return total;
+}
+
 function getTotalTodaySeconds() {
   var total = 0;
   state.tasks.forEach(function(t) {
     if (t.completed) total += (t.duration || 0);
+    (t.subtasks || []).forEach(function(s) {
+      total += (s.duration || 0);
+    });
   });
   return total;
 }
@@ -4349,6 +4419,7 @@ function persistTimer() {
     localStorage.setItem('riqi_active_timer', JSON.stringify({
       mode: currentTimer.mode,
       id: currentTimer.id,
+      subtaskId: currentTimer.subtaskId || null,
       start: currentTimer.start,
     }));
   } else {
@@ -4367,19 +4438,23 @@ function getTimerSelectedId() {
   return state.timerTaskId;
 }
 
-function startTaskTimer(id) {
+function startTimerForTarget(id, subtaskId) {
   if (!id || !findTaskById(id)) return;
   if (currentTimer) {
     if (currentTimer.mode === 'free') return;
-    if (currentTimer.id === id) return;
+    if (currentTimer.mode === 'task' && currentTimer.id === id && currentTimer.subtaskId === (subtaskId || null)) return;
     stopCurrentTimer();
   }
-  currentTimer = { id: id, mode: 'task', start: Date.now() };
+  currentTimer = { id: id, mode: 'task', subtaskId: subtaskId || null, start: Date.now() };
   persistTimer();
   updateTaskTimeUI(id);
   updateTimerFocus();
   renderTimerPage();
   ensureTimerTick();
+}
+
+function startTaskTimer(id) {
+  startTimerForTarget(id, null);
 }
 
 function startFreeTimer() {
@@ -4394,6 +4469,25 @@ function startFreeTimer() {
   ensureTimerTick();
 }
 
+function updateSubtaskRowDuration(taskId, st) {
+  var row = document.querySelector('[data-subtask="' + st.id + '"]');
+  if (!row) return;
+  var durEl = row.querySelector('.subtask-duration');
+  if (st.duration) {
+    if (durEl) {
+      durEl.textContent = formatDurationShort(st.duration);
+    } else {
+      durEl = document.createElement('span');
+      durEl.className = 'subtask-duration';
+      durEl.textContent = formatDurationShort(st.duration);
+      var delBtn = row.querySelector('.subtask-del');
+      row.insertBefore(durEl, delBtn);
+    }
+  } else if (durEl) {
+    durEl.remove();
+  }
+}
+
 function stopCurrentTimer() {
   if (!currentTimer) return;
   var t = currentTimer;
@@ -4404,7 +4498,16 @@ function stopCurrentTimer() {
   if (t.mode === 'task') {
     var task = findTaskById(t.id);
     if (task) {
-      task.duration = (task.duration || 0) + elapsedMin * 60;
+      var st = null;
+      if (t.subtaskId) {
+        st = (task.subtasks || []).find(function(s) { return s.id === t.subtaskId; });
+      }
+      if (st) {
+        st.duration = (st.duration || 0) + elapsedMin * 60;
+        updateSubtaskRowDuration(t.id, st);
+      } else {
+        task.duration = (task.duration || 0) + elapsedMin * 60;
+      }
       updateTaskTimeUI(t.id);
       if (state.tomorrowTasks.indexOf(task) !== -1) {
         debouncedSaveTomorrow();
@@ -4467,8 +4570,13 @@ function updateTimerFocus() {
     timeEl.textContent = formatClock(elapsedSec);
     if (currentTimer.mode === 'task') {
       var task = findTaskById(currentTimer.id);
-      if (labelEl) labelEl.textContent = '正在计时';
-      if (durEl) durEl.textContent = (task ? '已累计 ' + formatDurationShort(task.duration || 0) + ' · ' : '') + '本次 ' + formatClock(elapsedSec);
+      var targetName = task ? task.title : '';
+      if (currentTimer.subtaskId && task) {
+        var st = (task.subtasks || []).find(function(s) { return s.id === currentTimer.subtaskId; });
+        if (st) targetName += ' · ' + st.text;
+      }
+      if (labelEl) labelEl.textContent = '正在计时 · ' + targetName;
+      if (durEl) durEl.textContent = (task ? '已累计 ' + formatDurationShort(getTaskTotalDuration(task)) + ' · ' : '') + '本次 ' + formatClock(elapsedSec);
     } else {
       if (labelEl) labelEl.textContent = '自由计时';
       if (durEl) durEl.textContent = '本次 ' + formatClock(elapsedSec) + ' · 结束后选择任务';
@@ -4478,9 +4586,16 @@ function updateTimerFocus() {
   } else {
     if (state.timerMode === 'task') {
       var task2 = findTaskById(state.timerTaskId);
-      if (labelEl) labelEl.textContent = task2 ? '当前任务' : '请选择任务';
-      timeEl.textContent = formatClock((task2 && task2.duration) || 0);
-      if (durEl) durEl.textContent = task2 ? '已累计 ' + formatDurationShort(task2.duration || 0) : '先选一个任务再开始';
+      var selSub = state.timerSubtaskId && task2
+        ? (task2.subtasks || []).find(function(s) { return s.id === state.timerSubtaskId; })
+        : null;
+      if (labelEl) {
+        if (!task2) labelEl.textContent = '请选择任务';
+        else if (selSub) labelEl.textContent = task2.title + ' · ' + selSub.text;
+        else labelEl.textContent = task2.title + ' · 主任务';
+      }
+      timeEl.textContent = formatClock(selSub ? (selSub.duration || 0) : ((task2 && task2.duration) || 0));
+      if (durEl) durEl.textContent = task2 ? '已累计 ' + formatDurationShort(selSub ? (selSub.duration || 0) : getTaskTotalDuration(task2)) : '先选一个任务再开始';
     } else {
       if (labelEl) labelEl.textContent = '自由计时';
       timeEl.textContent = '00:00';
@@ -4493,6 +4608,7 @@ function updateTimerFocus() {
 
 function renderTimerPage() {
   var chips = document.getElementById('timerTaskChips');
+  var panel = document.getElementById('timerDetailPanel');
   var listEl = document.getElementById('timerTaskList');
   if (!chips || !listEl) return;
   var dateEl = document.getElementById('timerDateDisplay');
@@ -4508,6 +4624,10 @@ function renderTimerPage() {
 
   if (!state.tasks || state.tasks.length === 0) {
     chips.innerHTML = '<div class="timer-empty">今天还没有任务</div>';
+    if (panel) {
+      panel.innerHTML = '';
+      panel.classList.remove('open');
+    }
     listEl.innerHTML = '<div class="timer-empty">今天还没有任务，先去「任务」页添加吧</div>';
     state.timerTaskId = null;
     updateTimerFocus();
@@ -4518,14 +4638,38 @@ function renderTimerPage() {
   var currentId = runningTaskId || state.timerTaskId || state.tasks[0].id;
   if (!findTaskById(currentId)) currentId = state.tasks[0].id;
   state.timerTaskId = currentId;
+  if (runningTaskId) state.timerSubtaskId = currentTimer.subtaskId || null;
 
   if (state.timerMode === 'task') {
+    var expandedId = state.timerExpandedTaskId
+      || ((currentTimer && currentTimer.mode === 'task' && currentTimer.subtaskId) ? currentTimer.id : null);
+    var expandedTask = expandedId ? findTaskById(expandedId) : null;
     chips.innerHTML = state.tasks.map(function(t) {
-      return '<button class="timer-task-chip' + (t.id === currentId ? ' active' : '') + (t.completed ? ' done' : '') + '" data-timer-chip="' + t.id + '"' + (isFreeTimerRunning() ? ' disabled' : '') + '>'
-        + escapeHtml(t.title) + '</button>';
+      var active = (t.id === currentId);
+      var hasSub = (t.subtasks || []).length > 0;
+      return '<button class="timer-task-chip' + (active ? ' active' : '') + (t.completed ? ' done' : '') + '" data-timer-chip="' + t.id + '"' + (currentTimer ? ' disabled' : '') + '>'
+        + escapeHtml(t.title) + (hasSub ? (t.id === expandedId ? ' ▾' : ' ▸') : '')
+        + '</button>';
     }).join('');
+    if (panel) {
+      if (expandedTask && (expandedTask.subtasks || []).length) {
+        panel.innerHTML =
+          '<button class="timer-detail-option' + (expandedTask.id === state.timerTaskId && !state.timerSubtaskId ? ' active' : '') + '" data-timer-chip="' + expandedTask.id + '" data-subtask-id="">主任务<span class="timer-option-time">' + formatDurationShort(expandedTask.duration || 0) + '</span></button>'
+          + expandedTask.subtasks.map(function(s) {
+              return '<button class="timer-detail-option' + (expandedTask.id === state.timerTaskId && state.timerSubtaskId === s.id ? ' active' : '') + '" data-timer-chip="' + expandedTask.id + '" data-subtask-id="' + s.id + '">' + escapeHtml(s.text) + '<span class="timer-option-time">' + (s.duration ? formatDurationShort(s.duration) : '') + '</span></button>';
+            }).join('');
+        panel.classList.add('open');
+      } else {
+        panel.innerHTML = '';
+        panel.classList.remove('open');
+      }
+    }
   } else {
-    chips.innerHTML = '<div class="timer-empty">不选任务，直接开始</div>';
+    chips.innerHTML = '<div class="timer-selector-empty">不选任务，直接开始</div>';
+    if (panel) {
+      panel.innerHTML = '';
+      panel.classList.remove('open');
+    }
   }
 
   listEl.innerHTML = state.tasks.map(function(t) {
@@ -4533,7 +4677,7 @@ function renderTimerPage() {
     return '<div class="timer-task-row' + (t.id === currentId ? ' active' : '') + '" data-timer-row="' + t.id + '">'
       + '<span class="timer-task-name' + (t.completed ? ' done' : '') + '">' + escapeHtml(t.title) + '</span>'
       + '<span class="timer-task-time' + (running ? ' running' : '') + '">'
-        + (running ? '计时中' : formatDurationShort(t.duration || 0))
+        + (running ? '计时中' : formatDurationShort(getTaskTotalDuration(t)))
       + '</span>'
     + '</div>';
   }).join('');
@@ -4563,8 +4707,9 @@ function restoreActiveTimer() {
       if (state.tasksLoaded && state.tomorrowLoaded) localStorage.removeItem('riqi_active_timer');
       return;
     }
-    currentTimer = { id: id, mode: 'task', start: start };
+    currentTimer = { id: id, mode: 'task', subtaskId: saved.subtaskId || null, start: start };
     state.timerTaskId = id;
+    state.timerSubtaskId = saved.subtaskId || null;
     state.timerMode = 'task';
     localStorage.setItem('riqi_timer_mode', 'task');
     ensureTimerTick();
@@ -4583,9 +4728,31 @@ document.querySelectorAll('.timer-mode-tab').forEach(function(tab) {
 });
 
 document.getElementById('timerTaskChips').addEventListener('click', function(e) {
+  if (currentTimer) return;
   var chip = e.target.closest('[data-timer-chip]');
   if (!chip || chip.disabled) return;
-  state.timerTaskId = parseFloat(chip.dataset.timerChip);
+  if (isFreeTimerRunning()) return;
+  var id = parseFloat(chip.dataset.timerChip);
+  var task = findTaskById(id);
+  if (!task) return;
+  var hasSub = (task.subtasks || []).length > 0;
+  state.timerTaskId = id;
+  if (!hasSub) {
+    state.timerSubtaskId = null;
+    state.timerExpandedTaskId = null;
+  } else {
+    state.timerExpandedTaskId = (state.timerExpandedTaskId === id) ? null : id;
+  }
+  renderTimerPage();
+});
+
+document.getElementById('timerDetailPanel').addEventListener('click', function(e) {
+  if (currentTimer) return;
+  var subRow = e.target.closest('[data-subtask-id]');
+  if (!subRow) return;
+  state.timerTaskId = parseFloat(subRow.dataset.timerChip);
+  state.timerSubtaskId = subRow.dataset.subtaskId ? parseFloat(subRow.dataset.subtaskId) : null;
+  state.timerExpandedTaskId = null;
   renderTimerPage();
 });
 
@@ -4596,7 +4763,7 @@ document.getElementById('timerFocusBtn').addEventListener('click', function() {
     startFreeTimer();
   } else {
     var id = getTimerSelectedId();
-    if (id) startTaskTimer(id);
+    if (id) startTimerForTarget(id, state.timerSubtaskId);
   }
   renderTimerPage();
 });
@@ -4606,6 +4773,8 @@ document.getElementById('timerTaskList').addEventListener('click', function(e) {
   if (!row) return;
   if (isFreeTimerRunning()) return;
   state.timerTaskId = parseFloat(row.dataset.timerRow);
+  state.timerSubtaskId = null;
+  state.timerExpandedTaskId = null;
   renderTimerPage();
 });
 
@@ -4672,7 +4841,7 @@ function updateTaskTimeUI(taskId) {
   var beadsEl = card.querySelector('.time-beads');
   if (beadsEl) beadsEl.innerHTML = renderTimeBeads(taskId, task.duration || 0);
   var textEl = card.querySelector('.timer-text');
-  if (textEl) textEl.textContent = formatDurationShort(task.duration || 0);
+  if (textEl) textEl.textContent = formatDurationShort(getTaskTotalDuration(task));
   var btn = card.querySelector('.timer-btn');
   if (btn) {
     var running = isTaskTimerRunning(taskId);
@@ -4721,36 +4890,6 @@ function adjustDuration(e, delta) {
   debouncedSave();
 }
 
-// ==================== 编辑排序 ====================
-
-function updateSortMode() {
-  const handles = document.querySelectorAll('.drag-handle');
-  const deleteBtns = document.querySelectorAll('.delete-btn');
-  const notice = document.getElementById('sortNotice');
-  const editBtn = document.getElementById('btnEdit');
-
-  if (state.isSorting) {
-    handles.forEach(h => h.classList.add('visible'));
-    deleteBtns.forEach(b => b.classList.add('visible'));
-    notice.classList.add('show');
-    editBtn.classList.add('active');
-    editBtn.textContent = '✓';
-  } else {
-    handles.forEach(h => h.classList.remove('visible'));
-    deleteBtns.forEach(b => b.classList.remove('visible'));
-    notice.classList.remove('show');
-    editBtn.classList.remove('active');
-    editBtn.textContent = '✎';
-  }
-
-  if (state.isSorting) {
-    handles.forEach(h => {
-      h.removeEventListener('pointerdown', onDragStart);
-      h.addEventListener('pointerdown', onDragStart);
-    });
-  }
-}
-
 function escapeHtml(str) {
   var div = document.createElement('div');
   div.textContent = str;
@@ -4761,6 +4900,7 @@ function subtaskRowHtml(taskId, s) {
   return '<div class="task-subtask' + (s.done ? ' done' : '') + '" data-subtask="' + s.id + '" data-task="' + taskId + '">'
     + '<button class="subtask-check" data-subtask-toggle="' + s.id + '" data-task="' + taskId + '">' + (s.done ? '✓' : '') + '</button>'
     + '<span class="subtask-text">' + escapeHtml(s.text) + '</span>'
+    + (s.duration ? '<span class="subtask-duration">' + formatDurationShort(s.duration) + '</span>' : '')
     + '<button class="subtask-del" data-subtask-del="' + s.id + '" data-task="' + taskId + '" title="删除">✕</button>'
     + '</div>';
 }
@@ -5060,34 +5200,6 @@ function deleteTask(id) {
   }, 350);
 }
 
-// ==================== 排序模式 ====================
-function enterSortMode() {
-  state.isSorting = true;
-  updateSortMode();
-  bindDragHandles();
-  clearTimeout(state.sortTimeout);
-  state.sortTimeout = setTimeout(function() {
-    if (state.isSorting && !state.dragState) exitSortMode();
-  }, 5000);
-}
-
-function exitSortMode() {
-  state.isSorting = false;
-  state.dragState = null;
-  updateSortMode();
-  document.querySelectorAll('.task-card').forEach(function(el) {
-    el.style.transform = '';
-    el.style.transition = '';
-    el.classList.remove('dragging', 'drag-over');
-  });
-  debouncedSave();
-}
-
-function toggleSortMode() {
-  if (state.isSorting) exitSortMode();
-  else enterSortMode();
-}
-
 // ==================== 拖拽排序 ====================
 function bindDragHandles() {
   document.querySelectorAll('.drag-handle').forEach(function(h) {
@@ -5097,7 +5209,6 @@ function bindDragHandles() {
 }
 
 function onDragStart(e) {
-  if (!state.isSorting) return;
   e.preventDefault();
   var handle = e.currentTarget;
   var cardEl = handle.closest('.task-card');
@@ -5181,13 +5292,6 @@ function onDragEnd(e) {
   renderTasks();
   debouncedSave();
   state.dragState = null;
-
-  if (state.isSorting) {
-    clearTimeout(state.sortTimeout);
-    state.sortTimeout = setTimeout(function() {
-      if (state.isSorting && !state.dragState) exitSortMode();
-    }, 5000);
-  }
 }
 
 // ==================== 滑动打卡（支持正向和反向） ====================
@@ -5379,7 +5483,6 @@ function showInputBar() {
 
 // ==================== 事件绑定（任务） ====================
 document.getElementById('btnAdd').addEventListener('click', showInputBar);
-document.getElementById('btnEdit').addEventListener('click', toggleSortMode);
 document.getElementById('btnAddTask').addEventListener('click', addTaskFromInput);
 document.getElementById('btnCloseBar').addEventListener('click', hideInputBar);
 document.getElementById('taskInput').addEventListener('keydown', function(e) {
@@ -5479,7 +5582,6 @@ function renderTomorrowTasks() {
       list.innerHTML = '<div class="empty-state"><div class="icon">&#128221;</div><div>规划明天的任务吧</div></div>';
     }
     document.getElementById('tomorrowTaskCount').textContent = '';
-    document.getElementById('tomorrowSortNotice').classList.remove('show');
     return;
   }
 
@@ -5520,7 +5622,7 @@ function renderTomorrowTasks() {
       + '<div class="timer-area" onclick="handleBeadClick(event)">'
         + '<span class="timer-icon">⏱</span>'
         + '<span class="time-beads">' + renderTimeBeads(t.id, t.duration || 0) + '</span>'
-        + '<span class="timer-text">' + formatDurationShort(t.duration || 0) + '</span>'
+        + '<span class="timer-text">' + formatDurationShort(getTaskTotalDuration(t)) + '</span>'
         + '<button class="timer-adjust" onclick="adjustDuration(event,-5)" data-task-id="' + t.id + '">▼</button>'
         + '<button class="timer-adjust" onclick="adjustDuration(event,5)" data-task-id="' + t.id + '">▲</button>'
         + '<button class="timer-btn' + (isTaskTimerRunning(t.id) ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (isTaskTimerRunning(t.id) ? '⏹' : '▶') + '</button>'
@@ -5533,13 +5635,13 @@ function renderTomorrowTasks() {
   var amDoneSecs = 0, amTotalSecs = 0, pmDoneSecs = 0, pmTotalSecs = 0;
   for (var i = 0; i < pos; i++) {
     var t = state.tomorrowTasks[i];
-    if (t.completed) amDoneSecs += (t.duration || 0);
-    amTotalSecs += (t.duration || 0);
+    if (t.completed) amDoneSecs += getTaskTotalDuration(t);
+    amTotalSecs += getTaskTotalDuration(t);
   }
   for (var i = pos; i < state.tomorrowTasks.length; i++) {
     var t = state.tomorrowTasks[i];
-    if (t.completed) pmDoneSecs += (t.duration || 0);
-    pmTotalSecs += (t.duration || 0);
+    if (t.completed) pmDoneSecs += getTaskTotalDuration(t);
+    pmTotalSecs += getTaskTotalDuration(t);
   }
 
   var html = '';
@@ -5570,7 +5672,7 @@ function renderTomorrowTasks() {
 
   list.innerHTML = html;
 
-  updateTomorrowSortMode();
+  bindTomorrowDragHandles();
   updateTomorrowCount();
   state.tomorrowTasks.forEach(function(t) { delete t._fresh; });
 
@@ -5623,22 +5725,6 @@ function bindTomorrowDividerDrag() {
 function updateTomorrowCount() {
   var total = state.tomorrowTasks.length;
   document.getElementById('tomorrowTaskCount').textContent = '共 ' + total + ' 项';
-}
-
-function updateTomorrowSortMode() {
-  if (state.tomorrowSorting) {
-    document.querySelectorAll('#tomorrowTaskList .drag-handle').forEach(function(h) { h.classList.add('visible'); });
-    document.querySelectorAll('#tomorrowTaskList .delete-btn').forEach(function(b) { b.classList.add('visible'); });
-    document.getElementById('tomorrowSortNotice').classList.add('show');
-    document.getElementById('btnEditTomorrow').classList.add('active');
-    document.getElementById('btnEditTomorrow').textContent = '✓';
-  } else {
-    document.querySelectorAll('#tomorrowTaskList .drag-handle').forEach(function(h) { h.classList.remove('visible'); });
-    document.querySelectorAll('#tomorrowTaskList .delete-btn').forEach(function(b) { b.classList.remove('visible'); });
-    document.getElementById('tomorrowSortNotice').classList.remove('show');
-    document.getElementById('btnEditTomorrow').classList.remove('active');
-    document.getElementById('btnEditTomorrow').textContent = '✎';
-  }
 }
 
 function addTomorrowTask(title, detail) {
@@ -5724,16 +5810,6 @@ function showTomorrowInputBar() {
   setTimeout(function() { document.getElementById('tomorrowTaskInput').focus(); }, 100);
 }
 
-function toggleTomorrowSortMode() {
-  state.tomorrowSorting = !state.tomorrowSorting;
-  if (!state.tomorrowSorting) {
-    state.tomorrowDragState = null;
-    debouncedSaveTomorrow();
-  }
-  updateTomorrowSortMode();
-  if (state.tomorrowSorting) bindTomorrowDragHandles();
-}
-
 function bindTomorrowDragHandles() {
   document.querySelectorAll('#tomorrowTaskList .drag-handle').forEach(function(h) {
     h.removeEventListener('pointerdown', onTomorrowDragStart);
@@ -5742,7 +5818,6 @@ function bindTomorrowDragHandles() {
 }
 
 function onTomorrowDragStart(e) {
-  if (!state.tomorrowSorting) return;
   e.preventDefault();
   var handle = e.currentTarget;
   var cardEl = handle.closest('.task-card');
@@ -5822,7 +5897,6 @@ function onTomorrowDragEnd() {
 
 // 明日任务事件绑定
 document.getElementById('btnAddTomorrow').addEventListener('click', showTomorrowInputBar);
-document.getElementById('btnEditTomorrow').addEventListener('click', toggleTomorrowSortMode);
 document.getElementById('btnAddTomorrowTask').addEventListener('click', function() {
   var input = document.getElementById('tomorrowTaskInput');
   var detailInput = document.getElementById('tomorrowDetailInput');
@@ -5926,7 +6000,9 @@ function renderHistory(history) {
     const tasks = history[dateStr] || [];
     const done = tasks.filter(function(t) { return t.completed; }).length;
     const totalSecs = tasks.reduce(function(s, t) {
-      return s + (t.completed ? (t.duration || 0) : 0);
+      var total = t.completed ? (t.duration || 0) : 0;
+      (t.subtasks || []).forEach(function(st) { total += (st.duration || 0); });
+      return s + total;
     }, 0);
 
     const d = new Date(dateStr + 'T00:00:00');
@@ -5951,7 +6027,7 @@ function renderHistory(history) {
         + (t.detail ? '<div class="history-task-detail">' + escapeHtml(t.detail) + '</div>' : '')
         + (t.subtasks && t.subtasks.length
             ? '<div class="history-subtasks">' + t.subtasks.map(function(s) {
-                return '<div class="history-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + '</div>';
+                return '<div class="history-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</div>';
               }).join('') + '</div>'
             : '');
       });
@@ -6195,7 +6271,7 @@ async function showReviewDetail(dateStr) {
       if (t.detail) html += '<li class="review-detail-reflection">📌 <span class="rl-label">详情：</span>' + escapeHtml(t.detail) + '</li>';
       if (t.subtasks && t.subtasks.length) {
         t.subtasks.forEach(function(s) {
-          html += '<li class="review-detail-reflection">' + (s.done ? '✅ ' : '⭕ ') + escapeHtml(s.text) + '</li>';
+          html += '<li class="review-detail-reflection">' + (s.done ? '✅ ' : '⭕ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</li>';
         });
       }
     });
@@ -6213,7 +6289,7 @@ async function showReviewDetail(dateStr) {
         + (item.detail ? '<li class="review-detail-reflection">📌 <span class="rl-label">详情：</span>' + escapeHtml(item.detail) + '</li>' : '')
         + (item.subtasks && item.subtasks.length
             ? item.subtasks.map(function(s) {
-                return '<li class="review-detail-reflection">' + (s.done ? '✅ ' : '⭕ ') + escapeHtml(s.text) + '</li>';
+                return '<li class="review-detail-reflection">' + (s.done ? '✅ ' : '⭕ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</li>';
               }).join('')
             : '')
         + '<li class="review-detail-reflection">🤔 <span class="rl-label">困难：</span>' + escapeHtml(item.difficulty || '—') + '</li>'
@@ -7037,7 +7113,7 @@ function renderReview(tasks, reviewData, isToday) {
         + (t.detail ? '<div class="review-task-detail">' + escapeHtml(t.detail) + '</div>' : '')
         + (t.subtasks && t.subtasks.length
             ? '<div class="review-subtasks">' + t.subtasks.map(function(s) {
-                return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + '</div>';
+                return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</div>';
               }).join('') + '</div>'
             : '');
     });
@@ -7052,7 +7128,10 @@ function renderReview(tasks, reviewData, isToday) {
 
   // 总用时
   var totalSecs = 0;
-  tasks.forEach(function(t) { if (t.completed) totalSecs += (t.duration || 0); });
+  tasks.forEach(function(t) {
+    if (t.completed) totalSecs += (t.duration || 0);
+    (t.subtasks || []).forEach(function(st) { totalSecs += (st.duration || 0); });
+  });
   var timeEl = document.getElementById('reviewTotalTime');
   if (totalSecs > 0) {
     timeEl.textContent = '🕐 ' + (isToday ? '今日' : '当日') + '总用时：' + formatDurationShort(totalSecs);
@@ -7080,7 +7159,7 @@ function renderReview(tasks, reviewData, isToday) {
           + (item.detail ? '<div class="review-task-detail">' + escapeHtml(item.detail) + '</div>' : '')
           + (item.subtasks && item.subtasks.length
               ? '<div class="review-subtasks">' + item.subtasks.map(function(s) {
-                  return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + '</div>';
+                  return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</div>';
                 }).join('') + '</div>'
               : '')
           + '<div class="review-reflection readonly">'
@@ -7108,7 +7187,7 @@ function renderReview(tasks, reviewData, isToday) {
         + (item.detail ? '<div class="review-task-detail">' + escapeHtml(item.detail) + '</div>' : '')
         + (item.subtasks && item.subtasks.length
             ? '<div class="review-subtasks">' + item.subtasks.map(function(s) {
-                return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + '</div>';
+                return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</div>';
               }).join('') + '</div>'
             : '')
         + '<div class="review-reflection" data-idx="' + idx + '">'
