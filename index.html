@@ -583,6 +583,63 @@ body {
   letter-spacing:2px;
 }
 
+.day-progress {
+  position:sticky;
+  top:10px;
+  z-index:120;
+  max-width:640px;
+  width:calc(100% - 32px);
+  margin:0 auto 12px;
+  padding:8px 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(255,255,255,0.72);
+  backdrop-filter:blur(16px) saturate(1.2);
+  -webkit-backdrop-filter:blur(16px) saturate(1.2);
+  border:1px solid var(--card-border);
+  border-radius:16px;
+  box-shadow:var(--shadow-sm);
+}
+html[data-theme="dark"] .day-progress {
+  background:rgba(22,24,34,0.80);
+}
+.day-progress-pct {
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  color:var(--accent);
+  min-width:38px;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.day-progress-track {
+  flex:1;
+  height:8px;
+  border-radius:4px;
+  background:rgba(255,255,255,0.25);
+  border:1px solid rgba(255,255,255,0.12);
+  overflow:hidden;
+}
+html[data-theme="dark"] .day-progress-track {
+  background:rgba(255,255,255,0.08);
+}
+.day-progress-fill {
+  height:100%;
+  width:0%;
+  border-radius:4px;
+  background:linear-gradient(90deg, var(--accent-soft), var(--green));
+  transition:width 0.5s cubic-bezier(0.22,1,0.36,1);
+}
+.day-progress-text {
+  font-family:var(--font-hand);
+  font-size:0.82rem;
+  color:var(--text-muted);
+  white-space:nowrap;
+}
+@media (max-width:480px) {
+  .day-progress-text { display:none; }
+}
+
 /* ====== 浮动按钮 ====== */
 .fab {
   position:fixed;
@@ -1790,6 +1847,13 @@ body {
   font-weight:400;
   margin-left:8px;
   letter-spacing:0.5px;
+}
+.history-task-time {
+  flex-shrink:0;
+  font-size:0.82rem;
+  color:var(--accent);
+  margin-left:8px;
+  font-variant-numeric:tabular-nums;
 }
 .history-task-item {
   display:flex;
@@ -3556,6 +3620,12 @@ body {
         <span class="total-time" id="totalTimeDisplay"></span>
       </div>
 
+      <div class="day-progress" id="dayProgress">
+        <span class="day-progress-pct" id="dayProgressPct">0%</span>
+        <div class="day-progress-track"><div class="day-progress-fill" id="dayProgressFill"></div></div>
+        <span class="day-progress-text" id="dayProgressText">今天还没有任务</span>
+      </div>
+
       <button class="fab fab-add" id="btnAdd" title="添加任务">+</button>
       <button class="fab fab-library" id="btnLibrary" title="从任务库导入">&#128218;</button>
 
@@ -4150,6 +4220,7 @@ function renderTasks() {
       list.innerHTML = '<div class="empty-state"><div class="icon">&#127811;</div><div>点击 + 添加今日任务</div></div>';
     }
     document.getElementById('taskCount').textContent = '';
+    updateDayProgress();
     updateTotalTime();
     return;
   }
@@ -4253,6 +4324,7 @@ function renderTasks() {
 
   bindDragHandles();
   updateCount();
+  updateDayProgress();
   state.tasks.forEach(t => { delete t._fresh; });
 
   // 绑定分界线拖动
@@ -4307,6 +4379,34 @@ function updateCount() {
   document.getElementById('taskCount').textContent =
     done > 0 ? '已完成 ' + done + '/' + total : '共 ' + total + ' 项';
   updateTotalTime();
+}
+
+function getDayProgress() {
+  var total = 0;
+  var done = 0;
+  state.tasks.forEach(function(t) {
+    var subs = t.subtasks || [];
+    if (subs.length) {
+      total += subs.length;
+      subs.forEach(function(s) { if (s.done) done++; });
+    } else {
+      total += 1;
+      if (t.completed) done++;
+    }
+  });
+  return { done: done, total: total, pct: total ? Math.round(done / total * 100) : 0 };
+}
+
+function updateDayProgress() {
+  var bar = document.getElementById('dayProgress');
+  if (!bar) return;
+  var fill = document.getElementById('dayProgressFill');
+  var pct = document.getElementById('dayProgressPct');
+  var text = document.getElementById('dayProgressText');
+  var p = getDayProgress();
+  if (fill) fill.style.width = p.pct + '%';
+  if (pct) pct.textContent = p.pct + '%';
+  if (text) text.textContent = p.total > 0 ? p.done + '/' + p.total : '今天还没有任务';
 }
 
 // ==================== 计时器 ====================
@@ -4979,6 +5079,7 @@ function autoCompleteMainTask(task) {
   task.doneSettled = true;
   saveTaskFor(task);
   updateCount();
+  updateDayProgress();
   updateTotalTime();
 }
 
@@ -4996,6 +5097,7 @@ function autoUncompleteMainTask(task) {
     }
   } else {
     updateCount();
+    updateDayProgress();
     updateTotalTime();
     saveTaskFor(task);
   }
@@ -5052,6 +5154,7 @@ function toggleSubtask(taskId, subtaskId) {
     if (check) check.textContent = st.done ? '✓' : '';
   }
   syncMainTaskFromSubtasks(task);
+  updateDayProgress();
   saveTaskFor(task);
 }
 
@@ -5082,6 +5185,7 @@ function addSubtask(taskId) {
     inp.focus();
   }
   syncMainTaskFromSubtasks(task);
+  updateDayProgress();
   saveTaskFor(task);
 }
 
@@ -5094,6 +5198,7 @@ function deleteSubtask(taskId, subtaskId) {
   var container = document.querySelector('[data-subtasks="' + taskId + '"]');
   if (container && !container.children.length) container.remove();
   syncMainTaskFromSubtasks(task);
+  updateDayProgress();
   saveTaskFor(task);
 }
 
@@ -5367,6 +5472,7 @@ document.addEventListener('pointerdown', function(e) {
           fillEl.style.width = '100%';
         }
         updateCount();
+        updateDayProgress();
       }
     } else {
       // 正向：从未完成拖到完成
@@ -5425,6 +5531,7 @@ function completeTask(task, knob, track, cardEl) {
   }
 
   updateCount();
+  updateDayProgress();
   debouncedSave();
 }
 
@@ -5452,6 +5559,7 @@ function uncompleteTask(task, cardEl, knob) {
   if (label) label.textContent = '滑动打卡';
 
   updateCount();
+  updateDayProgress();
   debouncedSave();
 }
 
@@ -6023,8 +6131,12 @@ function renderHistory(history) {
         html += '<div class="history-task-item">'
           + '<div class="history-check ' + status + '">' + (t.completed ? '✓' : '') + '</div>'
           + '<span class="' + titleClass + '">' + escapeHtml(t.title) + '</span>'
+          + (getTaskTotalDuration(t) > 0 ? '<span class="history-task-time">🕐 ' + formatDurationShort(getTaskTotalDuration(t)) + '</span>' : '')
         + '</div>'
         + (t.detail ? '<div class="history-task-detail">' + escapeHtml(t.detail) + '</div>' : '')
+        + (t.duration > 0 && t.subtasks && t.subtasks.length
+            ? '<div class="history-subtask">主任务 · ' + formatDurationShort(t.duration) + '</div>'
+            : '')
         + (t.subtasks && t.subtasks.length
             ? '<div class="history-subtasks">' + t.subtasks.map(function(s) {
                 return '<div class="history-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</div>';
