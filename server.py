@@ -17,8 +17,17 @@ if sys.stdout.encoding and sys.stdout.encoding.upper() in ("GBK", "GB2312", "CP9
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+if getattr(sys, "frozen", False):
+    # PyInstaller 打包后：数据放在 exe 同目录，网页资源在解压临时目录里
+    SCRIPT_DIR = os.path.dirname(sys.executable)
+    RESOURCE_DIR = getattr(sys, "_MEIPASS", SCRIPT_DIR)
+else:
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    RESOURCE_DIR = SCRIPT_DIR
+
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
+INDEX_FILE = os.path.join(RESOURCE_DIR, "index.html")
 USERS_FILE = os.path.join(DATA_DIR, "users.json")
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -156,14 +165,14 @@ KEEP_AWAKE = False
 
 
 def apply_keep_awake():
-    """防止系统自动休眠（仅 Windows；不影响用户手动睡眠）。"""
+    """阻止屏幕自动熄灭（仅 Windows；不影响系统休眠）。"""
     if sys.platform != "win32":
         return
     try:
         import ctypes
         ES_CONTINUOUS = 0x80000000
-        ES_SYSTEM_REQUIRED = 0x00000001
-        flag = ES_CONTINUOUS | (ES_SYSTEM_REQUIRED if KEEP_AWAKE else 0)
+        ES_DISPLAY_REQUIRED = 0x00000002
+        flag = ES_CONTINUOUS | (ES_DISPLAY_REQUIRED if KEEP_AWAKE else 0)
         ctypes.windll.kernel32.SetThreadExecutionState(flag)
     except Exception:
         pass
@@ -669,7 +678,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         elif path == "/" or path == "":
             try:
-                with open("index.html", "rb") as f:
+                with open(INDEX_FILE, "rb") as f:
                     content = f.read()
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -816,8 +825,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 # ==================== 启动 ====================
 
 if __name__ == "__main__":
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(script_dir)
+    os.chdir(SCRIPT_DIR)
     load_power_state()
 
     lan_ip = get_lan_ip()
