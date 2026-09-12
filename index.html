@@ -543,7 +543,7 @@ body {
   display:flex;
   flex-direction:column;
   flex:1;
-  animation:pageIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+  animation:pageIn 0.35s cubic-bezier(0.22,1,0.36,1);
 }
 
 /* ====== 头部 ====== */
@@ -1225,99 +1225,6 @@ html[data-theme="dark"] .day-progress-track {
   color:var(--text-muted);
   min-width:40px;
 }
-/* 微调按钮 ▼▲ */
-.timer-adjust {
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:18px;height:18px;
-  border:none;border-radius:50%;
-  cursor:pointer;
-  font-size:0.5rem;
-  background:rgba(255,255,255,0.06);
-  color:var(--text-muted);
-  transition:all 0.15s;
-  opacity:0.4;
-  padding:0;line-height:1;
-  margin-left:1px;
-}
-.timer-adjust:hover {
-  opacity:1;
-  background:rgba(255,255,255,0.15);
-  transform:scale(1.2);
-}
-.timer-adjust:active { transform:scale(0.9); }
-/* 计时器按钮 ▶⏹ */
-.timer-btn {
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:24px;height:24px;
-  border-radius:50%;
-  cursor:pointer;
-  font-size:0.7rem;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.12);
-  color:var(--text-muted);
-  transition:all 0.2s;
-  margin-left:5px;
-  padding:0;line-height:1;
-}
-.timer-btn:hover {
-  background:rgba(255,255,255,0.2);
-  transform:scale(1.15);
-}
-.timer-btn.running {
-  background:rgba(255,80,80,0.2);
-  border-color:rgba(255,80,80,0.3);
-  color:#ff6b6b;
-  animation:timerPulse 1.5s infinite;
-}
-@keyframes timerPulse {
-  0%,100% { box-shadow:0 0 4px rgba(255,80,80,0.15); }
-  50% { box-shadow:0 0 12px rgba(255,80,80,0.35); }
-}
-/* 计时器实时数字 */
-.timer-live {
-  font-family:var(--font-ui);
-  font-size:0.78rem;
-  color:#ff6b6b;
-  min-width:40px;
-  font-variant-numeric:tabular-nums;
-  margin-left:2px;
-}
-.time-beads {
-  display:inline-flex;
-  gap:4px;
-  align-items:center;
-}
-.time-bead {
-  width:14px;
-  height:14px;
-  border-radius:50%;
-  border:2px solid rgba(255,255,255,0.2);
-  background:transparent;
-  cursor:pointer;
-  transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);
-}
-.time-bead:hover {
-  transform:scale(1.4);
-  border-color:var(--accent);
-}
-.time-bead.filled {
-  background:var(--accent);
-  border-color:var(--accent);
-  box-shadow:0 0 8px rgba(201,168,124,0.5);
-}
-.time-bead.filled-1 { background:#ca9755; border-color:#ca9755; }
-.time-bead.filled-2 { background:#c9a159; border-color:#c9a159; }
-.time-bead.filled-3 { background:#c9ab5e; border-color:#c9ab5e; }
-.time-bead.filled-4 { background:#b8b05e; border-color:#b8b05e; }
-.time-bead.filled-5 { background:#a3b05e; border-color:#a3b05e; }
-.time-bead.filled-6 { background:#8eaf5e; border-color:#8eaf5e; }
-.time-bead.filled-7 { background:#79ae5e; border-color:#79ae5e; }
-.time-bead.filled-8 { background:#64ad5e; border-color:#64ad5e; }
-
 .total-time {
   font-family:var(--font-hand);
   font-size:0.8rem;
@@ -2408,7 +2315,8 @@ html[data-theme="dark"] .day-progress-track {
 }
 .review-stat-grid {
   display:grid;
-  grid-template-columns:repeat(4, minmax(0, 1fr));
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  row-gap:16px;
 }
 .review-stat {
   min-width:0;
@@ -2527,6 +2435,63 @@ html[data-theme="dark"] .day-progress-track {
   font-family:var(--font-hand);
   font-size:0.86rem;
   line-height:1.5;
+}
+.review-chart-tabs {
+  display:inline-flex;
+  gap:4px;
+  padding:4px;
+  margin-bottom:16px;
+  border-radius:12px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.07);
+}
+.review-chart-tabs button {
+  padding:7px 13px;
+  border:none;
+  border-radius:9px;
+  background:transparent;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.86rem;
+  letter-spacing:0.5px;
+  cursor:pointer;
+}
+.review-chart-tabs button.active {
+  background:rgba(201,168,124,0.20);
+  color:var(--accent);
+}
+.review-timeline-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.review-timeline-header .review-section-title {
+  margin-bottom:0;
+}
+.review-timeline-tabs {
+  display:inline-flex;
+  flex-shrink:0;
+  gap:3px;
+  padding:3px;
+  border-radius:10px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.07);
+}
+.review-timeline-tabs button {
+  padding:6px 10px;
+  border:none;
+  border-radius:7px;
+  background:transparent;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.8rem;
+  cursor:pointer;
+}
+.review-timeline-tabs button.active {
+  background:rgba(201,168,124,0.20);
+  color:var(--accent);
 }
 .review-timeline-list {
   display:flex;
@@ -2649,6 +2614,18 @@ html[data-theme="dark"] .day-progress-track {
   border-color:rgba(200,85,85,0.28);
   color:var(--danger);
 }
+.review-timeline-status.break {
+  background:rgba(111,143,184,0.16);
+  border-color:rgba(111,143,184,0.34);
+  color:#8eb2df;
+}
+.review-timeline-item.break .review-timeline-main {
+  padding-left:12px;
+  border-left:3px solid rgba(111,143,184,0.48);
+}
+.review-timeline-item.break .review-timeline-title {
+  color:#9dbbe2;
+}
 .review-timeline-detail {
   margin-top:9px;
   padding-left:10px;
@@ -2669,6 +2646,111 @@ html[data-theme="dark"] .day-progress-track {
   font-size:0.75rem;
   line-height:1.4;
 }
+.review-day-chart {
+  display:grid;
+  grid-template-columns:46px minmax(180px, 300px);
+  gap:10px;
+  height:540px;
+  max-width:356px;
+  margin:18px 0 4px;
+  justify-content:start;
+}
+.review-day-axis {
+  position:relative;
+  height:100%;
+}
+.review-day-axis span {
+  position:absolute;
+  right:0;
+  transform:translateY(-50%);
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.72rem;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.review-day-canvas {
+  position:relative;
+  height:100%;
+  width:100%;
+  min-width:180px;
+  max-width:300px;
+  border-radius:12px;
+  border:1px solid var(--card-border);
+  background:
+    linear-gradient(180deg,
+      transparent 24.9%, rgba(255,255,255,0.09) 25%,
+      transparent 25.1%, transparent 49.9%,
+      rgba(255,255,255,0.09) 50%, transparent 50.1%,
+      transparent 74.9%, rgba(255,255,255,0.09) 75%,
+      transparent 75.1%),
+    rgba(255,255,255,0.06);
+  overflow:hidden;
+}
+.review-day-block {
+  position:absolute;
+  left:8px;
+  right:8px;
+  min-height:4px;
+  border-radius:7px;
+  display:flex;
+  align-items:center;
+  padding:0 9px;
+  overflow:hidden;
+  box-shadow:0 2px 10px rgba(0,0,0,0.16);
+  border:1px solid rgba(255,255,255,0.18);
+}
+.review-day-block-text {
+  color:#fff;
+  font-family:var(--font-hand);
+  font-size:0.78rem;
+  line-height:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  text-shadow:0 1px 3px rgba(0,0,0,0.28);
+}
+.review-day-block.short {
+  padding:0;
+}
+.review-day-block.short .review-day-block-text {
+  display:none;
+}
+.review-day-empty {
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  text-align:center;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+}
+.review-day-legend {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+  gap:8px 16px;
+  margin-top:16px;
+  padding-top:12px;
+  border-top:1px solid var(--card-border);
+}
+.review-day-legend-item {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--text-secondary);
+  font-family:var(--font-hand);
+  font-size:0.84rem;
+}
+.review-day-legend-dot {
+  width:11px;
+  height:11px;
+  border-radius:3px;
+  flex-shrink:0;
+}
 .review-data-empty {
   padding:24px 10px;
   color:var(--text-muted);
@@ -2683,7 +2765,8 @@ html[data-theme="dark"] .day-progress-track {
     grid-template-columns:repeat(2, minmax(0, 1fr));
     row-gap:14px;
   }
-  .review-stat:nth-child(3) {
+  .review-stat:nth-child(3),
+  .review-stat:nth-child(5) {
     border-left:none;
     padding-left:4px;
   }
@@ -2709,6 +2792,20 @@ html[data-theme="dark"] .day-progress-track {
   .review-timeline-head {
     flex-direction:column;
     gap:2px;
+  }
+  .review-timeline-header {
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .review-day-chart {
+    grid-template-columns:44px minmax(0, 1fr);
+    height:460px;
+    max-width:100%;
+  }
+  .review-day-canvas {
+    width:60%;
+    min-width:120px;
+    max-width:180px;
   }
 }
 
@@ -3415,6 +3512,35 @@ html[data-theme="dark"] .day-progress-track {
   background:linear-gradient(135deg, #c85555, #a53e3e);
   box-shadow:0 4px 20px rgba(200,85,85,0.25);
 }
+.timer-focus-actions {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.timer-break-btn {
+  min-width:120px;
+  padding:12px 22px;
+  border-radius:14px;
+  border:1px solid rgba(95,166,160,0.55);
+  background:rgba(95,166,160,0.14);
+  color:#78b8b2;
+  font-family:var(--font-hand);
+  font-size:1rem;
+  letter-spacing:1px;
+  cursor:pointer;
+  transition:all 0.25s;
+}
+.timer-break-btn:hover {
+  background:rgba(95,166,160,0.24);
+  transform:translateY(-1px);
+}
+.timer-break-btn.running {
+  border-color:rgba(111,143,184,0.65);
+  background:rgba(111,143,184,0.22);
+  color:#a8c1e4;
+}
 .timer-list-title {
   font-family:var(--font-hand);
   font-size:1rem;
@@ -3477,6 +3603,109 @@ html[data-theme="dark"] .day-progress-track {
 .timer-assign-card {
   width:380px;
   max-width:92vw;
+}
+.break-end-card {
+  width:400px;
+  max-width:92vw;
+}
+.break-end-card h3 {
+  text-align:center;
+}
+.break-end-summary {
+  text-align:center;
+  color:var(--accent);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  margin-bottom:16px;
+}
+.break-continue-btn {
+  width:100%;
+  padding:11px;
+  border-radius:12px;
+  border:1px solid rgba(122,158,126,0.45);
+  background:rgba(122,158,126,0.16);
+  color:var(--green);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  cursor:pointer;
+  margin-bottom:14px;
+}
+.break-continue-btn:disabled {
+  opacity:0.4;
+  cursor:default;
+}
+.break-switch-title {
+  text-align:center;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.86rem;
+  margin-bottom:8px;
+}
+.break-task-list {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  max-height:36vh;
+  overflow-y:auto;
+  margin-bottom:14px;
+}
+.break-task-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  width:100%;
+  padding:10px 12px;
+  border-radius:11px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.08);
+  color:var(--text);
+  font-family:var(--font-hand);
+  font-size:0.94rem;
+  text-align:left;
+  cursor:pointer;
+}
+.break-task-row:hover {
+  border-color:var(--accent);
+  background:rgba(201,168,124,0.12);
+}
+.break-task-arrow {
+  flex-shrink:0;
+  color:var(--text-muted);
+  font-size:0.8rem;
+}
+.break-detail-options {
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  margin:6px 0 2px 16px;
+  padding-left:10px;
+  border-left:2px solid rgba(201,168,124,0.28);
+}
+.break-detail-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  width:100%;
+  padding:8px 10px;
+  border-radius:9px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.05);
+  color:var(--text-secondary);
+  font-family:var(--font-hand);
+  font-size:0.88rem;
+  text-align:left;
+  cursor:pointer;
+}
+.break-detail-row:hover {
+  border-color:var(--accent);
+  color:var(--text);
+}
+.break-detail-row span {
+  flex-shrink:0;
+  color:var(--text-muted);
+  font-size:0.78rem;
 }
 .timer-assign-total {
   text-align:center;
@@ -4103,7 +4332,10 @@ html[data-theme="dark"] .day-progress-track {
           <div class="timer-detail-panel" id="timerDetailPanel"></div>
           <div class="timer-focus-time" id="timerFocusTime">00:00</div>
           <div class="timer-focus-duration" id="timerFocusDuration">已累计 0 分钟</div>
-          <button class="timer-focus-btn" id="timerFocusBtn">开始计时</button>
+          <div class="timer-focus-actions">
+            <button class="timer-focus-btn" id="timerFocusBtn">开始计时</button>
+            <button class="timer-break-btn" id="btnBreakTimer">开始休息</button>
+          </div>
         </div>
         <div class="timer-list-title">今日任务用时</div>
         <div class="timer-task-list" id="timerTaskList"></div>
@@ -4163,6 +4395,11 @@ html[data-theme="dark"] .day-progress-track {
         <!-- 任务用时饼图 -->
         <div class="review-section review-chart-section">
           <div class="review-section-title">📊 任务用时占比</div>
+          <div class="review-chart-tabs">
+            <button class="active" data-review-chart="tasks">主任务</button>
+            <button data-review-chart="details">详细任务</button>
+            <button data-review-chart="workrest">工作与休息</button>
+          </div>
           <div class="review-chart-layout">
             <div class="review-pie-chart" id="reviewPieChart"></div>
             <div class="review-pie-legend" id="reviewPieLegend"></div>
@@ -4172,7 +4409,13 @@ html[data-theme="dark"] .day-progress-track {
 
         <!-- 当天竖向时间轴 -->
         <div class="review-section review-timeline-section">
-          <div class="review-section-title">🕰️ 当天时间轴</div>
+          <div class="review-timeline-header">
+            <div class="review-section-title">🕰️ 当天时间轴</div>
+            <div class="review-timeline-tabs">
+              <button class="active" data-timeline-mode="detail">展开模式</button>
+              <button data-timeline-mode="day">全天模式</button>
+            </div>
+          </div>
           <div class="review-timeline-summary" id="reviewTimelineSummary"></div>
           <div class="review-timeline-list" id="reviewTimelineList"></div>
         </div>
@@ -4273,6 +4516,17 @@ html[data-theme="dark"] .day-progress-track {
   </div>
 </div>
 
+<!-- ====== 休息结束弹窗 ====== -->
+<div class="modal-overlay hidden" id="breakEndModal">
+  <div class="modal-card break-end-card">
+    <h3>休息结束</h3>
+    <div class="break-end-summary" id="breakEndSummary"></div>
+    <button class="break-continue-btn" id="breakContinueTask">继续刚才的任务</button>
+    <div class="break-switch-title">或者切换到其他任务</div>
+    <div class="break-task-list" id="breakTaskList"></div>
+  </div>
+</div>
+
 <!-- ====== 删除撤销提示 ====== -->
 <div class="undo-toast hidden" id="undoToast">
   <span id="undoToastText">任务已删除</span>
@@ -4285,6 +4539,7 @@ const state = {
   token: null,
   currentUser: null,    // { name }
   tasks: [],
+  breaks: [],
   isSorting: false,
   dragState: null,
   sliderState: null,
@@ -4578,6 +4833,7 @@ async function loadTasks() {
     } else {
       state.tasks = [];
     }
+    state.breaks = (data && data.breaks) || [];
     if (migrateTaskDetails(state.tasks)) debouncedSave();
     state.tasksLoaded = true;
     restoreActiveTimer();
@@ -4594,7 +4850,7 @@ async function saveTasks() {
     const res = await apiFetch('/api/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tasks: state.tasks }),
+      body: JSON.stringify({ tasks: state.tasks, breaks: state.breaks }),
       keepalive: true,
     });
     if (res.status === 401) { handleAuthError(); return; }
@@ -4672,14 +4928,9 @@ function renderTasks() {
         + '</div>'
         + '<div class="sparkle-container" data-sparkle="' + t.id + '"></div>'
       + '</div>'
-      + '<div class="timer-area" onclick="handleBeadClick(event)">'
+      + '<div class="timer-area">'
         + '<span class="timer-icon">⏱</span>'
-        + '<span class="time-beads">' + renderTimeBeads(t.id, t.duration || 0) + '</span>'
         + '<span class="timer-text">' + formatDurationShort(getTaskTotalDuration(t)) + '</span>'
-        + '<button class="timer-adjust" onclick="adjustDuration(event,-5)" data-task-id="' + t.id + '">▼</button>'
-        + '<button class="timer-adjust" onclick="adjustDuration(event,5)" data-task-id="' + t.id + '">▲</button>'
-        + '<button class="timer-btn' + (isTaskTimerRunning(t.id) ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (isTaskTimerRunning(t.id) ? '⏹' : '▶') + '</button>'
-        + '<span class="timer-live" data-timer-display="' + t.id + '" style="display:' + (isTaskTimerRunning(t.id) ? '' : 'none') + '"></span>'
       + '</div>'
     + '</div>';
   }
@@ -4865,40 +5116,16 @@ function updateTotalTime() {
 
 
 
-function renderTimeBeads(taskId, seconds) {
-  var numFilled = Math.round((seconds || 0) / 900);
-  if (numFilled > 8) numFilled = 8;
-  var html = '';
-  for (var i = 0; i < 8; i++) {
-    var cls = 'time-bead';
-    if (i < numFilled) cls += ' filled filled-' + (i + 1);
-    html += '<span class="' + cls + '" data-task-id="' + taskId + '" data-bead-idx="' + i + '"></span>';
-  }
-  return html;
-}
-
-function handleBeadClick(e) {
-  var bead = e.target.closest('.time-bead');
-  if (!bead) return;
-  var id = parseFloat(bead.dataset.taskId);
-  var idx = parseInt(bead.dataset.beadIdx, 10);
-  if (!id || isNaN(idx)) return;
-  var task = state.tasks.find(function(t) { return t.id === id; })
-    || state.tomorrowTasks.find(function(t) { return t.id === id; });
-  if (!task) return;
-  var newSecs = (idx + 1) * 15 * 60;
-  if (task.duration === newSecs) { task.duration = 0; }
-  else { task.duration = newSecs; }
-  updateTaskTimeUI(id);
-  updateTodaySectionStats();
-  debouncedSave();
-}
-
 // ==================== 计时器 ====================
 var currentTimer = null;
 var timerTick = null;
 var pendingFreeMinutes = 0;
 var pendingFreeSession = null;
+var breakReturnTarget = null;
+var breakExpandedTaskId = null;
+var reviewChartMode = 'tasks';
+var reviewTimelineMode = 'detail';
+var reviewDataCache = { tasks: [], breaks: [] };
 
 function formatClock(sec) {
   sec = Math.max(0, Math.floor(sec || 0));
@@ -4920,6 +5147,10 @@ function isFreeTimerRunning() {
   return !!(currentTimer && currentTimer.mode === 'free');
 }
 
+function isBreakTimerRunning() {
+  return !!(currentTimer && currentTimer.mode === 'break');
+}
+
 function persistTimer() {
   if (currentTimer) {
     localStorage.setItem('riqi_active_timer', JSON.stringify({
@@ -4927,6 +5158,7 @@ function persistTimer() {
       id: currentTimer.id,
       subtaskId: currentTimer.subtaskId || null,
       start: currentTimer.start,
+      returnTarget: currentTimer.mode === 'break' ? breakReturnTarget : null,
     }));
   } else {
     localStorage.removeItem('riqi_active_timer');
@@ -4961,6 +5193,7 @@ function getTimerSelectedId() {
 function startTimerForTarget(id, subtaskId) {
   if (!id || !findTaskById(id)) return;
   if (currentTimer) {
+    if (currentTimer.mode === 'break') return;
     if (currentTimer.mode === 'free') return;
     if (currentTimer.mode === 'task' && currentTimer.id === id && currentTimer.subtaskId === (subtaskId || null)) return;
     stopCurrentTimer();
@@ -4979,6 +5212,7 @@ function startTaskTimer(id) {
 
 function startFreeTimer() {
   if (currentTimer) {
+    if (currentTimer.mode === 'break') return;
     if (currentTimer.mode === 'free') return;
     stopCurrentTimer();
   }
@@ -4987,6 +5221,53 @@ function startFreeTimer() {
   updateTimerFocus();
   renderTimerPage();
   ensureTimerTick();
+}
+
+function startBreakTimer() {
+  if (currentTimer && currentTimer.mode === 'break') return;
+  if (currentTimer && currentTimer.mode === 'free') return;
+
+  var continueTarget = null;
+  if (currentTimer && currentTimer.mode === 'task') {
+    continueTarget = {
+      id: currentTimer.id,
+      subtaskId: currentTimer.subtaskId || null,
+    };
+    stopCurrentTimer();
+  }
+
+  breakReturnTarget = continueTarget;
+  currentTimer = { id: null, mode: 'break', start: Date.now() };
+  persistTimer();
+  updateTimerFocus();
+  renderTimerPage();
+  ensureTimerTick();
+}
+
+function stopBreakTimer() {
+  if (!currentTimer || currentTimer.mode !== 'break') return;
+  var t = currentTimer;
+  var endedAt = Date.now();
+  var duration = Math.max(0, Math.round((endedAt - t.start) / 1000));
+  currentTimer = null;
+  persistTimer();
+
+  if (duration > 3 * 60) {
+    if (!Array.isArray(state.breaks)) state.breaks = [];
+    state.breaks.push({
+      id: Date.now() + Math.random() * 1000,
+      start: t.start,
+      end: endedAt,
+      duration: duration,
+      label: '休息',
+    });
+    debouncedSave();
+  }
+
+  openBreakEndModal(duration, breakReturnTarget);
+  updateTimerFocus();
+  renderTimerPage();
+  stopTimerTickIfIdle();
 }
 
 function updateSubtaskRowDuration(taskId, st) {
@@ -5012,7 +5293,10 @@ function stopCurrentTimer() {
   if (!currentTimer) return;
   var t = currentTimer;
   var endedAt = Date.now();
-  var elapsedMin = Math.round((endedAt - t.start) / 60000 / 5) * 5;
+  var elapsedSec = Math.floor((endedAt - t.start) / 1000);
+  var elapsedMin = elapsedSec > 3 * 60
+    ? Math.round(elapsedSec / 60000 / 5) * 5
+    : 0;
   currentTimer = null;
   persistTimer();
 
@@ -5029,7 +5313,9 @@ function stopCurrentTimer() {
       } else {
         task.duration = (task.duration || 0) + elapsedMin * 60;
       }
-      appendTimerSession(task, t.subtaskId, t.start, endedAt, 'timer');
+      if (elapsedSec > 3 * 60) {
+        appendTimerSession(task, t.subtaskId, t.start, endedAt, 'timer');
+      }
       updateTaskTimeUI(t.id);
       if (state.tomorrowTasks.indexOf(task) !== -1) {
         debouncedSaveTomorrow();
@@ -5051,30 +5337,11 @@ function stopCurrentTimer() {
   renderTimerPage();
 }
 
-function toggleTimer(e) {
-  e.stopPropagation();
-  var id = parseFloat(e.currentTarget.dataset.taskId);
-  if (isTaskTimerRunning(id)) stopCurrentTimer();
-  else startTaskTimer(id);
-}
-
 function ensureTimerTick() {
   if (timerTick) return;
   timerTick = setInterval(function() {
-    var now = Date.now();
-    var anyActive = false;
-    document.querySelectorAll('.timer-live').forEach(function(el) {
-      var tid = parseFloat(el.dataset.timerDisplay);
-      if (currentTimer && currentTimer.mode === 'task' && currentTimer.id === tid) {
-        el.textContent = formatClock((now - currentTimer.start) / 1000);
-        el.style.display = '';
-        anyActive = true;
-      } else {
-        el.style.display = 'none';
-      }
-    });
     updateTimerFocus();
-    if (!anyActive && !currentTimer && timerTick) {
+    if (!currentTimer && timerTick) {
       clearInterval(timerTick);
       timerTick = null;
     }
@@ -5085,6 +5352,7 @@ function updateTimerFocus() {
   var timeEl = document.getElementById('timerFocusTime');
   var durEl = document.getElementById('timerFocusDuration');
   var btn = document.getElementById('timerFocusBtn');
+  var breakBtn = document.getElementById('btnBreakTimer');
   var labelEl = document.getElementById('timerFocusLabel');
   if (!timeEl) return;
 
@@ -5100,12 +5368,32 @@ function updateTimerFocus() {
       }
       if (labelEl) labelEl.textContent = '正在计时 · ' + targetName;
       if (durEl) durEl.textContent = (task ? '已累计 ' + formatDurationShort(getTaskTotalDuration(task)) + ' · ' : '') + '本次 ' + formatClock(elapsedSec);
-    } else {
+    } else if (currentTimer.mode === 'free') {
       if (labelEl) labelEl.textContent = '自由计时';
       if (durEl) durEl.textContent = '本次 ' + formatClock(elapsedSec) + ' · 结束后选择任务';
+    } else {
+      if (labelEl) labelEl.textContent = '正在休息';
+      if (durEl) durEl.textContent = '休息中 · 结束后选择接下来做什么';
     }
-    btn.textContent = '结束计时';
-    btn.classList.add('running');
+    if (currentTimer.mode === 'break') {
+      btn.textContent = '计时暂停';
+      btn.classList.remove('running');
+      btn.disabled = true;
+      if (breakBtn) {
+        breakBtn.textContent = '结束休息';
+        breakBtn.classList.add('running');
+        breakBtn.disabled = false;
+      }
+    } else {
+      btn.textContent = '结束计时';
+      btn.classList.add('running');
+      btn.disabled = false;
+      if (breakBtn) {
+        breakBtn.textContent = '开始休息';
+        breakBtn.classList.remove('running');
+        breakBtn.disabled = currentTimer.mode === 'free';
+      }
+    }
   } else {
     if (state.timerMode === 'task') {
       var task2 = findTaskById(state.timerTaskId);
@@ -5126,6 +5414,12 @@ function updateTimerFocus() {
     }
     btn.textContent = '开始计时';
     btn.classList.remove('running');
+    btn.disabled = false;
+    if (breakBtn) {
+      breakBtn.textContent = '开始休息';
+      breakBtn.classList.remove('running');
+      breakBtn.disabled = false;
+    }
   }
 }
 
@@ -5214,6 +5508,14 @@ function restoreActiveTimer() {
     if (!raw) return;
     var saved = JSON.parse(raw);
     var start = saved.start || Date.now();
+    if (saved.mode === 'break') {
+      breakReturnTarget = saved.returnTarget || null;
+      currentTimer = { id: null, mode: 'break', start: start };
+      ensureTimerTick();
+      updateTimerFocus();
+      renderTimerPage();
+      return;
+    }
     if (saved.mode === 'free') {
       currentTimer = { id: null, mode: 'free', start: start };
       state.timerMode = 'free';
@@ -5318,6 +5620,57 @@ function openTimerAssignModal() {
   document.getElementById('timerAssignModal').classList.remove('hidden');
 }
 
+function renderBreakTaskList() {
+  var list = document.getElementById('breakTaskList');
+  if (!list) return;
+  list.innerHTML = state.tasks.length
+    ? state.tasks.map(function(t) {
+        var hasSubtasks = (t.subtasks || []).length > 0;
+        var expanded = breakExpandedTaskId === t.id;
+        var html = '<div class="break-task-group">'
+          + '<button class="break-task-row" data-break-task="' + t.id + '">'
+            + '<span>' + escapeHtml(t.title) + '</span>'
+            + (hasSubtasks ? '<span class="break-task-arrow">' + (expanded ? '▾' : '▸') + '</span>' : '')
+          + '</button>';
+        if (hasSubtasks && expanded) {
+          html += '<div class="break-detail-options">'
+            + '<button class="break-detail-row" data-break-start="' + t.id + '" data-break-subtask="">主任务'
+              + '<span>' + formatDurationShort(t.duration || 0) + '</span></button>'
+            + (t.subtasks || []).map(function(s) {
+                return '<button class="break-detail-row" data-break-start="' + t.id + '" data-break-subtask="' + s.id + '">'
+                  + escapeHtml(s.text)
+                  + '<span>' + formatDurationShort(s.duration || 0) + '</span></button>';
+              }).join('')
+          + '</div>';
+        }
+        return html + '</div>';
+      }).join('')
+    : '<div class="review-data-empty">今天还没有任务</div>';
+}
+
+function openBreakEndModal(durationSec, continueTarget) {
+  var summary = document.getElementById('breakEndSummary');
+  var continueBtn = document.getElementById('breakContinueTask');
+  if (summary) summary.textContent = '本次休息 ' + formatDurationShort(durationSec);
+
+  var continueTask = continueTarget ? findTaskById(continueTarget.id) : null;
+  if (continueBtn) {
+    continueBtn.disabled = !continueTask;
+    continueBtn.textContent = continueTask
+      ? '继续：' + continueTask.title
+      : '没有可继续的任务';
+  }
+  breakExpandedTaskId = null;
+  renderBreakTaskList();
+  document.getElementById('breakEndModal').classList.remove('hidden');
+}
+
+function closeBreakEndModal() {
+  document.getElementById('breakEndModal').classList.add('hidden');
+  breakReturnTarget = null;
+  renderTimerPage();
+}
+
 function assignFreeTime(id) {
   var task = findTaskById(id);
   if (task && pendingFreeMinutes > 0) {
@@ -5367,23 +5720,8 @@ function updateTaskTimeUI(taskId) {
   var task = state.tasks.find(function(t) { return t.id === taskId; })
     || state.tomorrowTasks.find(function(t) { return t.id === taskId; });
   if (!task) return;
-  var beadsEl = card.querySelector('.time-beads');
-  if (beadsEl) beadsEl.innerHTML = renderTimeBeads(taskId, task.duration || 0);
   var textEl = card.querySelector('.timer-text');
   if (textEl) textEl.textContent = formatDurationShort(getTaskTotalDuration(task));
-  var btn = card.querySelector('.timer-btn');
-  if (btn) {
-    var running = isTaskTimerRunning(taskId);
-    btn.classList.toggle('running', running);
-    btn.textContent = running ? '⏹' : '▶';
-  }
-  var live = card.querySelector('.timer-live');
-  if (live) {
-    live.style.display = isTaskTimerRunning(taskId) ? '' : 'none';
-    if (currentTimer && currentTimer.mode === 'task' && currentTimer.id === taskId) {
-      live.textContent = formatClock((Date.now() - currentTimer.start) / 1000);
-    }
-  }
 }
 
 // 刷新今日分区标题的用时统计
@@ -5404,19 +5742,6 @@ function updateTodaySectionStats() {
   var headers = document.querySelectorAll('#taskList .task-section-header');
   if (headers[0]) headers[0].innerHTML = '☀️ 上午<span class="section-time-stats">已完成 ' + formatDurationShort(amDone) + ' · 总计 ' + formatDurationShort(amTotal) + '</span>';
   if (headers[1]) headers[1].innerHTML = '🌙 下午<span class="section-time-stats">已完成 ' + formatDurationShort(pmDone) + ' · 总计 ' + formatDurationShort(pmTotal) + '</span>';
-}
-
-function adjustDuration(e, delta) {
-  e.stopPropagation();
-  var id = parseFloat(e.currentTarget.dataset.taskId);
-  var task = state.tasks.find(function(t) { return t.id === id; })
-    || state.tomorrowTasks.find(function(t) { return t.id === id; });
-  if (!task) return;
-  var cur = task.duration || 0;
-  task.duration = Math.max(0, Math.min(120 * 60, cur + delta * 60));
-  updateTaskTimeUI(id);
-  updateTodaySectionStats();
-  debouncedSave();
 }
 
 function escapeHtml(str) {
@@ -6079,6 +6404,45 @@ document.getElementById('taskList').addEventListener('click', function(e) {
   }
 });
 
+document.getElementById('btnBreakTimer').addEventListener('click', function() {
+  if (isBreakTimerRunning()) stopBreakTimer();
+  else startBreakTimer();
+});
+
+document.getElementById('breakContinueTask').addEventListener('click', function() {
+  if (!breakReturnTarget) return;
+  var target = breakReturnTarget;
+  closeBreakEndModal();
+  startTimerForTarget(target.id, target.subtaskId);
+});
+
+document.getElementById('breakTaskList').addEventListener('click', function(e) {
+  var detail = e.target.closest('[data-break-start]');
+  if (detail) {
+    var detailTaskId = parseFloat(detail.dataset.breakStart);
+    var subtaskId = detail.dataset.breakSubtask ? parseFloat(detail.dataset.breakSubtask) : null;
+    closeBreakEndModal();
+    startTimerForTarget(detailTaskId, subtaskId);
+    return;
+  }
+  var row = e.target.closest('[data-break-task]');
+  if (!row) return;
+  var id = parseFloat(row.dataset.breakTask);
+  var task = findTaskById(id);
+  if (!task) return;
+  if ((task.subtasks || []).length) {
+    breakExpandedTaskId = breakExpandedTaskId === id ? null : id;
+    renderBreakTaskList();
+    return;
+  }
+  closeBreakEndModal();
+  startTimerForTarget(id, null);
+});
+
+document.getElementById('breakEndModal').addEventListener('click', function(e) {
+  if (e.target === this) closeBreakEndModal();
+});
+
 // ==================== 昨日任务带入 ====================
 
 function undoneSubtasks(t) {
@@ -6303,14 +6667,9 @@ function renderTomorrowTasks() {
       + '</div>'
       + taskDetailHtml(t)
       + '<div style="font-family:var(--font-hand);font-size:0.85rem;color:var(--text-muted);letter-spacing:1px;padding:2px 0 0 42px;">&#128221; 已规划</div>'
-      + '<div class="timer-area" onclick="handleBeadClick(event)">'
+      + '<div class="timer-area">'
         + '<span class="timer-icon">⏱</span>'
-        + '<span class="time-beads">' + renderTimeBeads(t.id, t.duration || 0) + '</span>'
         + '<span class="timer-text">' + formatDurationShort(getTaskTotalDuration(t)) + '</span>'
-        + '<button class="timer-adjust" onclick="adjustDuration(event,-5)" data-task-id="' + t.id + '">▼</button>'
-        + '<button class="timer-adjust" onclick="adjustDuration(event,5)" data-task-id="' + t.id + '">▲</button>'
-        + '<button class="timer-btn' + (isTaskTimerRunning(t.id) ? ' running' : '') + '" onclick="toggleTimer(event)" data-task-id="' + t.id + '">' + (isTaskTimerRunning(t.id) ? '⏹' : '▶') + '</button>'
-        + '<span class="timer-live" data-timer-display="' + t.id + '" style="display:' + (isTaskTimerRunning(t.id) ? '' : 'none') + '"></span>'
       + '</div>'
     + '</div>';
   }
@@ -7501,7 +7860,7 @@ function formatTimeOfDay(value) {
   return pad2n(d.getHours()) + ':' + pad2n(d.getMinutes());
 }
 
-function collectReviewSessions(tasks, dateStr, isToday) {
+function collectReviewSessions(tasks, breaks, dateStr, isToday) {
   var dayStartDate = parseDateStr(dateStr);
   dayStartDate.setHours(0, 0, 0, 0);
   var dayEndDate = new Date(dayStartDate.getTime());
@@ -7537,7 +7896,47 @@ function collectReviewSessions(tasks, dateStr, isToday) {
     });
   });
 
-  if (isToday && currentTimer && currentTimer.start) {
+  (breaks || []).forEach(function(item) {
+    var start = Number(item.start);
+    var end = Number(item.end);
+    if (!isFinite(start) || !isFinite(end) || end <= start) return;
+    start = Math.max(start, dayStart);
+    end = Math.min(end, dayEnd);
+    if (end <= start) return;
+    sessions.push({
+      taskId: null,
+      taskTitle: item.label || '休息',
+      taskDetail: '',
+      taskCompleted: false,
+      subtaskText: '',
+      start: start,
+      end: end,
+      duration: Math.round((end - start) / 1000),
+      source: 'break',
+      isBreak: true,
+      color: '#6f8fb4',
+    });
+  });
+
+  if (isToday && currentTimer && currentTimer.start && currentTimer.mode === 'break') {
+    var breakStart = Math.max(currentTimer.start, dayStart);
+    var breakEnd = Math.min(Date.now(), dayEnd);
+    if (breakEnd > breakStart) {
+      sessions.push({
+        taskId: null,
+        taskTitle: '休息',
+        taskDetail: '',
+        taskCompleted: false,
+        subtaskText: '',
+        start: breakStart,
+        end: breakEnd,
+        duration: Math.round((breakEnd - breakStart) / 1000),
+        source: 'active-break',
+        isBreak: true,
+        color: '#6f8fb4',
+      });
+    }
+  } else if (isToday && currentTimer && currentTimer.start) {
     var activeTask = currentTimer.mode === 'task' ? findTaskById(currentTimer.id) : null;
     var activeStart = Math.max(currentTimer.start, dayStart);
     var activeEnd = Math.min(Date.now(), dayEnd);
@@ -7574,12 +7973,23 @@ function renderReviewStats(tasks, sessions, isToday) {
   var totalTasks = tasks.length;
   var doneTasks = tasks.filter(function(t) { return t.completed; }).length;
   var completion = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
-  var timedTasks = tasks.filter(function(t) { return getTaskTotalDuration(t) > 0; }).length;
-  var longest = sessions.reduce(function(max, s) { return Math.max(max, s.duration); }, 0);
-  var rangeText = sessions.length
-    ? formatTimeOfDay(sessions[0].start) + '–' + formatTimeOfDay(sessions[sessions.length - 1].end)
+  var countedSessions = sessions.filter(function(s) { return s.duration > 3 * 60; });
+  var workSessions = countedSessions.filter(function(s) { return !s.isBreak; });
+  var breakSessions = countedSessions.filter(function(s) { return s.isBreak; });
+  var workTaskIds = {};
+  workSessions.forEach(function(s) {
+    if (s.taskId) workTaskIds[s.taskId] = true;
+  });
+  var timedTasks = tasks.filter(function(t) {
+    if (Array.isArray(t.sessions) && t.sessions.length) return !!workTaskIds[t.id];
+    return getTaskTotalDuration(t) > 0;
+  }).length;
+  var breakDuration = breakSessions.reduce(function(sum, s) { return sum + s.duration; }, 0);
+  var longest = workSessions.reduce(function(max, s) { return Math.max(max, s.duration); }, 0);
+  var rangeText = countedSessions.length
+    ? formatTimeOfDay(countedSessions[0].start) + '–' + formatTimeOfDay(countedSessions[countedSessions.length - 1].end)
     : '--';
-  var rangeSub = sessions.length ? sessions.length + ' 个计时块' : '暂无区间数据';
+  var rangeSub = countedSessions.length ? countedSessions.length + ' 个计时块' : '暂无区间数据';
 
   grid.innerHTML =
     '<div class="review-stat">'
@@ -7601,11 +8011,29 @@ function renderReviewStats(tasks, sessions, isToday) {
       + '<span class="review-stat-label">最长专注</span>'
       + '<strong class="review-stat-value">' + (longest ? formatDurationShort(longest) : '--') + '</strong>'
       + '<span class="review-stat-sub">' + (longest ? '单次连续计时' : '暂无连续记录') + '</span>'
+    + '</div>'
+    + '<div class="review-stat">'
+      + '<span class="review-stat-label">总休息时长</span>'
+      + '<strong class="review-stat-value">' + (breakDuration ? formatDurationShort(breakDuration) : '--') + '</strong>'
+      + '<span class="review-stat-sub">' + (breakDuration ? '仅统计超过 3 分钟' : '暂无有效休息记录') + '</span>'
+    + '</div>'
+    + '<div class="review-stat">'
+      + '<span class="review-stat-label">休息次数</span>'
+      + '<strong class="review-stat-value">' + breakSessions.length + '</strong>'
+      + '<span class="review-stat-sub">' + (breakSessions.length ? '今天已记录' : '今天还没有休息') + '</span>'
     + '</div>';
 
   if (!insightEl) return;
+  var countedByTask = {};
+  workSessions.forEach(function(s) {
+    if (s.taskId) countedByTask[s.taskId] = (countedByTask[s.taskId] || 0) + s.duration;
+  });
   var ranked = tasks.map(function(t) {
-    return { title: t.title, duration: getTaskTotalDuration(t) };
+    var hasSessions = Array.isArray(t.sessions) && t.sessions.length > 0;
+    return {
+      title: t.title,
+      duration: hasSessions ? (countedByTask[t.id] || 0) : getTaskTotalDuration(t),
+    };
   }).filter(function(t) {
     return t.duration > 0;
   }).sort(function(a, b) {
@@ -7616,9 +8044,9 @@ function renderReviewStats(tasks, sessions, isToday) {
   if (ranked.length && totalSeconds) {
     insights.push('投入最多：' + ranked[0].title + '，占 ' + Math.round(ranked[0].duration / totalSeconds * 100) + '%');
   }
-  if (sessions.length) {
+  if (workSessions.length) {
     var hourMinutes = {};
-    sessions.forEach(function(s) {
+    workSessions.forEach(function(s) {
       var cursor = s.start;
       while (cursor < s.end) {
         var d = new Date(cursor);
@@ -7646,29 +8074,91 @@ function renderReviewStats(tasks, sessions, isToday) {
   insightEl.textContent = insights.join(' · ');
 }
 
-function renderReviewPie(tasks) {
+function renderReviewPie(tasks, breaks, sessions) {
   var chart = document.getElementById('reviewPieChart');
   var legend = document.getElementById('reviewPieLegend');
   var summary = document.getElementById('reviewPieSummary');
   if (!chart || !legend || !summary) return;
 
-  var items = tasks.map(function(t) {
-    return {
-      title: t.title,
-      duration: getTaskTotalDuration(t),
-      color: reviewTaskColor(t.id, tasks),
-    };
-  }).filter(function(t) {
-    return t.duration > 0;
-  }).sort(function(a, b) {
-    return b.duration - a.duration;
-  });
+  var items;
+  if (reviewChartMode === 'workrest') {
+    var counted = (sessions || []).filter(function(s) { return s.duration > 3 * 60; });
+    var workDuration = counted.filter(function(s) { return !s.isBreak; })
+      .reduce(function(sum, s) { return sum + s.duration; }, 0);
+    var breakDuration = counted.filter(function(s) { return s.isBreak; })
+      .reduce(function(sum, s) { return sum + s.duration; }, 0);
+    if (!counted.length) {
+      workDuration = tasks.reduce(function(sum, t) { return sum + getTaskTotalDuration(t); }, 0);
+      breakDuration = (breaks || []).filter(function(item) { return (item.duration || 0) > 3 * 60; })
+        .reduce(function(sum, item) { return sum + (item.duration || 0); }, 0);
+    }
+    items = [
+      { title: '工作', duration: workDuration, color: '#7a9e7e' },
+      { title: '休息', duration: breakDuration, color: '#6f8fb4' },
+    ].filter(function(item) {
+      return item.duration > 0;
+    });
+  } else if (reviewChartMode === 'details') {
+    var detailGroups = {};
+    (sessions || []).forEach(function(s) {
+      if (s.isBreak || s.duration <= 3 * 60 || !s.taskId) return;
+      var key = String(s.taskId) + '|' + (s.subtaskText || '__main__');
+      if (!detailGroups[key]) {
+        detailGroups[key] = {
+          title: s.taskTitle + ' · ' + (s.subtaskText || '主任务'),
+          duration: 0,
+        };
+      }
+      detailGroups[key].duration += s.duration;
+    });
+    items = Object.keys(detailGroups).map(function(key) {
+      return detailGroups[key];
+    });
+    tasks.forEach(function(t) {
+      if (Array.isArray(t.sessions) && t.sessions.length) return;
+      if ((t.duration || 0) > 0) {
+        items.push({ title: t.title + ' · 主任务', duration: t.duration });
+      }
+      (t.subtasks || []).forEach(function(s) {
+        if ((s.duration || 0) > 0) {
+          items.push({ title: t.title + ' · ' + s.text, duration: s.duration });
+        }
+      });
+    });
+    items.sort(function(a, b) { return b.duration - a.duration; });
+    items.forEach(function(item, idx) {
+      item.color = REVIEW_TASK_COLORS[idx % REVIEW_TASK_COLORS.length];
+    });
+  } else {
+    var countedTaskDurations = {};
+    (sessions || []).forEach(function(s) {
+      if (!s.isBreak && s.duration > 3 * 60 && s.taskId) {
+        countedTaskDurations[s.taskId] = (countedTaskDurations[s.taskId] || 0) + s.duration;
+      }
+    });
+    items = tasks.map(function(t) {
+      var hasSessions = Array.isArray(t.sessions) && t.sessions.length > 0;
+      return {
+        title: t.title,
+        duration: hasSessions ? (countedTaskDurations[t.id] || 0) : getTaskTotalDuration(t),
+        color: reviewTaskColor(t.id, tasks),
+      };
+    }).filter(function(t) {
+      return t.duration > 0;
+    }).sort(function(a, b) {
+      return b.duration - a.duration;
+    });
+  }
 
   var total = items.reduce(function(sum, t) { return sum + t.duration; }, 0);
   if (!total) {
     chart.style.background = 'rgba(255,255,255,0.08)';
-    legend.innerHTML = '<div class="review-data-empty">还没有任务用时记录。</div>';
-    summary.textContent = '还没有任务用时记录。完成计时或手动调整用时后，这里会显示任务占比。';
+    legend.innerHTML = '<div class="review-data-empty">还没有计时记录。</div>';
+    summary.textContent = reviewChartMode === 'workrest'
+      ? '还没有工作或休息计时记录。'
+      : (reviewChartMode === 'details'
+          ? '还没有分配到具体详情的计时记录。'
+          : '还没有任务用时记录。完成计时或手动调整用时后，这里会显示任务占比。');
     return;
   }
 
@@ -7690,8 +8180,18 @@ function renderReviewPie(tasks) {
     + '</div>';
   }).join('');
 
-  summary.textContent = '共 ' + formatDurationShort(total) + '，覆盖 ' + items.length + ' 项任务。'
-    + '用时最高的是「' + items[0].title + '」，占 ' + Math.round(items[0].percent) + '%。';
+  if (reviewChartMode === 'workrest') {
+    var workItem = items.find(function(i) { return i.title === '工作'; });
+    var breakItem = items.find(function(i) { return i.title === '休息'; });
+    summary.textContent = '工作 ' + formatDurationShort(workItem ? workItem.duration : 0)
+      + '，休息 ' + formatDurationShort(breakItem ? breakItem.duration : 0) + '。';
+  } else if (reviewChartMode === 'details') {
+    summary.textContent = '共 ' + formatDurationShort(total) + '，拆分为 ' + items.length + ' 个主任务或详情项目。'
+      + '用时最高的是「' + items[0].title + '」，占 ' + Math.round(items[0].percent) + '%。';
+  } else {
+    summary.textContent = '共 ' + formatDurationShort(total) + '，覆盖 ' + items.length + ' 项任务。'
+      + '用时最高的是「' + items[0].title + '」，占 ' + Math.round(items[0].percent) + '%。';
+  }
 }
 
 function renderReviewTimeline(sessionData, isToday) {
@@ -7718,19 +8218,28 @@ function renderReviewTimeline(sessionData, isToday) {
   summary.textContent = sessions.length + ' 个计时块 · 共 ' + formatDurationShort(totalDuration)
     + ' · ' + formatTimeOfDay(sessions[0].start) + '–' + formatTimeOfDay(sessions[sessions.length - 1].end);
 
+  if (reviewTimelineMode === 'day') {
+    list.innerHTML = renderReviewDayChart(sessionData, sessions);
+    return;
+  }
+
   var previousEnd = null;
   list.innerHTML = sessions.map(function(s) {
     var gapText = previousEnd
       ? '距上一段 ' + formatDurationShort(Math.max(0, Math.round((s.start - previousEnd) / 1000)))
       : '当天第一个计时块';
     var share = totalDuration ? Math.round(s.duration / totalDuration * 100) : 0;
-    var sourceLabel = s.source === 'free'
-      ? '自由计时'
-      : (s.subtaskText ? '详情计时' : '主任务计时');
-    var statusLabel = s.source === 'active' ? '进行中' : (s.taskCompleted ? '已完成' : '未完成');
-    var statusClass = s.source === 'active' ? ' active' : (s.taskCompleted ? '' : ' pending');
+    var sourceLabel = s.isBreak
+      ? '休息'
+      : (s.source === 'free' ? '自由计时' : (s.subtaskText ? '详情计时' : '主任务计时'));
+    var statusLabel = s.isBreak
+      ? (s.source === 'active-break' ? '休息中' : '休息')
+      : (s.source === 'active' ? '进行中' : (s.taskCompleted ? '已完成' : '未完成'));
+    var statusClass = s.isBreak
+      ? ' break'
+      : (s.source === 'active' ? ' active' : (s.taskCompleted ? '' : ' pending'));
     var detailText = s.subtaskText || s.taskDetail || '';
-    var html = '<div class="review-timeline-item">'
+    var html = '<div class="review-timeline-item' + (s.isBreak ? ' break' : '') + '">'
       + '<div class="review-timeline-time">'
         + '<strong>' + formatTimeOfDay(s.start) + '</strong>'
         + '<span>' + formatTimeOfDay(s.end) + '</span>'
@@ -7760,10 +8269,59 @@ function renderReviewTimeline(sessionData, isToday) {
   }).join('');
 }
 
-function renderReviewAnalytics(tasks, dateStr, isToday) {
-  var sessionData = collectReviewSessions(tasks, dateStr, isToday);
+function renderReviewDayChart(sessionData, sessions) {
+  var dayMs = sessionData.dayEnd - sessionData.dayStart;
+  var hourLabels = [0, 6, 12, 18, 24].map(function(hour) {
+    var label = hour === 24 ? '24:00' : pad2n(hour) + ':00';
+    return '<span style="top:' + (hour / 24 * 100).toFixed(3) + '%;">' + label + '</span>';
+  }).join('');
+  var blocks = sessions.map(function(s) {
+    var top = Math.max(0, Math.min(100, (s.start - sessionData.dayStart) / dayMs * 100));
+    var height = Math.max(0.4, Math.min(100 - top, s.duration * 1000 / dayMs * 100));
+    var label = s.taskTitle + (s.subtaskText ? ' · ' + s.subtaskText : '')
+      + ' · ' + formatDurationShort(s.duration);
+    var shortClass = height < 3 ? ' short' : '';
+    return '<div class="review-day-block' + shortClass + '" style="top:' + top.toFixed(3)
+      + '%;height:' + height.toFixed(3) + '%;background:' + s.color + ';" title="'
+      + escAttr(formatTimeOfDay(s.start) + '–' + formatTimeOfDay(s.end) + ' · ' + label) + '">'
+      + '<span class="review-day-block-text">' + formatTimeOfDay(s.start) + ' · ' + escapeHtml(label) + '</span>'
+    + '</div>';
+  }).join('');
+  var legendMap = {};
+  sessions.forEach(function(s) {
+    var key = s.isBreak ? '__break__' : String(s.taskId);
+    if (!legendMap[key]) {
+      legendMap[key] = {
+        title: s.isBreak ? '休息' : s.taskTitle,
+        color: s.color,
+      };
+    }
+  });
+  var legend = Object.keys(legendMap).map(function(key) {
+    var item = legendMap[key];
+    return '<div class="review-day-legend-item">'
+      + '<span class="review-day-legend-dot" style="background:' + item.color + ';"></span>'
+      + '<span>' + escapeHtml(item.title) + '</span>'
+    + '</div>';
+  }).join('');
+  return '<div class="review-day-chart">'
+    + '<div class="review-day-axis">' + hourLabels + '</div>'
+    + '<div class="review-day-canvas">' + blocks + '</div>'
+  + '</div>'
+  + '<div class="review-day-legend">' + legend + '</div>';
+}
+
+function renderReviewAnalytics(tasks, breaks, dateStr, isToday) {
+  var sessionData = collectReviewSessions(tasks, breaks, dateStr, isToday);
+  reviewDataCache = {
+    tasks: tasks || [],
+    breaks: breaks || [],
+    sessions: sessionData.sessions,
+    sessionData: sessionData,
+    isToday: isToday,
+  };
   renderReviewStats(tasks, sessionData.sessions, isToday);
-  renderReviewPie(tasks);
+  renderReviewPie(tasks, breaks, sessionData.sessions);
   renderReviewTimeline(sessionData, isToday);
 }
 
@@ -7776,30 +8334,52 @@ async function loadReview() {
 
   // 加载该日任务
   var tasks = [];
+  var breaks = [];
   try {
     var res = await apiFetch('/api/data?date=' + dateStr);
     if (res.status === 401) { handleAuthError(); return; }
     var data = await res.json();
     tasks = (data && data.tasks) || [];
+    breaks = (data && data.breaks) || [];
   } catch(e) { tasks = []; }
 
-  renderReview(tasks, isToday, dateStr);
+  renderReview(tasks, breaks, isToday, dateStr);
   await loadReviewMonth();
 }
 
-function renderReview(tasks, isToday, dateStr) {
+function renderReview(tasks, breaks, isToday, dateStr) {
   isToday = (isToday === undefined) ? true : isToday;
   dateStr = dateStr || todayKey();
   var nextBtn = document.getElementById('btnReviewNext');
   if (nextBtn) nextBtn.disabled = isToday;
   updateReviewDateDisplay();
-  renderReviewAnalytics(tasks, dateStr, isToday);
+  renderReviewAnalytics(tasks, breaks, dateStr, isToday);
 }
 
 function escAttr(str) {
   if (!str) return '';
   return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+document.querySelectorAll('[data-review-chart]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    reviewChartMode = btn.dataset.reviewChart;
+    document.querySelectorAll('[data-review-chart]').forEach(function(item) {
+      item.classList.toggle('active', item === btn);
+    });
+    renderReviewPie(reviewDataCache.tasks, reviewDataCache.breaks, reviewDataCache.sessions);
+  });
+});
+
+document.querySelectorAll('[data-timeline-mode]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    reviewTimelineMode = btn.dataset.timelineMode;
+    document.querySelectorAll('[data-timeline-mode]').forEach(function(item) {
+      item.classList.toggle('active', item === btn);
+    });
+    renderReviewTimeline(reviewDataCache.sessionData, reviewDataCache.isToday);
+  });
+});
 
 // 月度日历交互
 document.getElementById('reviewMonthCalendar').addEventListener('click', function(e) {

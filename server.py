@@ -621,8 +621,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             else:
                 date_str = date.today().isoformat()
             filepath = user_data_file(user["name"], date_str)
+            existing = {}
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                pass
+            saved = {"tasks": body.get("tasks", [])}
+            if "breaks" in body:
+                saved["breaks"] = body.get("breaks", [])
+            elif "breaks" in existing:
+                saved["breaks"] = existing.get("breaks", [])
             with open(filepath, "w", encoding="utf-8") as f:
-                json.dump({"tasks": body.get("tasks", [])}, f, ensure_ascii=False, indent=2)
+                json.dump(saved, f, ensure_ascii=False, indent=2)
             self._send_json(200, {"ok": True})
 
         elif self.path == "/api/users/register":
