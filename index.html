@@ -3844,11 +3844,12 @@ html[data-theme="dark"] .day-progress-track {
   font-size:0.78rem;
 }
 .homework-modal-card {
-  width:620px;
+  width:780px;
   max-width:94vw;
   max-height:88vh;
   overflow-y:auto;
   position:relative;
+  padding-bottom:18px;
 }
 .homework-modal-close {
   position:absolute;
@@ -3930,29 +3931,59 @@ html[data-theme="dark"] .day-progress-track {
   color:var(--danger);
 }
 .homework-results {
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
   margin-top:10px;
+  max-height:48vh;
+  overflow-y:auto;
+  padding-right:4px;
+}
+.homework-result-row.unclassified {
+  grid-column:1 / -1;
 }
 .homework-result-row {
-  padding:11px 12px;
-  border-radius:12px;
+  display:grid;
+  grid-template-columns:24px minmax(0, 1fr);
+  align-items:start;
+  gap:10px;
+  min-width:0;
+  padding:12px 14px 14px;
+  border-radius:15px;
   border:1px solid var(--card-border);
-  background:rgba(255,255,255,0.06);
+  border-left:4px solid var(--subject-color, var(--accent));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--subject-color, var(--accent)) 10%, transparent), rgba(255,255,255,0.04));
+}
+.homework-result-check {
+  display:flex;
+  justify-content:center;
+  padding-top:2px;
+  cursor:pointer;
+}
+.homework-result-check input {
+  width:17px;
+  height:17px;
+  accent-color:var(--subject-color, var(--accent));
+  cursor:pointer;
+}
+.homework-result-body {
+  min-width:0;
 }
 .homework-result-head {
   display:flex;
   align-items:center;
   gap:8px;
-  margin-bottom:7px;
+  margin-bottom:9px;
+  padding-bottom:8px;
+  border-bottom:1px solid rgba(255,255,255,0.09);
   color:var(--text);
   font-family:var(--font-hand);
   font-size:0.95rem;
 }
 .homework-result-row textarea {
   width:100%;
-  min-height:64px;
+  min-height:78px;
   resize:vertical;
   padding:8px 10px;
   border-radius:9px;
@@ -3963,6 +3994,10 @@ html[data-theme="dark"] .day-progress-track {
   font-size:0.88rem;
   line-height:1.5;
   outline:none;
+}
+.homework-result-row textarea:focus {
+  border-color:var(--subject-color, var(--accent));
+  background:rgba(255,255,255,0.13);
 }
 .homework-result-row select {
   width:100%;
@@ -3980,6 +4015,11 @@ html[data-theme="dark"] .day-progress-track {
   display:flex;
   gap:8px;
   margin-top:14px;
+  position:sticky;
+  bottom:-18px;
+  padding-top:12px;
+  padding-bottom:2px;
+  background:linear-gradient(180deg, transparent, var(--bg2) 35%);
 }
 .homework-recognize-btn,
 .homework-import-btn {
@@ -4001,6 +4041,16 @@ html[data-theme="dark"] .day-progress-track {
 .homework-recognize-btn:disabled {
   opacity:0.45;
   cursor:default;
+}
+
+@media (max-width:640px) {
+  .homework-results {
+    grid-template-columns:1fr;
+    max-height:none;
+  }
+  .homework-api-setup {
+    flex-direction:column;
+  }
 }
 .timer-assign-total {
   text-align:center;
@@ -5171,28 +5221,34 @@ function renderHomeworkResults(result) {
   });
 
   var html = rows.map(function(row) {
-    return '<div class="homework-result-row" data-homework-subject="' + row.key + '">'
-      + '<label class="homework-result-head">'
+    return '<div class="homework-result-row" data-homework-subject="' + row.key + '" style="--subject-color:' + row.color + ';">'
+      + '<label class="homework-result-check">'
         + '<input type="checkbox" checked>'
-        + '<span class="review-day-legend-dot" style="background:' + row.color + ';"></span>'
-        + '<span>' + row.name + '</span>'
       + '</label>'
-      + '<textarea>' + escapeHtml(row.items.join('\n')) + '</textarea>'
+      + '<div class="homework-result-body">'
+        + '<div class="homework-result-head">'
+          + '<span class="review-day-legend-dot" style="background:' + row.color + ';"></span>'
+          + '<span>' + row.name + '</span>'
+        + '</div>'
+        + '<textarea>' + escapeHtml(row.items.join('\n')) + '</textarea>'
+      + '</div>'
     + '</div>';
   }).join('');
   if (unclassified.length) {
-    html += '<div class="homework-result-row" data-homework-subject="unclassified">'
-      + '<label class="homework-result-head">'
+    html += '<div class="homework-result-row unclassified" data-homework-subject="unclassified">'
+      + '<label class="homework-result-check">'
         + '<input type="checkbox" checked>'
-        + '<span>未分类</span>'
       + '</label>'
-      + '<select id="homeworkUnclassifiedSubject">'
-        + '<option value="">不导入</option>'
-        + SCHOOL_SUBJECTS.map(function(subject) {
-            return '<option value="' + subject.key + '">归入' + subject.name + '</option>';
-          }).join('')
-      + '</select>'
-      + '<textarea>' + escapeHtml(unclassified.join('\n')) + '</textarea>'
+      + '<div class="homework-result-body">'
+        + '<div class="homework-result-head"><span>未分类</span></div>'
+        + '<select id="homeworkUnclassifiedSubject">'
+          + '<option value="">不导入</option>'
+          + SCHOOL_SUBJECTS.map(function(subject) {
+              return '<option value="' + subject.key + '">归入' + subject.name + '</option>';
+            }).join('')
+        + '</select>'
+        + '<textarea>' + escapeHtml(unclassified.join('\n')) + '</textarea>'
+      + '</div>'
     + '</div>';
   }
   container.innerHTML = html || '<div class="review-data-empty">没有识别到可导入的作业。</div>';
