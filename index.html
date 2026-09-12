@@ -352,6 +352,32 @@ body {
   opacity:0.7;
   text-shadow:0 2px 12px var(--accent-glow);
 }
+.app-mode-switch {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
+  margin:0 12px 10px;
+  padding:4px;
+  border-radius:12px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.08);
+  flex-shrink:0;
+}
+.app-mode-switch button {
+  padding:7px 6px;
+  border:none;
+  border-radius:8px;
+  background:transparent;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.82rem;
+  letter-spacing:0.5px;
+  cursor:pointer;
+}
+.app-mode-switch button.active {
+  background:rgba(201,168,124,0.22);
+  color:var(--accent);
+}
 
 .sidebar-nav {
   flex:1;
@@ -600,6 +626,88 @@ body {
   border:1px solid var(--card-border);
   border-radius:16px;
   box-shadow:var(--shadow-sm);
+}
+.school-work-panel {
+  max-width:640px;
+  width:calc(100% - 32px);
+  margin:0 auto 14px;
+  padding:16px 18px;
+  border-radius:18px;
+  border:1px solid var(--card-border);
+  background:var(--card-bg);
+  box-shadow:var(--shadow-md), inset 0 1px 0 var(--card-highlight);
+}
+.school-work-panel.hidden {
+  display:none;
+}
+.school-panel-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.school-panel-title {
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  color:var(--text);
+  letter-spacing:1px;
+}
+.school-panel-hint {
+  margin-top:2px;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.8rem;
+}
+.school-selected-count {
+  flex-shrink:0;
+  color:var(--accent);
+  font-family:var(--font-hand);
+  font-size:0.84rem;
+}
+.school-subject-grid {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:14px;
+}
+.school-subject-chip {
+  --subject-color:#c9a87c;
+  padding:7px 13px;
+  border-radius:999px;
+  border:1px solid var(--subject-color);
+  background:color-mix(in srgb, var(--subject-color) 18%, transparent);
+  color:var(--text-secondary);
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.school-subject-chip.selected {
+  background:color-mix(in srgb, var(--subject-color) 28%, transparent);
+  color:var(--text);
+  box-shadow:0 2px 10px color-mix(in srgb, var(--subject-color) 24%, transparent);
+}
+.school-subject-chip:not(.selected) {
+  opacity:0.42;
+  text-decoration:line-through;
+}
+.school-generate-btn {
+  width:100%;
+  padding:11px 16px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg, var(--accent), var(--accent-soft));
+  color:#fff;
+  font-family:var(--font-hand);
+  font-size:1rem;
+  letter-spacing:1px;
+  cursor:pointer;
+  box-shadow:0 4px 18px var(--accent-glow);
+}
+.school-generate-btn:hover {
+  opacity:0.88;
+  transform:translateY(-1px);
 }
 html[data-theme="dark"] .day-progress {
   background:rgba(22,24,34,0.80);
@@ -910,6 +1018,19 @@ html[data-theme="dark"] .day-progress-track {
   position:absolute;
   top:0; left:0; right:0; height:1px;
   background:linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+}
+.task-card.subject-task {
+  border-left:5px solid var(--subject-color);
+}
+.subject-badge {
+  flex-shrink:0;
+  padding:3px 8px;
+  border-radius:999px;
+  background:color-mix(in srgb, var(--subject-color) 22%, transparent);
+  border:1px solid color-mix(in srgb, var(--subject-color) 42%, transparent);
+  color:var(--text-secondary);
+  font-family:var(--font-hand);
+  font-size:0.78rem;
 }
 .task-card.dragging {
   z-index:50;
@@ -4250,6 +4371,10 @@ html[data-theme="dark"] .day-progress-track {
       <div class="logo">日砌</div>
       <button class="sidebar-theme" id="themeToggle" title="切换深色/浅色模式">🌙</button>
     </div>
+    <div class="app-mode-switch">
+      <button class="active" data-app-mode="default">默认模式</button>
+      <button data-app-mode="school">课业模式</button>
+    </div>
     <div class="sidebar-nav">
       <button class="nav-item active" data-page="tasks">&#128203; 任务</button>
       <button class="nav-item" data-page="timer">&#9201; 计时</button>
@@ -4281,6 +4406,18 @@ html[data-theme="dark"] .day-progress-track {
         <div class="date" id="dateDisplay"></div>
         <span class="streak-badge" id="streakBadge"></span>
         <span class="total-time" id="totalTimeDisplay"></span>
+      </div>
+
+      <div class="school-work-panel hidden" id="schoolWorkPanel">
+        <div class="school-panel-head">
+          <div>
+            <div class="school-panel-title">今日课业</div>
+            <div class="school-panel-hint">点击科目可取消当天没有作业的项目</div>
+          </div>
+          <span class="school-selected-count" id="schoolSelectedCount"></span>
+        </div>
+        <div class="school-subject-grid" id="schoolSubjectGrid"></div>
+        <button class="school-generate-btn" id="btnGenerateSchoolTasks">生成今日课业</button>
       </div>
 
       <div class="day-progress" id="dayProgress">
@@ -4560,7 +4697,23 @@ const state = {
   rolloverSelected: [],
   tasksLoaded: false,
   tomorrowLoaded: false,
+  appMode: localStorage.getItem('riqi_app_mode') || 'default',
+  schoolSubjectSelection: {},
 };
+
+var SCHOOL_SUBJECTS = [
+  { key: 'chinese', name: '语文', color: '#c85555' },
+  { key: 'math', name: '数学', color: '#5b8ec9' },
+  { key: 'english', name: '英语', color: '#7a9e7e' },
+  { key: 'physics', name: '物理', color: '#9a7fb8' },
+  { key: 'chemistry', name: '化学', color: '#d49c5f' },
+  { key: 'geography', name: '地理', color: '#5fa6a0' },
+  { key: 'biology', name: '生物', color: '#6d9f71' },
+  { key: 'history', name: '历史', color: '#b8a35f' },
+  { key: 'politics', name: '道法', color: '#c96f7b' }
+];
+var SCHOOL_SUBJECT_MAP = {};
+SCHOOL_SUBJECTS.forEach(function(subject) { SCHOOL_SUBJECT_MAP[subject.key] = subject; });
 
 // ==================== 日期 ====================
 (function initDate() {
@@ -4569,6 +4722,126 @@ const state = {
   document.getElementById('dateDisplay').textContent =
     d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 星期'+w[d.getDay()];
 })();
+
+function initSchoolSelection() {
+  SCHOOL_SUBJECTS.forEach(function(subject) {
+    if (state.schoolSubjectSelection[subject.key] === undefined) {
+      state.schoolSubjectSelection[subject.key] = true;
+    }
+  });
+}
+
+function renderSchoolPanel() {
+  var panel = document.getElementById('schoolWorkPanel');
+  var grid = document.getElementById('schoolSubjectGrid');
+  var count = document.getElementById('schoolSelectedCount');
+  if (!panel || !grid) return;
+  panel.classList.toggle('hidden', state.appMode !== 'school');
+  if (state.appMode !== 'school') return;
+  initSchoolSelection();
+  var selectedCount = 0;
+  grid.innerHTML = SCHOOL_SUBJECTS.map(function(subject) {
+    var selected = state.schoolSubjectSelection[subject.key] !== false;
+    if (selected) selectedCount++;
+    return '<button class="school-subject-chip' + (selected ? ' selected' : '') + '" data-school-subject="' + subject.key + '" style="--subject-color:' + subject.color + ';">'
+      + subject.name + '</button>';
+  }).join('');
+  if (count) count.textContent = '已选 ' + selectedCount + ' / ' + SCHOOL_SUBJECTS.length;
+}
+
+function applyAppMode() {
+  document.querySelectorAll('[data-app-mode]').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.appMode === state.appMode);
+  });
+  renderSchoolPanel();
+}
+
+function generateSchoolTasks() {
+  initSchoolSelection();
+  var selectedSubjects = SCHOOL_SUBJECTS.filter(function(subject) {
+    return state.schoolSubjectSelection[subject.key] !== false;
+  });
+  if (!selectedSubjects.length) {
+    alert('请至少保留一个科目。');
+    return;
+  }
+
+  var nonSubjectTasks = state.tasks.filter(function(task) {
+    return !task.subject || !SCHOOL_SUBJECT_MAP[task.subject];
+  });
+  var existingBySubject = {};
+  state.tasks.forEach(function(task) {
+    if (task.subject && SCHOOL_SUBJECT_MAP[task.subject]) {
+      if (!existingBySubject[task.subject]) existingBySubject[task.subject] = [];
+      existingBySubject[task.subject].push(task);
+    }
+  });
+
+  var orderedSubjectTasks = [];
+  selectedSubjects.forEach(function(subject) {
+    var existing = existingBySubject[subject.key] || [];
+    existing.forEach(function(task) {
+      task.mode = 'school';
+      task.subject = subject.key;
+      task.subjectName = subject.name;
+      orderedSubjectTasks.push(task);
+    });
+    if (!existing.length) {
+      orderedSubjectTasks.push({
+        id: Date.now() + Math.random() * 1000,
+        title: subject.name,
+        subtasks: [],
+        completed: false,
+        doneSettled: false,
+        duration: 0,
+        sessions: [],
+        mode: 'school',
+        subject: subject.key,
+        subjectName: subject.name,
+        _fresh: true,
+      });
+    }
+  });
+
+  // 未选中的已有科目任务不删除，只是不再生成新任务。
+  SCHOOL_SUBJECTS.forEach(function(subject) {
+    if (selectedSubjects.indexOf(subject) !== -1) return;
+    (existingBySubject[subject.key] || []).forEach(function(task) {
+      var isEmpty = !task.completed
+        && getTaskTotalDuration(task) === 0
+        && !(task.subtasks || []).length;
+      if (isEmpty) return;
+      orderedSubjectTasks.push(task);
+    });
+  });
+
+  // 保持学科固定顺序：非学科任务在前，学科任务按模板顺序在后。
+  state.tasks = nonSubjectTasks.concat(orderedSubjectTasks);
+  renderTasks();
+  debouncedSave();
+}
+
+document.querySelectorAll('[data-app-mode]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    if (currentTimer) {
+      alert('计时过程中不能切换模式，请先结束当前计时。');
+      return;
+    }
+    state.appMode = btn.dataset.appMode;
+    localStorage.setItem('riqi_app_mode', state.appMode);
+    applyAppMode();
+  });
+});
+
+document.getElementById('schoolSubjectGrid').addEventListener('click', function(e) {
+  var chip = e.target.closest('[data-school-subject]');
+  if (!chip) return;
+  var key = chip.dataset.schoolSubject;
+  state.schoolSubjectSelection[key] = state.schoolSubjectSelection[key] === false;
+  renderSchoolPanel();
+});
+
+document.getElementById('btnGenerateSchoolTasks').addEventListener('click', generateSchoolTasks);
 
 // ==================== 主题 ====================
 function applyTheme(theme) {
@@ -4685,6 +4958,7 @@ function showApp() {
   sidebar.classList.remove('hidden');
   mainArea.classList.add('has-sidebar');
   document.getElementById('sidebarUserName').textContent = state.currentUser.name;
+  applyAppMode();
   loadKeepAwake();
 
   var lastPage = localStorage.getItem('lastPage') || 'tasks';
@@ -4909,13 +5183,17 @@ function renderTasks() {
   function cardHtml(t) {
     const completed = t.completed ? 'completed' : '';
     const doneSettled = t.doneSettled ? 'done-settled' : '';
+    const subject = t.subject ? SCHOOL_SUBJECT_MAP[t.subject] : null;
     const animStyle = t._fresh ? 'animation:slideUp 1s cubic-bezier(0.22,1,0.36,1) backwards;' : '';
+    const subjectStyle = subject ? '--subject-color:' + subject.color + ';' : '';
     const badge = '<span class="ampm-badge ' + (t.ampm === 'am' ? 'am' : 'pm') + '">' + (t.ampm === 'am' ? '☀' : '🌙') + '</span>';
+    const subjectBadge = subject ? '<span class="subject-badge">' + subject.name + '</span>' : '';
 
-    return '<div class="task-card ' + completed + ' ' + doneSettled + '" data-id="' + t.id + '" style="' + animStyle + '">'
+    return '<div class="task-card ' + completed + ' ' + doneSettled + (subject ? ' subject-task' : '') + '" data-id="' + t.id + '" style="' + subjectStyle + animStyle + '">'
       + '<div class="card-main">'
         + '<div class="drag-handle" data-handle="' + t.id + '"><span></span><span></span><span></span></div>'
         + badge
+        + subjectBadge
         + '<div class="task-title">' + escapeHtml(t.title) + '</div>'
         + '<button class="delete-btn" data-delete="' + t.id + '" title="删除">&#10005;</button>'
       + '</div>'
@@ -7850,6 +8128,10 @@ var REVIEW_TASK_COLORS = [
 ];
 
 function reviewTaskColor(taskId, tasks) {
+  var task = tasks.find(function(t) { return t.id === taskId; });
+  if (task && task.subject && SCHOOL_SUBJECT_MAP[task.subject]) {
+    return SCHOOL_SUBJECT_MAP[task.subject].color;
+  }
   var idx = tasks.findIndex(function(t) { return t.id === taskId; });
   return REVIEW_TASK_COLORS[(idx < 0 ? 0 : idx) % REVIEW_TASK_COLORS.length];
 }
