@@ -10,7 +10,9 @@ import sys
 import hashlib
 import secrets
 import threading
+import urllib.error
 import urllib.parse
+import urllib.request
 import socket
 import webbrowser
 from datetime import date, timedelta
@@ -52,6 +54,8 @@ else:
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 INDEX_FILE = os.path.join(RESOURCE_DIR, "index.html")
 USERS_FILE = os.path.join(DATA_DIR, "users.json")
+DEEPSEEK_CONFIG_FILE = os.path.join(DATA_DIR, "deepseek.json")
+DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
 os.makedirs(DATA_DIR, exist_ok=True)
 
 INVALID_NAME_CHARS = set('\\/:*?"<>|\r\n\t')
@@ -156,6 +160,105 @@ def find_user_by_token(users_data, token):
         if u.get("token") == token:
             return u
     return None
+
+
+def load_deepseek_config():
+    try:
+        with open(DEEPSEEK_CONFIG_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def save_deepseek_config(api_key):
+    with open(DEEPSEEK_CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump({"api_key": api_key}, f, ensure_ascii=False, indent=2)
+
+
+def get_deepseek_api_key():
+    env_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    if env_key:
+        return env_key
+    return str(load_deepseek_config().get("api_key", "")).strip()
+
+
+def parse_homework_image(image_data):
+    api_key = get_deepseek_api_key()
+    if not api_key:
+        raise ValueError("尚未配置 DeepSeek API Key")
+    if not image_data.startswith("data:image/"):
+        raise ValueError("图片格式不正确")
+    if len(image_data) > 45 * 1024 * 1024:
+        raise ValueError("图片过大，请压缩后重试")
+
+    prompt = (
+        "你是中文学生作业单解析器。请识别图片中的全部作业内容，"
+        "按学科分组，并拆分成可以逐项完成的条目。\n"
+        "只返回 JSON，不要输出 Markdown 或解释。\n"
+        "固定学科名和顺序为：语文、数学、英语、物理、化学、地理、生物、历史、道法。\n"
+        "常见缩写要归一化，例如：数=数学，英=英语，物=物理，化=化学，"
+        "地=地理，生=生物，史=历史，政治/道德与法治=道法。\n"
+        "无法判断学科的内容放到“未分类”。\n"
+        "输出格式："
+        '{"subjects":[{"subject":"语文","items":["作业内容"]}],'
+        '"unclassified":["无法分类的内容"]}'
+    )
+    payload = {
+        "model": "deepseek-flash",
+        "messages": [{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": image_data, "detail": "high"},
+                },
+            ],
+        }],
+        "response_format": {"type": "json_object"},
+        "temperature": 0,
+        "max_tokens": 4000,
+        "stream": False,
+    }
+    request = urllib.request.Request(
+        DEEPSEEK_API_URL,
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={
+            "Authorization": "Bearer " + api_key,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            result = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        try:
+            detail = exc.read().decode("utf-8", errors="replace")
+        except Exception:
+            detail = str(exc)
+        raise RuntimeError("DeepSeek 请求失败：%s" % detail)
+    except (urllib.error.URLError, TimeoutError, socket.timeout) as exc:
+        raise RuntimeError("无法连接 DeepSeek：%s" % exc)
+
+    try:
+        content = result["choices"][0]["message"]["content"]
+        content = content.strip()
+        if content.startswith("```"):
+            content = re.sub(r"^```(?:json)?\s*", "", content)
+            content = re.sub(r"\s*```$", "", content)
+        parsed = json.loads(content)
+    except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("DeepSeek 返回内容无法解析：%s" % exc)
+
+    if not isinstance(parsed, dict):
+        raise RuntimeError("DeepSeek 返回格式不正确")
+    if not isinstance(parsed.get("subjects"), list):
+        parsed["subjects"] = []
+    if not isinstance(parsed.get("unclassified"), list):
+        parsed["unclassified"] = []
+    return parsed
 
 
 def user_data_file(username, date_str=None):
@@ -569,6 +672,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
             self._send_json(200, {"enabled": KEEP_AWAKE})
 
+        elif path == "/api/ai/config":
+            user = self._auth(request_token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            self._send_json(200, {
+                "configured": bool(get_deepseek_api_key()),
+                "model": "deepseek-flash",
+            })
+
         elif path == "/" or path == "":
             try:
                 with open(INDEX_FILE, "rb") as f:
@@ -606,6 +719,33 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
             save_power_state(bool(body.get("enabled", False)))
             self._send_json(200, {"enabled": KEEP_AWAKE})
+
+        elif self.path == "/api/ai/config":
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            api_key = str(body.get("api_key", "")).strip()
+            if api_key:
+                save_deepseek_config(api_key)
+            self._send_json(200, {
+                "configured": bool(get_deepseek_api_key()),
+                "model": "deepseek-flash",
+            })
+
+        elif self.path == "/api/homework/parse":
+            user = self._auth(token)
+            if not user:
+                self._send_json(401, {"error": "未登录或登录已过期"})
+                return
+            image_data = body.get("image", "")
+            try:
+                parsed = parse_homework_image(image_data)
+                self._send_json(200, {"result": parsed})
+            except ValueError as exc:
+                self._send_json(400, {"error": str(exc)})
+            except RuntimeError as exc:
+                self._send_json(502, {"error": str(exc)})
 
         elif self.path == "/api/save":
             user = self._auth(token)
@@ -809,7 +949,7 @@ if __name__ == "__main__":
     lan_ip = get_lan_ip()
 
     try:
-        httpd = http.server.HTTPServer(("0.0.0.0", PORT), Handler)
+        httpd = http.server.ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     except OSError as exc:
         message = "无法启动日砌：端口 %d 可能已被占用。\n\n%s" % (PORT, exc)
         print("\n  [!] %s\n" % message)

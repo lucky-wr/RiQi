@@ -709,6 +709,21 @@ body {
   opacity:0.88;
   transform:translateY(-1px);
 }
+.school-scan-btn {
+  width:100%;
+  margin-bottom:9px;
+  padding:10px 16px;
+  border-radius:12px;
+  border:1px solid rgba(111,143,184,0.45);
+  background:rgba(111,143,184,0.14);
+  color:#8eb2df;
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  cursor:pointer;
+}
+.school-scan-btn:hover {
+  background:rgba(111,143,184,0.24);
+}
 html[data-theme="dark"] .day-progress {
   background:rgba(22,24,34,0.80);
 }
@@ -3828,6 +3843,165 @@ html[data-theme="dark"] .day-progress-track {
   color:var(--text-muted);
   font-size:0.78rem;
 }
+.homework-modal-card {
+  width:620px;
+  max-width:94vw;
+  max-height:88vh;
+  overflow-y:auto;
+  position:relative;
+}
+.homework-modal-close {
+  position:absolute;
+  top:12px;
+  right:14px;
+  border:none;
+  background:transparent;
+  color:var(--text-muted);
+  cursor:pointer;
+  font-size:1rem;
+}
+.homework-api-status {
+  margin-bottom:10px;
+  padding:9px 12px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.07);
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.86rem;
+}
+.homework-api-setup {
+  display:flex;
+  gap:8px;
+  margin-bottom:12px;
+}
+.homework-api-setup input {
+  flex:1;
+  min-width:0;
+  padding:9px 11px;
+  border-radius:10px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.1);
+  color:var(--text);
+  outline:none;
+}
+.homework-api-setup button {
+  flex-shrink:0;
+  padding:9px 14px;
+  border-radius:10px;
+  border:none;
+  background:rgba(201,168,124,0.18);
+  color:var(--accent);
+  font-family:var(--font-hand);
+  cursor:pointer;
+}
+.homework-upload-area {
+  padding:28px 16px;
+  border:2px dashed var(--card-border);
+  border-radius:14px;
+  text-align:center;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.92rem;
+  cursor:pointer;
+  transition:border-color 0.2s, background 0.2s;
+}
+.homework-upload-area:hover,
+.homework-upload-area.dragging {
+  border-color:var(--accent);
+  background:rgba(201,168,124,0.08);
+}
+.homework-preview {
+  display:block;
+  width:100%;
+  max-height:280px;
+  object-fit:contain;
+  margin-top:12px;
+  border-radius:12px;
+  background:rgba(0,0,0,0.16);
+}
+.homework-status {
+  min-height:1.4em;
+  margin-top:10px;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.86rem;
+}
+.homework-status.error {
+  color:var(--danger);
+}
+.homework-results {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:10px;
+}
+.homework-result-row {
+  padding:11px 12px;
+  border-radius:12px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.06);
+}
+.homework-result-head {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:7px;
+  color:var(--text);
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+}
+.homework-result-row textarea {
+  width:100%;
+  min-height:64px;
+  resize:vertical;
+  padding:8px 10px;
+  border-radius:9px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.08);
+  color:var(--text);
+  font-family:var(--font-hand);
+  font-size:0.88rem;
+  line-height:1.5;
+  outline:none;
+}
+.homework-result-row select {
+  width:100%;
+  margin-bottom:7px;
+  padding:7px 9px;
+  border-radius:9px;
+  border:1px solid var(--card-border);
+  background:rgba(255,255,255,0.08);
+  color:var(--text);
+  font-family:var(--font-hand);
+  font-size:0.86rem;
+  outline:none;
+}
+.homework-modal-actions {
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+}
+.homework-recognize-btn,
+.homework-import-btn {
+  flex:1;
+  padding:11px;
+  border:none;
+  border-radius:11px;
+  color:#fff;
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  cursor:pointer;
+}
+.homework-recognize-btn {
+  background:linear-gradient(135deg, #6f8fb8, #5fa6a0);
+}
+.homework-import-btn {
+  background:linear-gradient(135deg, var(--green-soft), var(--green));
+}
+.homework-recognize-btn:disabled {
+  opacity:0.45;
+  cursor:default;
+}
 .timer-assign-total {
   text-align:center;
   font-family:var(--font-hand);
@@ -4417,6 +4591,7 @@ html[data-theme="dark"] .day-progress-track {
           <span class="school-selected-count" id="schoolSelectedCount"></span>
         </div>
         <div class="school-subject-grid" id="schoolSubjectGrid"></div>
+        <button class="school-scan-btn" id="btnHomeworkScanner">识别作业单</button>
         <button class="school-generate-btn" id="btnGenerateSchoolTasks">生成今日课业</button>
       </div>
 
@@ -4664,6 +4839,30 @@ html[data-theme="dark"] .day-progress-track {
   </div>
 </div>
 
+<!-- ====== 作业单识别弹窗 ====== -->
+<div class="modal-overlay hidden" id="homeworkModal">
+  <div class="modal-card homework-modal-card">
+    <button class="homework-modal-close" id="homeworkModalClose" title="关闭">&#10005;</button>
+    <h3>识别作业单</h3>
+    <div class="homework-api-status" id="homeworkApiStatus"></div>
+    <div class="homework-api-setup" id="homeworkApiSetup">
+      <input type="password" id="homeworkApiKey" placeholder="输入 DeepSeek API Key" autocomplete="off">
+      <button id="homeworkSaveKey">保存 Key</button>
+    </div>
+    <div class="homework-upload-area" id="homeworkUploadArea">
+      <span>点击选择图片，或直接 Ctrl+V 粘贴截图</span>
+    </div>
+    <input type="file" id="homeworkImageInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+    <img class="homework-preview hidden" id="homeworkPreview" alt="作业单预览">
+    <div class="homework-status" id="homeworkStatus"></div>
+    <div class="homework-results hidden" id="homeworkResults"></div>
+    <div class="homework-modal-actions">
+      <button class="homework-recognize-btn" id="homeworkRecognize" disabled>开始识别</button>
+      <button class="homework-import-btn hidden" id="homeworkImport">生成今日课业</button>
+    </div>
+  </div>
+</div>
+
 <!-- ====== 删除撤销提示 ====== -->
 <div class="undo-toast hidden" id="undoToast">
   <span id="undoToastText">任务已删除</span>
@@ -4714,6 +4913,8 @@ var SCHOOL_SUBJECTS = [
 ];
 var SCHOOL_SUBJECT_MAP = {};
 SCHOOL_SUBJECTS.forEach(function(subject) { SCHOOL_SUBJECT_MAP[subject.key] = subject; });
+var homeworkImageData = null;
+var homeworkParsedResult = null;
 
 // ==================== 日期 ====================
 (function initDate() {
@@ -4821,6 +5022,295 @@ function generateSchoolTasks() {
   debouncedSave();
 }
 
+function findSchoolSubject(name) {
+  var normalized = String(name || '').replace(/\s+/g, '');
+  var aliases = {
+    '语': 'chinese', '语文': 'chinese',
+    '数': 'math', '数学': 'math',
+    '英': 'english', '英语': 'english',
+    '物': 'physics', '物理': 'physics',
+    '化': 'chemistry', '化学': 'chemistry',
+    '地': 'geography', '地理': 'geography',
+    '生': 'biology', '生物': 'biology',
+    '史': 'history', '历史': 'history',
+    '政治': 'politics', '道法': 'politics', '道德与法治': 'politics'
+  };
+  var key = aliases[normalized];
+  return key ? SCHOOL_SUBJECT_MAP[key] : null;
+}
+
+function compressHomeworkImage(file) {
+  return new Promise(function(resolve, reject) {
+    if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+      reject(new Error('请选择图片文件'));
+      return;
+    }
+    var reader = new FileReader();
+    reader.onerror = function() { reject(new Error('图片读取失败')); };
+    reader.onload = function() {
+      var img = new Image();
+      img.onerror = function() { reject(new Error('图片格式无法识别')); };
+      img.onload = function() {
+        var maxSide = 1600;
+        var scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.86));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleHomeworkFile(file) {
+  var status = document.getElementById('homeworkStatus');
+  try {
+    if (status) {
+      status.textContent = '正在压缩图片…';
+      status.classList.remove('error');
+    }
+    homeworkImageData = await compressHomeworkImage(file);
+    homeworkParsedResult = null;
+    var preview = document.getElementById('homeworkPreview');
+    preview.src = homeworkImageData;
+    preview.classList.remove('hidden');
+    document.getElementById('homeworkResults').classList.add('hidden');
+    document.getElementById('homeworkImport').classList.add('hidden');
+    document.getElementById('homeworkRecognize').disabled = false;
+    if (status) status.textContent = '图片已就绪，可以开始识别。';
+  } catch(e) {
+    if (status) {
+      status.textContent = e.message || '图片处理失败';
+      status.classList.add('error');
+    }
+  }
+}
+
+async function loadHomeworkApiStatus() {
+  var status = document.getElementById('homeworkApiStatus');
+  var setup = document.getElementById('homeworkApiSetup');
+  if (!status || !setup) return;
+  try {
+    var res = await apiFetch('/api/ai/config');
+    var data = await res.json();
+    if (data.configured) {
+      status.textContent = 'DeepSeek 已配置 · 模型 deepseek-flash';
+      setup.style.display = 'none';
+    } else {
+      status.textContent = '首次使用请配置 DeepSeek API Key。Key 只保存在这台电脑上。';
+      setup.style.display = 'flex';
+    }
+  } catch(e) {
+    status.textContent = '无法读取 DeepSeek 配置';
+    setup.style.display = 'flex';
+  }
+}
+
+function openHomeworkModal() {
+  document.getElementById('homeworkModal').classList.remove('hidden');
+  loadHomeworkApiStatus();
+}
+
+function closeHomeworkModal() {
+  document.getElementById('homeworkModal').classList.add('hidden');
+}
+
+async function saveHomeworkApiKey() {
+  var input = document.getElementById('homeworkApiKey');
+  var status = document.getElementById('homeworkStatus');
+  var apiKey = input ? input.value.trim() : '';
+  if (!apiKey) {
+    if (status) status.textContent = '请输入 API Key。';
+    return;
+  }
+  try {
+    var res = await apiFetch('/api/ai/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: apiKey }),
+    });
+    var data = await res.json();
+    if (!res.ok || !data.configured) throw new Error(data.error || '保存失败');
+    if (input) input.value = '';
+    if (status) status.textContent = 'API Key 已保存。';
+    loadHomeworkApiStatus();
+  } catch(e) {
+    if (status) {
+      status.textContent = e.message || 'API Key 保存失败';
+      status.classList.add('error');
+    }
+  }
+}
+
+function renderHomeworkResults(result) {
+  var container = document.getElementById('homeworkResults');
+  var rows = [];
+  var unclassified = [];
+  (result.subjects || []).forEach(function(group) {
+    var subject = findSchoolSubject(group.subject);
+    var items = Array.isArray(group.items) ? group.items.filter(Boolean) : [];
+    if (!subject) {
+      unclassified = unclassified.concat(items);
+      return;
+    }
+    rows.push({
+      key: subject.key,
+      name: subject.name,
+      color: subject.color,
+      items: items,
+    });
+  });
+  unclassified = unclassified.concat(result.unclassified || []);
+  rows.sort(function(a, b) {
+    return SCHOOL_SUBJECTS.findIndex(function(s) { return s.key === a.key; })
+      - SCHOOL_SUBJECTS.findIndex(function(s) { return s.key === b.key; });
+  });
+
+  var html = rows.map(function(row) {
+    return '<div class="homework-result-row" data-homework-subject="' + row.key + '">'
+      + '<label class="homework-result-head">'
+        + '<input type="checkbox" checked>'
+        + '<span class="review-day-legend-dot" style="background:' + row.color + ';"></span>'
+        + '<span>' + row.name + '</span>'
+      + '</label>'
+      + '<textarea>' + escapeHtml(row.items.join('\n')) + '</textarea>'
+    + '</div>';
+  }).join('');
+  if (unclassified.length) {
+    html += '<div class="homework-result-row" data-homework-subject="unclassified">'
+      + '<label class="homework-result-head">'
+        + '<input type="checkbox" checked>'
+        + '<span>未分类</span>'
+      + '</label>'
+      + '<select id="homeworkUnclassifiedSubject">'
+        + '<option value="">不导入</option>'
+        + SCHOOL_SUBJECTS.map(function(subject) {
+            return '<option value="' + subject.key + '">归入' + subject.name + '</option>';
+          }).join('')
+      + '</select>'
+      + '<textarea>' + escapeHtml(unclassified.join('\n')) + '</textarea>'
+    + '</div>';
+  }
+  container.innerHTML = html || '<div class="review-data-empty">没有识别到可导入的作业。</div>';
+  container.classList.remove('hidden');
+  document.getElementById('homeworkImport').classList.remove('hidden');
+}
+
+async function recognizeHomework() {
+  var button = document.getElementById('homeworkRecognize');
+  var status = document.getElementById('homeworkStatus');
+  if (!homeworkImageData) {
+    if (status) status.textContent = '请先选择或粘贴作业单截图。';
+    return;
+  }
+  button.disabled = true;
+  if (status) {
+    status.textContent = 'DeepSeek 正在识别作业单，请稍候…';
+    status.classList.remove('error');
+  }
+  try {
+    var res = await apiFetch('/api/homework/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: homeworkImageData }),
+    });
+    if (res.status === 401) { handleAuthError(); return; }
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || '识别失败');
+    homeworkParsedResult = data.result;
+    renderHomeworkResults(homeworkParsedResult);
+    if (status) status.textContent = '识别完成，请检查并修改后生成课业。';
+  } catch(e) {
+    if (status) {
+      status.textContent = e.message || '识别失败';
+      status.classList.add('error');
+    }
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function upsertSchoolHomework(subject, items) {
+  var task = state.tasks.find(function(t) { return t.subject === subject.key; });
+  if (!task) {
+    task = {
+      id: Date.now() + Math.random() * 1000,
+      title: subject.name,
+      subtasks: [],
+      completed: false,
+      doneSettled: false,
+      duration: 0,
+      sessions: [],
+      mode: 'school',
+      subject: subject.key,
+      subjectName: subject.name,
+      _fresh: true,
+    };
+    state.tasks.push(task);
+  }
+  task.mode = 'school';
+  task.subject = subject.key;
+  task.subjectName = subject.name;
+  items.forEach(function(text) {
+    text = String(text || '').trim();
+    if (!text) return;
+    var exists = (task.subtasks || []).some(function(s) { return s.text === text; });
+    if (!exists) {
+      task.subtasks.push({
+        id: Date.now() + Math.random() * 1000,
+        text: text,
+        done: false,
+        duration: 0,
+      });
+    }
+  });
+}
+
+function importHomeworkResults() {
+  var additions = [];
+  document.querySelectorAll('[data-homework-subject]').forEach(function(row) {
+    var checkbox = row.querySelector('input[type="checkbox"]');
+    if (!checkbox || !checkbox.checked) return;
+    var subjectKey = row.dataset.homeworkSubject;
+    var textarea = row.querySelector('textarea');
+    var items = textarea ? textarea.value.split('\n').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+    if (subjectKey === 'unclassified') {
+      var select = row.querySelector('select');
+      subjectKey = select ? select.value : '';
+      if (!subjectKey) return;
+    }
+    var subject = SCHOOL_SUBJECT_MAP[subjectKey];
+    if (subject) additions.push({ subject: subject, items: items });
+  });
+
+  if (!additions.length) {
+    var status = document.getElementById('homeworkStatus');
+    if (status) status.textContent = '请至少选择一个学科。';
+    return;
+  }
+  additions.forEach(function(item) {
+    upsertSchoolHomework(item.subject, item.items);
+  });
+
+  var nonSubjectTasks = state.tasks.filter(function(task) {
+    return !task.subject || !SCHOOL_SUBJECT_MAP[task.subject];
+  });
+  var ordered = [];
+  SCHOOL_SUBJECTS.forEach(function(subject) {
+    state.tasks.forEach(function(task) {
+      if (task.subject === subject.key) ordered.push(task);
+    });
+  });
+  state.tasks = nonSubjectTasks.concat(ordered);
+  renderTasks();
+  debouncedSave();
+  closeHomeworkModal();
+}
+
 document.querySelectorAll('[data-app-mode]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     if (currentTimer) {
@@ -4842,6 +5332,58 @@ document.getElementById('schoolSubjectGrid').addEventListener('click', function(
 });
 
 document.getElementById('btnGenerateSchoolTasks').addEventListener('click', generateSchoolTasks);
+
+document.getElementById('btnHomeworkScanner').addEventListener('click', openHomeworkModal);
+document.getElementById('homeworkModalClose').addEventListener('click', closeHomeworkModal);
+document.getElementById('homeworkSaveKey').addEventListener('click', saveHomeworkApiKey);
+document.getElementById('homeworkRecognize').addEventListener('click', recognizeHomework);
+document.getElementById('homeworkImport').addEventListener('click', importHomeworkResults);
+
+document.getElementById('homeworkUploadArea').addEventListener('click', function() {
+  document.getElementById('homeworkImageInput').click();
+});
+
+document.getElementById('homeworkImageInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) handleHomeworkFile(this.files[0]);
+  this.value = '';
+});
+
+['dragenter', 'dragover'].forEach(function(eventName) {
+  document.getElementById('homeworkUploadArea').addEventListener(eventName, function(e) {
+    e.preventDefault();
+    this.classList.add('dragging');
+  });
+});
+
+document.getElementById('homeworkUploadArea').addEventListener('dragleave', function() {
+  this.classList.remove('dragging');
+});
+
+document.getElementById('homeworkUploadArea').addEventListener('drop', function(e) {
+  e.preventDefault();
+  this.classList.remove('dragging');
+  var file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file) handleHomeworkFile(file);
+});
+
+document.getElementById('homeworkModal').addEventListener('paste', function(e) {
+  var items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].type && items[i].type.indexOf('image/') === 0) {
+      var file = items[i].getAsFile();
+      if (file) {
+        e.preventDefault();
+        handleHomeworkFile(file);
+      }
+      return;
+    }
+  }
+});
+
+document.getElementById('homeworkModal').addEventListener('click', function(e) {
+  if (e.target === this) closeHomeworkModal();
+});
 
 // ==================== 主题 ====================
 function applyTheme(theme) {
