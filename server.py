@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """日砌 — 每日打卡"""
 
+import argparse
 import http.server
 import json
 import os
@@ -8,15 +9,37 @@ import re
 import sys
 import hashlib
 import secrets
+import threading
 import urllib.parse
 import socket
-from datetime import date, datetime, timedelta
+import webbrowser
+from datetime import date, timedelta
 
 # Windows 终端 GBK 编码兼容
-if sys.stdout.encoding and sys.stdout.encoding.upper() in ("GBK", "GB2312", "CP936"):
+if getattr(sys.stdout, "encoding", None) and sys.stdout.encoding.upper() in ("GBK", "GB2312", "CP936"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
+
+def show_error(message):
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(0, message, "日砌", 0x10)
+        except Exception:
+            pass
+
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description="日砌 - 每日打卡")
+    parser.add_argument("port", nargs="?", type=int, default=8080, help="服务端口（默认 8080）")
+    parser.add_argument("--no-tray", action="store_true", help="不启动系统托盘")
+    args = parser.parse_args(argv)
+    if not 0 <= args.port <= 65535:
+        parser.error("端口必须在 0 到 65535 之间")
+    return args
+
+
+ARGS = parse_args()
+PORT = ARGS.port
 
 if getattr(sys, "frozen", False):
     # PyInstaller 打包后：数据放在 exe 同目录，网页资源在解压临时目录里
@@ -198,33 +221,6 @@ def save_power_state(enabled):
     apply_keep_awake()
 
 
-# ==================== 保护卡管理 ====================
-
-def protection_file(username):
-    d = user_dir_for(username)
-    os.makedirs(d, exist_ok=True)
-    return os.path.join(d, "protection.json")
-
-
-def load_protection(username):
-    try:
-        with open(protection_file(username), "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {"cards": 0, "protected": [], "totalEarned": 0}
-
-
-def save_protection(username, data):
-    with open(protection_file(username), "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-
-def get_card_max(streak):
-    if streak <= 20: return 2
-    if streak <= 50: return 5
-    return 10
-
-
 def task_file_for_date(username, date_str):
     date_str = safe_date_str(date_str)
     if not date_str:
@@ -241,19 +237,6 @@ def read_tasks_for_date(username, date_str):
         return data.get("tasks", [])
     except (FileNotFoundError, json.JSONDecodeError):
         return None
-
-
-# ==================== 每日复盘管理 ====================
-
-def review_file(username, date_str=None):
-    if date_str is None:
-        date_str = date.today().isoformat()
-    date_str = safe_date_str(date_str)
-    if not date_str:
-        raise ValueError("invalid date")
-    d = user_dir_for(username)
-    os.makedirs(d, exist_ok=True)
-    return os.path.join(d, f"review_{date_str}.json")
 
 
 # ==================== 任务库管理 ====================
@@ -278,18 +261,12 @@ def save_library(username, data):
 
 
 def compute_stats(username, target=None):
-    """计算用户统计，自动处理保护卡。
+    """计算用户统计。
     target：可选，某月任一天，用于构建该月日历；默认今天。未来日期会被钳制到今天。"""
     today = date.today()
     if target is None or target > today:
         target = today
     yesterday = today - timedelta(days=1)
-
-    # 加载保护卡数据
-    prot = load_protection(username)
-    cards = prot["cards"]
-    protected_set = set(prot["protected"])
-    total_earned = prot["totalEarned"]
 
     # 读取用户所有任务数据
     user_dir = user_dir_for(username)
@@ -311,8 +288,7 @@ def compute_stats(username, target=None):
             "streak": 0, "longestStreak": 0, "totalDays": 0, "fullDays": 0,
             "totalTasks": 0, "completedTasks": 0, "completionRate": 0,
             "monthTasks": 0, "monthCompleted": 0,
-            "cards": 0, "cardsMax": 2, "protectedDates": [],
-            "calendar": build_calendar(target, all_tasks, protected_set)
+            "calendar": build_calendar(target, all_tasks)
         }
 
     # 基础统计
@@ -332,11 +308,15 @@ def compute_stats(username, target=None):
     completion_rate = round(completed_tasks / total_tasks, 2) if total_tasks > 0 else 0
 
     # ---- 计算当月统计 ----
-    month_start = today.replace(day=1)
+    month_start = target.replace(day=1)
+    if month_start.month == 12:
+        month_end = month_start.replace(year=month_start.year + 1, month=1)
+    else:
+        month_end = month_start.replace(month=month_start.month + 1)
     month_tasks = 0
     month_completed = 0
     d = month_start
-    while d <= today:
+    while d < month_end and d <= today:
         ds = d.isoformat()
         tasks = all_tasks.get(ds, [])
         if tasks:
@@ -344,9 +324,7 @@ def compute_stats(username, target=None):
             month_completed += sum(1 for t in tasks if t.get("completed"))
         d += timedelta(days=1)
 
-    # ---- 计算连续打卡 + 自动保护 ----
-    used_cards = 0
-    new_protected = []
+    # ---- 计算连续打卡 ----
 
     # 从昨天开始往前遍历（今天还没结束，不纳入连续判断）
     check_start = yesterday
@@ -376,14 +354,6 @@ def compute_stats(username, target=None):
 
             if all_done:
                 streak += 1
-            elif ds in protected_set:
-                streak += 1
-            elif cards > 0 and len(tasks) - done >= 2:
-                cards -= 1
-                used_cards += 1
-                protected_set.add(ds)
-                new_protected.append(ds)
-                streak += 1
             else:
                 break
         elif tasks is not None and len(tasks) == 0:
@@ -391,41 +361,15 @@ def compute_stats(username, target=None):
             streak += 1
         else:
             # 没有数据（没打卡）
-            if ds in protected_set:
-                streak += 1
-            elif cards > 0:
-                cards -= 1
-                used_cards += 1
-                protected_set.add(ds)
-                new_protected.append(ds)
-                streak += 1
-            else:
-                break
+            break
 
         current -= timedelta(days=1)
 
-    # ---- 计算奖励保护卡 ----
-    # 每连续 2 天奖励 1 张，不超过上限
-    new_earned = (streak // 2) - total_earned
-    if new_earned > 0:
-        total_earned += new_earned
-        cards += new_earned
-
-    # 上限限制
-    cards_max = get_card_max(streak)
-    cards = min(cards, cards_max)
-
-    # ---- 保存保护卡状态 ----
-    prot["cards"] = cards
-    prot["protected"] = sorted(protected_set)
-    prot["totalEarned"] = total_earned
-    save_protection(username, prot)
-
-    # ---- 计算最长连续（含保护） ----
-    longest = compute_longest_streak(all_tasks, protected_set, today, yesterday)
+    # ---- 计算最长连续 ----
+    longest = compute_longest_streak(all_tasks, today)
 
     # ---- 构建日历（月份由 target 决定） ----
-    calendar = build_calendar(target, all_tasks, protected_set)
+    calendar = build_calendar(target, all_tasks)
 
     return {
         "streak": streak,
@@ -437,16 +381,11 @@ def compute_stats(username, target=None):
         "completionRate": completion_rate,
         "monthTasks": month_tasks,
         "monthCompleted": month_completed,
-        "cards": cards,
-        "cardsMax": cards_max,
-        "cardsUsedThisRun": used_cards,
-        "newCardsAwarded": max(new_earned, 0),
-        "protectedDates": sorted(protected_set),
         "calendar": calendar,
     }
 
 
-def build_calendar(today, all_tasks, protected_set):
+def build_calendar(today, all_tasks):
     """构建当前月份的日历"""
     month_start = today.replace(day=1)
     if month_start.month == 12:
@@ -459,9 +398,7 @@ def build_calendar(today, all_tasks, protected_set):
     while d < month_end:
         ds = d.isoformat()
         tasks = all_tasks.get(ds)
-        if ds in protected_set:
-            calendar[ds] = "protected"
-        elif tasks:
+        if tasks:
             done = sum(1 for t in tasks if t.get("completed"))
             if len(tasks) > 0 and done == len(tasks):
                 calendar[ds] = "full"
@@ -475,8 +412,8 @@ def build_calendar(today, all_tasks, protected_set):
     return calendar
 
 
-def compute_longest_streak(all_tasks, protected_set, today, yesterday):
-    """计算历史最长连续打卡（含保护）。按日历日逐个检查，缺卡的日子会中断连续。"""
+def compute_longest_streak(all_tasks, today):
+    """计算历史最长连续打卡。按日历日逐个检查，缺卡的日子会中断连续。"""
     dates = sorted(all_tasks.keys())
     if not dates:
         return 0
@@ -492,9 +429,7 @@ def compute_longest_streak(all_tasks, protected_set, today, yesterday):
         ds = d.isoformat()
         tasks = all_tasks.get(ds)
         ok = False
-        if ds in protected_set:
-            ok = True
-        elif tasks is not None and len(tasks) > 0:
+        if tasks is not None and len(tasks) > 0:
             done = sum(1 for t in tasks if t.get("completed"))
             ok = done == len(tasks)
         elif tasks is not None and len(tasks) == 0:
@@ -599,48 +534,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
             self._send_json(200, load_library(user["name"]))
 
-        elif path == "/api/review":
-            token = request_token
-            user = self._auth(token)
-            if not user:
-                self._send_json(401, {"error": "未登录或登录已过期"})
-                return
-            raw_date = get_first("date")
-            if raw_date:
-                date_str = safe_date_str(raw_date)
-                if not date_str:
-                    self._send_json(400, {"error": "日期格式不正确"})
-                    return
-            else:
-                date_str = date.today().isoformat()
-            try:
-                with open(review_file(user["name"], date_str), "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError, ValueError):
-                data = {}
-            self._send_json(200, data)
-
-        elif path == "/api/reviews":
-            token = request_token
-            user = self._auth(token)
-            if not user:
-                self._send_json(401, {"error": "未登录或登录已过期"})
-                return
-            user_dir = user_dir_for(user["name"])
-            reviews = {}
-            if os.path.exists(user_dir):
-                for fname in sorted(os.listdir(user_dir)):
-                    if fname.startswith("review_") and fname.endswith(".json"):
-                        date_str = fname[len("review_"):-len(".json")]
-                        try:
-                            with open(os.path.join(user_dir, fname), "r", encoding="utf-8") as f:
-                                data = json.load(f)
-                            if data.get("score"):
-                                reviews[date_str] = data
-                        except (json.JSONDecodeError, FileNotFoundError):
-                            continue
-            self._send_json(200, {"reviews": reviews})
-
         elif path == "/api/history":
             token = request_token
             user = self._auth(token)
@@ -704,25 +597,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
             library_data = body.get("library", {})
             save_library(user["name"], library_data)
-            self._send_json(200, {"ok": True})
-
-        elif self.path == "/api/review":
-            user = self._auth(token)
-            if not user:
-                self._send_json(401, {"error": "未登录或登录已过期"})
-                return
-            raw_date = body.get("date")
-            if raw_date:
-                date_str = safe_date_str(raw_date)
-                if not date_str:
-                    self._send_json(400, {"error": "日期格式不正确"})
-                    return
-            else:
-                date_str = date.today().isoformat()
-            review_data = body.get("review", {})
-            review_data["updatedAt"] = datetime.now().isoformat()
-            with open(review_file(user["name"], date_str), "w", encoding="utf-8") as f:
-                json.dump(review_data, f, ensure_ascii=False, indent=2)
             self._send_json(200, {"ok": True})
 
         elif self.path == "/api/power/keep-awake":
@@ -824,11 +698,114 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 # ==================== 启动 ====================
 
+def create_tray_image():
+    """生成简洁的“砌石成塔”托盘图标。"""
+    from PIL import Image, ImageDraw
+
+    size = 64
+    image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    draw.ellipse((3, 3, 61, 61), fill=(122, 158, 126, 255), outline=(245, 230, 211, 255), width=3)
+
+    stones = (
+        (15, 15, 49, 25, 5),
+        (19, 29, 45, 39, 5),
+        (24, 43, 40, 52, 4),
+    )
+    for left, top, right, bottom, radius in stones:
+        draw.rounded_rectangle(
+            (left, top, right, bottom),
+            radius=radius,
+            fill=(255, 255, 255, 246),
+        )
+    return image
+
+
+def create_tray_icon(httpd, port):
+    try:
+        import pystray
+        image = create_tray_image()
+    except (ImportError, OSError) as exc:
+        return None, exc
+
+    stopping = threading.Event()
+
+    def open_app(icon=None, item=None):
+        webbrowser.open("http://localhost:%d/" % port)
+
+    def toggle_keep_awake(icon, item):
+        save_power_state(not KEEP_AWAKE)
+        icon.update_menu()
+
+    def exit_app(icon, item):
+        if stopping.is_set():
+            return
+        stopping.set()
+        httpd.shutdown()
+        icon.stop()
+
+    menu = pystray.Menu(
+        pystray.MenuItem("打开日砌", open_app, default=True),
+        pystray.Menu.SEPARATOR,
+        pystray.MenuItem("保持亮屏", toggle_keep_awake, checked=lambda item: KEEP_AWAKE),
+        pystray.Menu.SEPARATOR,
+        pystray.MenuItem("退出日砌", exit_app),
+    )
+    try:
+        icon = pystray.Icon(
+            "riqi",
+            image,
+            "日砌 — 每日打卡",
+            menu,
+        )
+    except (ImportError, OSError) as exc:
+        return None, exc
+    return (icon, stopping), None
+
+
+def serve_console(httpd):
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\n  服务器已停止\n")
+    finally:
+        httpd.server_close()
+
+
+def serve_with_tray(httpd, tray_icon, stopping):
+    server_thread = threading.Thread(
+        target=httpd.serve_forever,
+        name="riqi-http-server",
+        daemon=True,
+    )
+    server_thread.start()
+    try:
+        tray_icon.run()
+    except KeyboardInterrupt:
+        print("\n  正在退出...")
+    finally:
+        if not stopping.is_set():
+            stopping.set()
+            httpd.shutdown()
+        server_thread.join(timeout=3)
+        httpd.server_close()
+
+
 if __name__ == "__main__":
     os.chdir(SCRIPT_DIR)
     load_power_state()
 
     lan_ip = get_lan_ip()
+
+    try:
+        httpd = http.server.HTTPServer(("0.0.0.0", PORT), Handler)
+    except OSError as exc:
+        message = "无法启动日砌：端口 %d 可能已被占用。\n\n%s" % (PORT, exc)
+        print("\n  [!] %s\n" % message)
+        show_error(message)
+        raise SystemExit(1)
+
+    actual_port = httpd.server_address[1]
 
     # Windows 防火墙：尝试自动添加放行规则
     if sys.platform == "win32":
@@ -837,10 +814,11 @@ if __name__ == "__main__":
         try:
             subprocess.run(
                 ['netsh', 'advfirewall', 'firewall', 'add', 'rule',
-                 'name=RiQi_%d' % PORT, 'dir=in', 'action=allow',
+                 'name=RiQi_%d' % actual_port, 'dir=in', 'action=allow',
                  'program=' + python_path, 'protocol=tcp',
-                 'localport=%d' % PORT],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5
+                 'localport=%d' % actual_port],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5,
+                creationflags=subprocess.CREATE_NO_WINDOW,
             )
             rule_ok = True
         except Exception:
@@ -848,10 +826,13 @@ if __name__ == "__main__":
 
     print()
     print("  == Ri Qi - Daily Check-in ==")
-    print("  本机:  http://localhost:%d" % PORT)
-    print("  局域网: http://%s:%d" % (lan_ip, PORT))
+    print("  本机:  http://localhost:%d" % actual_port)
+    print("  局域网: http://%s:%d" % (lan_ip, actual_port))
     print("  首次登录会自动创建账号（仅支持一个账号）")
-    print("  按 Ctrl+C 停止服务器")
+    if not ARGS.no_tray:
+        print("  系统托盘：打开日砌 / 保持亮屏 / 退出")
+    else:
+        print("  按 Ctrl+C 停止服务器")
     print()
 
     # 防火墙提示
@@ -859,9 +840,18 @@ if __name__ == "__main__":
         print("  [!] 如果局域网其他设备无法访问，请以管理员身份运行 fix_firewall.bat")
         print()
 
-    httpd = http.server.HTTPServer(("0.0.0.0", PORT), Handler)
-    try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        print("\n  服务器已停止\n")
-        httpd.server_close()
+    if ARGS.no_tray:
+        tray_result, tray_error = None, None
+    else:
+        tray_result, tray_error = create_tray_icon(httpd, actual_port)
+    if tray_result:
+        tray_icon, stopping = tray_result
+        serve_with_tray(httpd, tray_icon, stopping)
+    else:
+        if not ARGS.no_tray:
+            print("  [!] 系统托盘不可用，将继续以命令行模式运行")
+            if tray_error:
+                print("      原因: %s" % tray_error)
+            print("      安装依赖: python -m pip install -r requirements.txt")
+            print()
+        serve_console(httpd)

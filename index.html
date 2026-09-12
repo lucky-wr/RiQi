@@ -636,6 +636,108 @@ html[data-theme="dark"] .day-progress-track {
   color:var(--text-muted);
   white-space:nowrap;
 }
+.day-progress-btn {
+  flex-shrink:0;
+  padding:5px 10px;
+  border-radius:999px;
+  border:1px solid var(--card-border);
+  background:rgba(201,168,124,0.14);
+  color:var(--accent);
+  font-family:var(--font-hand);
+  font-size:0.8rem;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  transition:all 0.2s;
+  white-space:nowrap;
+}
+.day-progress-btn:hover {
+  background:rgba(201,168,124,0.26);
+  border-color:var(--accent);
+}
+.rollover-card {
+  width:480px;
+  max-width:92vw;
+}
+.rollover-list {
+  max-height:55vh;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-bottom:16px;
+}
+.rollover-item {
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:12px 14px;
+  border:1px solid var(--card-border);
+  border-radius:14px;
+  background:var(--card-bg);
+  cursor:pointer;
+  transition:border-color 0.2s, background 0.2s;
+}
+.rollover-item:hover {
+  border-color:var(--accent);
+  background:rgba(201,168,124,0.08);
+}
+.rollover-item.checked {
+  border-color:var(--green-soft);
+  background:rgba(122,158,126,0.08);
+}
+.rollover-check {
+  flex-shrink:0;
+  width:22px;
+  height:22px;
+  margin-top:2px;
+  border-radius:50%;
+  border:2px solid var(--text-muted);
+  background:transparent;
+  color:transparent;
+  font-size:0.7rem;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.2s;
+}
+.rollover-item.checked .rollover-check {
+  background:var(--green);
+  border-color:var(--green);
+  color:#fff;
+}
+.rollover-item-body {
+  flex:1;
+  min-width:0;
+}
+.rollover-title {
+  font-family:var(--font-hand);
+  font-size:1.05rem;
+  color:var(--text);
+  word-break:break-word;
+}
+.rollover-details {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  margin-top:4px;
+}
+.rollover-detail {
+  font-family:var(--font-hand);
+  font-size:0.85rem;
+  color:var(--text-muted);
+}
+.rollover-detail.done {
+  color:var(--green);
+  text-decoration:line-through;
+}
+.rollover-empty {
+  text-align:center;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  padding:36px 16px;
+}
 @media (max-width:480px) {
   .day-progress-text { display:none; }
 }
@@ -2068,6 +2170,13 @@ html[data-theme="dark"] .day-progress-track {
   z-index:2;
   box-shadow:0 4px 14px var(--card-shadow);
 }
+.calendar-day[data-review-day] {
+  cursor:pointer;
+}
+.calendar-day.future {
+  opacity:0.25;
+  pointer-events:none;
+}
 .calendar-day.full {
   background:var(--green);
   color:#fff;
@@ -2122,6 +2231,14 @@ html[data-theme="dark"] .day-progress-track {
 .calendar-legend-item .dot.partial { background:#d4b04a; }
 .calendar-legend-item .dot.protected { background:#5b8ec9; }
 .calendar-legend-item .dot.empty { background:rgba(255,255,255,0.08); }
+.review-month-summary {
+  margin-top:12px;
+  text-align:center;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.84rem;
+  letter-spacing:0.5px;
+}
 
 /* 保护卡卡片 */
 .protection-card {
@@ -2246,7 +2363,7 @@ html[data-theme="dark"] .day-progress-track {
 
 /* ====== 每日复盘 ====== */
 .review-page {
-  max-width:640px;
+  max-width:980px;
   width:100%;
   margin:0 auto;
   padding:4px 16px 60px;
@@ -2284,6 +2401,316 @@ html[data-theme="dark"] .day-progress-track {
 }
 .review-section-title.done-title { color:var(--green); }
 .review-section-title.pending-title { color:#c9a04a; }
+
+/* 复盘数据概览 */
+.review-overview-section {
+  padding-bottom:16px;
+}
+.review-stat-grid {
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+}
+.review-stat {
+  min-width:0;
+  padding:4px 16px 8px;
+  border-left:1px solid var(--card-border);
+}
+.review-stat:first-child {
+  border-left:none;
+  padding-left:4px;
+}
+.review-stat-label {
+  display:block;
+  font-family:var(--font-hand);
+  font-size:0.82rem;
+  color:var(--text-muted);
+  letter-spacing:1px;
+  margin-bottom:4px;
+}
+.review-stat-value {
+  display:block;
+  font-family:var(--font-hand);
+  font-size:1.38rem;
+  line-height:1.15;
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.review-stat-sub {
+  display:block;
+  min-height:1.2em;
+  margin-top:3px;
+  font-family:var(--font-hand);
+  font-size:0.78rem;
+  color:var(--text-muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.review-overview-insight {
+  margin-top:14px;
+  padding:10px 14px;
+  border-radius:12px;
+  background:linear-gradient(135deg, rgba(201,168,124,0.14), rgba(122,158,126,0.12));
+  border:1px solid var(--card-border);
+  color:var(--text-secondary);
+  font-family:var(--font-hand);
+  font-size:0.95rem;
+  line-height:1.55;
+  letter-spacing:0.5px;
+}
+
+/* 任务占比与时间轴 */
+.review-analytics-grid {
+  display:grid;
+  grid-template-columns:minmax(300px, 0.8fr) minmax(0, 1.2fr);
+  gap:16px;
+  margin-bottom:16px;
+}
+.review-analytics-grid .review-section {
+  margin-bottom:0;
+  min-width:0;
+}
+.review-chart-layout {
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+.review-pie-chart {
+  position:relative;
+  flex:0 0 190px;
+  width:190px;
+  height:190px;
+  border-radius:50%;
+  box-shadow:inset 0 0 0 1px var(--card-border), 0 10px 30px var(--card-shadow);
+}
+.review-pie-legend {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.review-pie-legend-item {
+  display:grid;
+  grid-template-columns:10px minmax(0, 1fr) auto;
+  align-items:center;
+  gap:8px;
+  font-family:var(--font-hand);
+  font-size:0.9rem;
+}
+.review-pie-dot {
+  width:9px;
+  height:9px;
+  border-radius:3px;
+}
+.review-pie-name {
+  min-width:0;
+  color:var(--text-secondary);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.review-pie-value {
+  color:var(--text-muted);
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.review-chart-summary,
+.review-timeline-summary {
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid var(--card-border);
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.86rem;
+  line-height:1.5;
+}
+.review-timeline-list {
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  margin-top:20px;
+  padding-top:4px;
+  overflow:visible;
+}
+.review-timeline-item {
+  display:grid;
+  grid-template-columns:54px 24px minmax(0, 1fr);
+  gap:10px;
+  align-items:stretch;
+  min-width:0;
+}
+.review-timeline-time {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:2px;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-variant-numeric:tabular-nums;
+  padding-top:1px;
+}
+.review-timeline-time strong {
+  color:var(--text-secondary);
+  font-size:0.88rem;
+  font-weight:500;
+}
+.review-timeline-time span {
+  font-size:0.7rem;
+  opacity:0.75;
+}
+.review-timeline-rail {
+  position:relative;
+  min-height:104px;
+}
+.review-timeline-item:not(:last-child) .review-timeline-rail::after {
+  content:'';
+  position:absolute;
+  left:50%;
+  top:14px;
+  bottom:-2px;
+  width:2px;
+  transform:translateX(-50%);
+  background:linear-gradient(180deg, var(--card-border), rgba(201,168,124,0.35));
+}
+.review-timeline-dot {
+  position:absolute;
+  top:5px;
+  left:50%;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  transform:translateX(-50%);
+  border:2px solid rgba(255,255,255,0.72);
+  box-shadow:0 0 0 3px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.16);
+  z-index:1;
+}
+.review-timeline-main {
+  min-width:0;
+  padding:0 0 28px;
+}
+.review-timeline-item:last-child .review-timeline-main {
+  padding-bottom:0;
+}
+.review-timeline-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.review-timeline-title {
+  flex:1;
+  min-width:0;
+  color:var(--text);
+  font-family:var(--font-hand);
+  font-size:1rem;
+  line-height:1.35;
+  word-break:break-word;
+}
+.review-timeline-duration {
+  flex-shrink:0;
+  color:var(--accent);
+  font-family:var(--font-hand);
+  font-size:0.88rem;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.review-timeline-meta {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+  margin-top:5px;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.78rem;
+  line-height:1.45;
+}
+.review-timeline-status {
+  display:inline-flex;
+  align-items:center;
+  padding:2px 7px;
+  border-radius:999px;
+  background:rgba(122,158,126,0.14);
+  border:1px solid rgba(122,158,126,0.28);
+  color:var(--green);
+  line-height:1.2;
+}
+.review-timeline-status.pending {
+  background:rgba(201,160,74,0.12);
+  border-color:rgba(201,160,74,0.28);
+  color:#c9a04a;
+}
+.review-timeline-status.active {
+  background:rgba(200,85,85,0.12);
+  border-color:rgba(200,85,85,0.28);
+  color:var(--danger);
+}
+.review-timeline-detail {
+  margin-top:9px;
+  padding-left:10px;
+  border-left:2px solid rgba(201,168,124,0.28);
+  color:var(--text-secondary);
+  font-family:var(--font-hand);
+  font-size:0.84rem;
+  line-height:1.45;
+  word-break:break-word;
+}
+.review-timeline-foot {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 14px;
+  margin-top:9px;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.75rem;
+  line-height:1.4;
+}
+.review-data-empty {
+  padding:24px 10px;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.92rem;
+  line-height:1.6;
+  text-align:center;
+}
+
+@media (max-width:800px) {
+  .review-stat-grid {
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    row-gap:14px;
+  }
+  .review-stat:nth-child(3) {
+    border-left:none;
+    padding-left:4px;
+  }
+  .review-analytics-grid {
+    grid-template-columns:1fr;
+  }
+  .review-chart-layout {
+    justify-content:center;
+  }
+}
+
+@media (max-width:520px) {
+  .review-chart-layout {
+    flex-direction:column;
+  }
+  .review-pie-legend {
+    width:100%;
+  }
+  .review-timeline-item {
+    grid-template-columns:46px 20px minmax(0, 1fr);
+    gap:8px;
+  }
+  .review-timeline-head {
+    flex-direction:column;
+    gap:2px;
+  }
+}
 
 /* 复盘总用时 */
 .review-total-time {
@@ -2451,6 +2878,14 @@ html[data-theme="dark"] .day-progress-track {
 .review-task-title {
   flex:1;
   word-break:break-word;
+}
+.review-task-meta {
+  flex-shrink:0;
+  color:var(--text-muted);
+  font-family:var(--font-hand);
+  font-size:0.82rem;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
 }
 .review-task-item.done .review-task-title {
   color:var(--text-muted);
@@ -3591,7 +4026,6 @@ html[data-theme="dark"] .day-progress-track {
       <button class="nav-item" data-page="timer">&#9201; 计时</button>
       <button class="nav-item" data-page="tomorrow">&#128221; 明日任务</button>
       <button class="nav-item" data-page="history">&#128197; 历史任务</button>
-      <button class="nav-item" data-page="stats">&#128200; 数据看板</button>
       <button class="nav-item" data-page="review">&#128214; 每日复盘</button>
 <button class="nav-item" data-page="library">&#128218; 任务库</button>
     </div>
@@ -3624,6 +4058,7 @@ html[data-theme="dark"] .day-progress-track {
         <span class="day-progress-pct" id="dayProgressPct">0%</span>
         <div class="day-progress-track"><div class="day-progress-fill" id="dayProgressFill"></div></div>
         <span class="day-progress-text" id="dayProgressText">今天还没有任务</span>
+        <button class="day-progress-btn" id="btnRollover" title="把昨天没完成的任务添加到今天">↩ 昨日</button>
       </div>
 
       <button class="fab fab-add" id="btnAdd" title="添加任务">+</button>
@@ -3706,17 +4141,6 @@ html[data-theme="dark"] .day-progress-track {
       </div>
     </div>
 
-    <!-- 页面：数据看板 -->
-    <div class="page" id="page-stats">
-      <div class="header">
-        <h1>数据看板</h1>
-        <div class="date" id="statsDateDisplay"></div>
-      </div>
-      <div class="page-content">
-        <div id="statsDashboard"></div>
-      </div>
-    </div>
-
     <!-- 页面：每日复盘 -->
     <div class="page" id="page-review">
       <div class="header">
@@ -3725,57 +4149,37 @@ html[data-theme="dark"] .day-progress-track {
           <button class="review-nav-btn" id="btnReviewPrev" title="前一天">&#9664;</button>
           <span id="reviewDateDisplay"></span>
           <button class="review-nav-btn" id="btnReviewNext" title="后一天">&#9654;</button>
+          <button class="review-today-btn" id="btnReviewToday">今天</button>
         </div>
       </div>
       <div class="page-content review-page">
-        <div class="review-mode-bar hidden" id="reviewModeBar">
-          <button class="review-today-btn" id="btnReviewToday">&#8635; 回到今天</button>
-          <span class="review-readonly-hint">只读回看 · 过去的复盘不可编辑</span>
+        <!-- 每日数据概览 -->
+        <div class="review-section review-overview-section">
+          <div class="review-section-title">📊 每日概览</div>
+          <div class="review-stat-grid" id="reviewStatGrid"></div>
+          <div class="review-overview-insight" id="reviewOverviewInsight"></div>
         </div>
-        <!-- 打分区 -->
-        <div class="review-section score-section">
-          <div class="review-section-title">今天给自己打几分？</div>
-          <div class="score-display">
-            <span class="score-number" id="scoreNumber">5</span>
-            <span class="score-unit">分</span>
+
+        <!-- 任务用时饼图 -->
+        <div class="review-section review-chart-section">
+          <div class="review-section-title">📊 任务用时占比</div>
+          <div class="review-chart-layout">
+            <div class="review-pie-chart" id="reviewPieChart"></div>
+            <div class="review-pie-legend" id="reviewPieLegend"></div>
           </div>
-          <div class="score-slider-container">
-            <div class="score-slider-track" id="scoreTrack">
-              <div class="score-track-bg"></div>
-              <div class="score-fill" id="scoreFill" style="width:44.4%"></div>
-              <div class="score-knob" id="scoreKnob" style="left:44.4%">5</div>
-              <div class="score-marks">
-                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-                <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
-              </div>
-            </div>
-          </div>
-          <div class="score-mood" id="scoreMood">中规中矩 🙂</div>
+          <div class="review-chart-summary" id="reviewPieSummary"></div>
         </div>
 
-        <!-- 已完成任务 -->
-        <div class="review-section" id="reviewCompletedSection">
-          <div class="review-section-title done-title">✅ 今天完成了</div>
-          <div class="review-task-list" id="reviewCompletedList"></div>
+        <!-- 当天竖向时间轴 -->
+        <div class="review-section review-timeline-section">
+          <div class="review-section-title">🕰️ 当天时间轴</div>
+          <div class="review-timeline-summary" id="reviewTimelineSummary"></div>
+          <div class="review-timeline-list" id="reviewTimelineList"></div>
         </div>
 
-        <!-- 今日总用时 -->
-        <div class="review-total-time" id="reviewTotalTime" style="display:none;">🕐 今日总用时：</div>
-
-        <!-- 未完成任务（含反思） -->
-        <div class="review-section" id="reviewUncompletedSection">
-          <div class="review-section-title pending-title">⏳ 还没完成的</div>
-          <div id="reviewUncompletedList"></div>
-          <div class="review-empty" id="reviewAllDone">
-            <div class="review-empty-icon">🎉</div>
-            <div>今天的任务全部完成！太棒了 👏</div>
-          </div>
-        </div>
-
-        <!-- 保存按钮 -->
-        <div class="review-actions">
-          <button class="btn-review-save" id="btnReviewSave">保存复盘</button>
-          <span class="review-save-status" id="reviewSaveStatus"></span>
+        <!-- 月度完成日历 -->
+        <div class="review-section review-month-section" id="reviewMonthSection">
+          <div id="reviewMonthCalendar"></div>
         </div>
       </div>
     </div>
@@ -3842,11 +4246,18 @@ html[data-theme="dark"] .day-progress-track {
   </div>
 </div>
 
-<!-- ====== 复盘详情弹窗 ====== -->
-<div class="modal-overlay hidden" id="reviewDetailModal">
-  <div class="modal-card review-detail-card">
-    <button class="review-detail-close" data-close-review-detail title="关闭">&#10005;</button>
-    <div class="review-detail-body" id="reviewDetailBody"></div>
+<!-- ====== 昨日未完成带入弹窗 ====== -->
+<div class="modal-overlay hidden" id="rolloverModal">
+  <div class="modal-card rollover-card">
+    <h3>↩ 昨天没完成的任务</h3>
+    <div class="rollover-list" id="rolloverList"></div>
+    <div class="library-modal-footer">
+      <div class="library-modal-count" id="rolloverCount">已选 0 项</div>
+      <div class="library-modal-actions">
+        <button class="lib-btn-cancel" id="rolloverCancel">取消</button>
+        <button class="lib-btn-import" id="rolloverConfirm" disabled>添加到今天</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3890,6 +4301,8 @@ const state = {
   timerSubtaskId: null,
   timerExpandedTaskId: null,
   timerMode: localStorage.getItem('riqi_timer_mode') || 'task',
+  rolloverTasks: [],
+  rolloverSelected: [],
   tasksLoaded: false,
   tomorrowLoaded: false,
 };
@@ -4134,20 +4547,12 @@ function switchPage(page) {
     else renderTimerPage();
   }
   if (page === 'tomorrow') { loadTomorrowTasks(); }
-  if (page === 'stats') {
-    var _now = new Date();
-    statsViewYear = _now.getFullYear();
-    statsViewMonth = _now.getMonth() + 1;
-    loadStatsPage();
-  }
   if (page === 'history') { loadHistory(); }
   if (page === 'review') {
-    if (reviewEnterDate) {
-      reviewViewDate = (reviewEnterDate > todayKey()) ? null : reviewEnterDate;
-      reviewEnterDate = null;
-    } else {
-      reviewViewDate = null;
-    }
+    reviewViewDate = null;
+    var now = new Date();
+    reviewMonthYear = now.getFullYear();
+    reviewMonthValue = now.getMonth() + 1;
     loadReview();
   }
   if (page === 'library') { loadLibraryManage(); }
@@ -4493,6 +4898,7 @@ function handleBeadClick(e) {
 var currentTimer = null;
 var timerTick = null;
 var pendingFreeMinutes = 0;
+var pendingFreeSession = null;
 
 function formatClock(sec) {
   sec = Math.max(0, Math.floor(sec || 0));
@@ -4524,6 +4930,20 @@ function persistTimer() {
     }));
   } else {
     localStorage.removeItem('riqi_active_timer');
+  }
+}
+
+function appendTimerSession(task, subtaskId, startedAt, endedAt, source) {
+  if (!task || !startedAt || !endedAt || endedAt <= startedAt) return;
+  if (!Array.isArray(task.sessions)) task.sessions = [];
+  task.sessions.push({
+    start: startedAt,
+    end: endedAt,
+    subtaskId: subtaskId || null,
+    source: source || 'timer',
+  });
+  if (task.sessions.length > 1000) {
+    task.sessions = task.sessions.slice(-1000);
   }
 }
 
@@ -4591,7 +5011,8 @@ function updateSubtaskRowDuration(taskId, st) {
 function stopCurrentTimer() {
   if (!currentTimer) return;
   var t = currentTimer;
-  var elapsedMin = Math.round((Date.now() - t.start) / 60000 / 5) * 5;
+  var endedAt = Date.now();
+  var elapsedMin = Math.round((endedAt - t.start) / 60000 / 5) * 5;
   currentTimer = null;
   persistTimer();
 
@@ -4608,6 +5029,7 @@ function stopCurrentTimer() {
       } else {
         task.duration = (task.duration || 0) + elapsedMin * 60;
       }
+      appendTimerSession(task, t.subtaskId, t.start, endedAt, 'timer');
       updateTaskTimeUI(t.id);
       if (state.tomorrowTasks.indexOf(task) !== -1) {
         debouncedSaveTomorrow();
@@ -4620,6 +5042,7 @@ function stopCurrentTimer() {
   } else {
     if (elapsedMin > 0) {
       pendingFreeMinutes = elapsedMin;
+      pendingFreeSession = { start: t.start, end: endedAt };
       openTimerAssignModal();
     }
     updateTimerFocus();
@@ -4899,11 +5322,15 @@ function assignFreeTime(id) {
   var task = findTaskById(id);
   if (task && pendingFreeMinutes > 0) {
     task.duration = (task.duration || 0) + pendingFreeMinutes * 60;
+    if (pendingFreeSession) {
+      appendTimerSession(task, null, pendingFreeSession.start, pendingFreeSession.end, 'free');
+    }
     updateTaskTimeUI(id);
     updateTodaySectionStats();
     debouncedSave();
   }
   pendingFreeMinutes = 0;
+  pendingFreeSession = null;
   document.getElementById('timerAssignModal').classList.add('hidden');
   updateTimerFocus();
   renderTimerPage();
@@ -4917,6 +5344,7 @@ document.getElementById('timerAssignList').addEventListener('click', function(e)
 
 document.getElementById('timerAssignDiscard').addEventListener('click', function() {
   pendingFreeMinutes = 0;
+  pendingFreeSession = null;
   document.getElementById('timerAssignModal').classList.add('hidden');
   updateTimerFocus();
   renderTimerPage();
@@ -4925,6 +5353,7 @@ document.getElementById('timerAssignDiscard').addEventListener('click', function
 document.getElementById('timerAssignModal').addEventListener('click', function(e) {
   if (e.target === this) {
     pendingFreeMinutes = 0;
+    pendingFreeSession = null;
     document.getElementById('timerAssignModal').classList.add('hidden');
     updateTimerFocus();
     renderTimerPage();
@@ -5036,6 +5465,10 @@ function migrateTaskDetails(tasks) {
       }
       changed = true;
     }
+    if (!Array.isArray(t.sessions)) {
+      t.sessions = [];
+      changed = true;
+    }
     if (allSubtasksDone(t) && !t.completed) {
       t.completed = true;
       t.doneSettled = true;
@@ -5063,6 +5496,7 @@ function allSubtasksDone(task) {
 
 function autoCompleteMainTask(task) {
   task.completed = true;
+  task.completedAt = new Date().toISOString();
   task.doneSettled = false;
   task.autoDone = true;
   var id = task.id;
@@ -5085,6 +5519,7 @@ function autoCompleteMainTask(task) {
 
 function autoUncompleteMainTask(task) {
   task.completed = false;
+  delete task.completedAt;
   task.doneSettled = false;
   task.autoDone = false;
   var id = task.id;
@@ -5237,6 +5672,7 @@ function addTaskFromInput() {
     completed: false,
     doneSettled: false,
     duration: 0,
+    sessions: [],
     _fresh: true,
   });
   renderTasks();
@@ -5506,6 +5942,7 @@ document.addEventListener('pointerdown', function(e) {
 
 function completeTask(task, knob, track, cardEl) {
   task.completed = true;
+  task.completedAt = new Date().toISOString();
   task.doneSettled = false;
   task.autoDone = false;
 
@@ -5537,6 +5974,7 @@ function completeTask(task, knob, track, cardEl) {
 
 function uncompleteTask(task, cardEl, knob) {
   task.completed = false;
+  delete task.completedAt;
   task.doneSettled = false;
   task.autoDone = false;
 
@@ -5641,6 +6079,133 @@ document.getElementById('taskList').addEventListener('click', function(e) {
   }
 });
 
+// ==================== 昨日任务带入 ====================
+
+function undoneSubtasks(t) {
+  return (t.subtasks || []).filter(function(s) { return !s.done; });
+}
+
+function renderRolloverList() {
+  var list = document.getElementById('rolloverList');
+  var count = document.getElementById('rolloverCount');
+  var confirm = document.getElementById('rolloverConfirm');
+  if (!state.rolloverTasks.length) {
+    list.innerHTML = '<div class="rollover-empty">昨天没有未完成的任务 🎉</div>';
+    count.textContent = '已选 0 项';
+    confirm.disabled = true;
+    return;
+  }
+  list.innerHTML = state.rolloverTasks.map(function(t, i) {
+    var checked = state.rolloverSelected.indexOf(i) !== -1;
+    var details = '';
+    var undone = undoneSubtasks(t);
+    if (undone.length) {
+      details = '<div class="rollover-details">' + undone.map(function(s) {
+        return '<div class="rollover-detail">○ ' + escapeHtml(s.text) + '</div>';
+      }).join('') + '</div>';
+    }
+    return '<div class="rollover-item' + (checked ? ' checked' : '') + '" data-roll-index="' + i + '">'
+      + '<span class="rollover-check">✓</span>'
+      + '<div class="rollover-item-body">'
+        + '<div class="rollover-title">' + escapeHtml(t.title) + '</div>'
+        + details
+      + '</div>'
+    + '</div>';
+  }).join('');
+  updateRolloverCount();
+}
+
+function updateRolloverCount() {
+  var count = document.getElementById('rolloverCount');
+  var confirm = document.getElementById('rolloverConfirm');
+  count.textContent = '已选 ' + state.rolloverSelected.length + ' / ' + state.rolloverTasks.length + ' 项';
+  confirm.disabled = state.rolloverSelected.length === 0;
+}
+
+function toggleRollover(index) {
+  var pos = state.rolloverSelected.indexOf(index);
+  if (pos === -1) state.rolloverSelected.push(index);
+  else state.rolloverSelected.splice(pos, 1);
+  var item = document.querySelector('[data-roll-index="' + index + '"]');
+  if (item) item.classList.toggle('checked');
+  updateRolloverCount();
+}
+
+async function openRolloverModal() {
+  state.rolloverTasks = [];
+  state.rolloverSelected = [];
+  try {
+    var res = await apiFetch('/api/data?date=' + getYesterdayDateStr());
+    if (res.status === 401) { handleAuthError(); return; }
+    var data = await res.json();
+    state.rolloverTasks = ((data && data.tasks) || []).filter(function(t) {
+      if (t.completed) return false;
+      if ((t.subtasks || []).length) return undoneSubtasks(t).length > 0;
+      return true;
+    });
+  } catch(e) {
+    state.rolloverTasks = [];
+  }
+  state.rolloverSelected = state.rolloverTasks.map(function(_, i) { return i; });
+  renderRolloverList();
+  document.getElementById('rolloverModal').classList.remove('hidden');
+}
+
+function closeRolloverModal() {
+  document.getElementById('rolloverModal').classList.add('hidden');
+  state.rolloverTasks = [];
+  state.rolloverSelected = [];
+}
+
+function cloneRolledTask(t) {
+  var undone = undoneSubtasks(t);
+  return {
+    id: Date.now() + Math.random() * 1000,
+    title: t.title,
+    subtasks: undone.map(function(s) {
+      return {
+        id: Date.now() + Math.random() * 1000,
+        text: s.text,
+        done: false,
+        duration: 0,
+      };
+    }),
+    completed: false,
+    doneSettled: false,
+    duration: 0,
+    sessions: [],
+    _fresh: true,
+  };
+}
+
+function confirmRollover() {
+  var added = [];
+  state.rolloverTasks.forEach(function(t, i) {
+    if (state.rolloverSelected.indexOf(i) !== -1) added.push(cloneRolledTask(t));
+  });
+  if (!added.length) return;
+  state.tasks = state.tasks.concat(added);
+  renderTasks();
+  debouncedSave();
+  closeRolloverModal();
+  setTimeout(function() {
+    var cards = document.querySelectorAll('.task-card');
+    if (cards.length > 0) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 120);
+}
+
+document.getElementById('btnRollover').addEventListener('click', openRolloverModal);
+document.getElementById('rolloverCancel').addEventListener('click', closeRolloverModal);
+document.getElementById('rolloverConfirm').addEventListener('click', confirmRollover);
+document.getElementById('rolloverList').addEventListener('click', function(e) {
+  var item = e.target.closest('[data-roll-index]');
+  if (!item) return;
+  toggleRollover(parseInt(item.dataset.rollIndex, 10));
+});
+document.getElementById('rolloverModal').addEventListener('click', function(e) {
+  if (e.target === this) closeRolloverModal();
+});
+
 // ==================== 明日任务 ====================
 
 function getTomorrowDate() {
@@ -5651,6 +6216,17 @@ function getTomorrowDate() {
 
 function getTomorrowDateStr() {
   var d = getTomorrowDate();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getYesterdayDate() {
+  var d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d;
+}
+
+function getYesterdayDateStr() {
+  var d = getYesterdayDate();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
@@ -5848,6 +6424,7 @@ function addTomorrowTask(title, detail) {
     completed: false,
     doneSettled: false,
     duration: 0,
+    sessions: [],
     _fresh: true,
   });
   renderTomorrowTasks();
@@ -6164,32 +6741,19 @@ async function fetchStats(monthStr) {
   } catch(e) { return null; }
 }
 
-async function fetchReviews() {
-  const token = getToken();
-  if (!token) return {};
-  try {
-    const res = await apiFetch('/api/reviews');
-    if (res.status === 401) { handleAuthError(); return {}; }
-    const data = await res.json();
-    return (data && data.reviews) || {};
-  } catch(e) { return {}; }
+// 月度完成情况（默认当月；不允许翻到未来月份）
+var reviewMonthYear = new Date().getFullYear();
+var reviewMonthValue = new Date().getMonth() + 1;
+
+async function loadReviewMonth() {
+  var stats = await fetchStats(reviewMonthYear + '-' + pad2n(reviewMonthValue));
+  renderReviewMonth(stats);
+  updateStreakBadge(stats);
 }
 
-// 看板月份状态（默认当月；不允许翻到未来月份）
-var statsViewYear = new Date().getFullYear();
-var statsViewMonth = new Date().getMonth() + 1; // 1-12
-
-async function loadStatsPage() {
-  if (state.tasks.length === 0) await loadTasks();
-  var s = await fetchStats(statsViewYear + '-' + pad2n(statsViewMonth));
-  var revs = await fetchReviews();
-  renderStatsDashboard(s, revs || {});
-  updateStreakBadge(s);
-}
-
-function changeStatsMonth(delta) {
-  var newMonth = statsViewMonth + delta;
-  var newYear = statsViewYear;
+function changeReviewMonth(delta) {
+  var newMonth = reviewMonthValue + delta;
+  var newYear = reviewMonthYear;
   if (newMonth < 1) { newMonth = 12; newYear--; }
   if (newMonth > 12) { newMonth = 1; newYear++; }
   var now = new Date();
@@ -6197,27 +6761,24 @@ function changeStatsMonth(delta) {
   if (newYear > now.getFullYear() || (newYear === now.getFullYear() && newMonth > now.getMonth() + 1)) {
     return;
   }
-  statsViewYear = newYear;
-  statsViewMonth = newMonth;
-  loadStatsPage();
+  reviewMonthYear = newYear;
+  reviewMonthValue = newMonth;
+  loadReviewMonth();
 }
 
-// 月份切换按钮（容器内容会重建，用事件委托）
-document.getElementById('statsDashboard').addEventListener('click', function(e) {
-  if (e.target.closest('[data-stats-month="-1"]')) changeStatsMonth(-1);
-  if (e.target.closest('[data-stats-month="1"]')) changeStatsMonth(1);
-});
-
-function renderStatsDashboard(stats, reviews) {
-  const container = document.getElementById('statsDashboard');
-  if (!stats) { container.style.display = 'none'; return; }
-  container.style.display = 'block';
+function renderReviewMonth(stats) {
+  const container = document.getElementById('reviewMonthCalendar');
+  if (!container) return;
+  if (!stats) {
+    container.innerHTML = '<div class="review-data-empty">月度数据加载失败。</div>';
+    return;
+  }
 
   const weekDays = ['日','一','二','三','四','五','六'];
   const now = new Date();
-  const year = statsViewYear;
-  const month = statsViewMonth;
-  const isCurrentMonth = (statsViewYear === now.getFullYear() && statsViewMonth === now.getMonth() + 1);
+  const year = reviewMonthYear;
+  const month = reviewMonthValue;
+  const isCurrentMonth = (reviewMonthYear === now.getFullYear() && reviewMonthValue === now.getMonth() + 1);
 
   // 构建月历网格
   const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
@@ -6234,100 +6795,28 @@ function renderStatsDashboard(stats, reviews) {
     const dateStr = year + '-' + String(month).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     const status = stats.calendar[dateStr] || 'empty';
     const isToday = dateStr === todayStr ? ' calendar-today' : '';
-    calCells += '<div class="calendar-day ' + status + isToday + '">' + d + '</div>';
-  }
-
-  // 等级标签
-  const levels = [
-    {max: 20, label: '≤ 20天 / 上限2张', active: stats.cardsMax <= 2},
-    {max: 50, label: '≤ 50天 / 上限5张', active: stats.cardsMax === 5},
-    {max: 999, label: '> 50天 / 上限10张', active: stats.cardsMax === 10},
-  ];
-
-  // 评分趋势（当月有复盘的日期）
-  const monthPrefix = year + '-' + String(month).padStart(2, '0');
-  let trendHtml = '';
-  const trendDates = Object.keys(reviews || {}).filter(function(ds) {
-    return ds.indexOf(monthPrefix) === 0;
-  }).sort();
-  if (trendDates.length > 0) {
-    trendHtml = '<div class="score-trend-card">'
-      + '<div class="score-trend-header">⭐ 月度评分 · 点击看当天复盘</div>'
-      + '<div class="score-trend-grid">';
-    trendDates.forEach(function(ds) {
-      const score = reviews[ds].score || 0;
-      const day = parseInt(ds.slice(8), 10);
-      const color = SCORE_COLORS[Math.max(0, Math.min(9, score - 1))] || '#c9a04a';
-      trendHtml += '<div class="score-trend-day" data-review-date="' + ds + '" style="background:' + color + ';">'
-        + '<div class="st-date">' + day + '日</div>'
-        + '<div class="st-score">' + score + '</div>'
-        + '</div>';
-    });
-    trendHtml += '</div></div>';
+    const isFuture = dateStr > todayStr;
+    calCells += '<div class="calendar-day ' + status + isToday + (isFuture ? ' future' : '') + '"'
+      + (isFuture ? '' : ' data-review-day="' + dateStr + '"')
+      + '>' + d + '</div>';
   }
 
   container.innerHTML =
-    '<div class="stats-section">'
-    + '<h2>📊 数据看板</h2>'
-
-    // 连续打卡横条
-    + '<div class="streak-banner">'
-      + '<span class="streak-icon">⚡</span>'
-      + '<span class="streak-number">' + stats.streak + '</span>'
-      + '<span class="streak-label">连续不断电</span>'
-      + '<span class="streak-sub">🏆 最长 <span class="num">' + stats.longestStreak + '</span> 天</span>'
-    + '</div>'
-
-    // 今日用时
-    + '<div class="stats-card time-card">'
-      + '<div class="stats-card-icon">🕐</div>'
-      + '<div class="stats-card-body">'
-        + '<div class="stats-card-label">今日总用时</div>'
-        + '<div class="stats-card-value" id="todayDurationDisplay">' + formatDurationShort(getTotalTodaySeconds()) + '</div>'
-      + '</div>'
-    + '</div>'
-
-    // 月历
-    + '<div class="calendar-card">'
-      + '<div class="calendar-header">'
-        + '<button class="cal-nav-btn" data-stats-month="-1" title="上个月">&#9664;</button>'
+    '<div class="review-section-title">📅 月度完成情况</div>'
+    + '<div class="calendar-header">'
+        + '<button class="cal-nav-btn" data-review-month="-1" title="上个月">&#9664;</button>'
         + '<span>' + year + ' 年 ' + month + ' 月</span>'
-        + '<button class="cal-nav-btn" data-stats-month="1" title="下个月"' + (isCurrentMonth ? ' disabled' : '') + '>&#9654;</button>'
-      + '</div>'
-      + '<div class="calendar-weekdays">'
+        + '<button class="cal-nav-btn" data-review-month="1" title="下个月"' + (isCurrentMonth ? ' disabled' : '') + '>&#9654;</button>'
+    + '</div>'
+    + '<div class="calendar-weekdays">'
         + weekDays.map(function(w) { return '<span>' + w + '</span>'; }).join('')
-      + '</div>'
-      + '<div class="calendar-grid">' + calCells + '</div>'
-      + '<div class="calendar-legend">'
+    + '</div>'
+    + '<div class="calendar-grid">' + calCells + '</div>'
+    + '<div class="review-month-summary">本月完成 ' + stats.monthCompleted + ' / ' + stats.monthTasks + ' 项任务</div>'
+    + '<div class="calendar-legend">'
         + '<span class="calendar-legend-item"><span class="dot full"></span>全部完成</span>'
         + '<span class="calendar-legend-item"><span class="dot partial"></span>部分完成</span>'
-        + '<span class="calendar-legend-item"><span class="dot protected"></span>保护卡</span>'
         + '<span class="calendar-legend-item"><span class="dot empty"></span>无数据</span>'
-      + '</div>'
-    + '</div>'
-
-    // 评分趋势
-    + trendHtml
-
-    // 保护卡
-    + '<div class="protection-card">'
-      + '<div class="protection-header">'
-        + '<span class="protection-icon">🛡️</span>'
-        + '<span class="protection-title">断电保护卡</span>'
-      + '</div>'
-      + '<div>'
-        + '持有 <span class="protection-stats">' + stats.cards + '</span>'
-        + ' <span class="max">/ 上限 ' + stats.cardsMax + ' 张</span>'
-      + '</div>'
-      + '<div class="protection-rule">💡 每连续打卡 2 天奖励 1 张</div>'
-      + '<div class="protection-level-info">'
-        + levels.map(function(l) {
-            var cls = 'level-tag' + (l.active ? ' active' : '');
-            return '<span class="' + cls + '">' + l.label + '</span>';
-          }).join('')
-      + '</div>'
-    + '</div>'
-
     + '</div>';
 }
 
@@ -6344,122 +6833,7 @@ function updateStreakBadge(stats) {
   }
 }
 
-// ==================== 复盘详情弹窗 ====================
-
-// 看板评分点 → 查看当天复盘详情
-async function showReviewDetail(dateStr) {
-  var token = getToken();
-  if (!token) return;
-  var reviewData = {};
-  try {
-    var r = await apiFetch('/api/review?date=' + dateStr + '&_t=' + Date.now());
-    if (r.ok) reviewData = await r.json();
-  } catch(e) {}
-  var tasks = [];
-  try {
-    var res = await apiFetch('/api/data?date=' + dateStr);
-    if (res.ok) {
-      var d = await res.json();
-      tasks = (d && d.tasks) || [];
-    }
-  } catch(e) {}
-
-  var score = reviewData.score || 5;
-  var color = SCORE_COLORS[Math.max(0, Math.min(9, score - 1))] || '#c9a04a';
-  var completed = tasks.filter(function(t) { return t.completed; });
-  var savedUn = reviewData.uncompletedTasks || [];
-
-  var html = '<div class="review-detail-head">'
-    + '<div class="review-detail-date">' + fmtDateStr(dateStr) + '</div>'
-    + '<div class="review-detail-score" style="color:' + color + ';">' + (reviewData.score ? score : '—') + '</div>'
-    + '<div class="review-detail-mood">' + (reviewData.score ? SCORE_MOODS[score - 1] : '当天没写复盘') + '</div>'
-    + '</div>';
-
-  html += '<div class="review-detail-block"><div class="review-detail-block-title">✅ 完成了</div>';
-  if (completed.length > 0) {
-    html += '<ul class="review-detail-list">';
-    completed.forEach(function(t) {
-      html += '<li><span class="di-bullet">✓</span><span>' + escapeHtml(t.title) + '</span></li>';
-      if (t.detail) html += '<li class="review-detail-reflection">📌 <span class="rl-label">详情：</span>' + escapeHtml(t.detail) + '</li>';
-      if (t.subtasks && t.subtasks.length) {
-        t.subtasks.forEach(function(s) {
-          html += '<li class="review-detail-reflection">' + (s.done ? '✅ ' : '⭕ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</li>';
-        });
-      }
-    });
-    html += '</ul>';
-  } else {
-    html += '<div class="score-trend-empty">当天没有完成任务记录</div>';
-  }
-  html += '</div>';
-
-  html += '<div class="review-detail-block"><div class="review-detail-block-title">⏳ 没完成 &amp; 反思</div>';
-  if (savedUn.length > 0) {
-    html += '<ul class="review-detail-list">';
-    savedUn.forEach(function(item, idx) {
-      html += '<li class="pending"><span class="di-bullet">' + (idx + 1) + '</span><span>' + escapeHtml(item.title) + '</span></li>'
-        + (item.detail ? '<li class="review-detail-reflection">📌 <span class="rl-label">详情：</span>' + escapeHtml(item.detail) + '</li>' : '')
-        + (item.subtasks && item.subtasks.length
-            ? item.subtasks.map(function(s) {
-                return '<li class="review-detail-reflection">' + (s.done ? '✅ ' : '⭕ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</li>';
-              }).join('')
-            : '')
-        + '<li class="review-detail-reflection">🤔 <span class="rl-label">困难：</span>' + escapeHtml(item.difficulty || '—') + '</li>'
-        + '<li class="review-detail-reflection">💡 <span class="rl-label">计划：</span>' + escapeHtml(item.solution || '—') + '</li>';
-    });
-    html += '</ul>';
-  } else {
-    html += '<div class="score-trend-empty">当天没有写反思</div>';
-  }
-  html += '</div>';
-
-  html += '<button class="review-detail-link" data-jump-date="' + dateStr + '">📖 去复盘页看完整记录</button>';
-
-  document.getElementById('reviewDetailBody').innerHTML = html;
-  document.getElementById('reviewDetailModal').classList.remove('hidden');
-}
-
-// 复盘详情弹窗交互：点遮罩/关闭按钮关闭，点跳转按钮进复盘页
-(function initReviewDetailModal() {
-  var modal = document.getElementById('reviewDetailModal');
-  if (!modal) return;
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) modal.classList.add('hidden');
-    if (e.target.closest('[data-close-review-detail]')) modal.classList.add('hidden');
-    var jump = e.target.closest('[data-jump-date]');
-    if (jump) {
-      reviewEnterDate = jump.getAttribute('data-jump-date');
-      modal.classList.add('hidden');
-      switchPage('review');
-    }
-  });
-})();
-
-// 看板评分点点击 → 弹出当天复盘详情
-document.addEventListener('click', function(e) {
-  var dayEl = e.target.closest('.score-trend-day');
-  if (dayEl && dayEl.dataset.reviewDate) {
-    showReviewDetail(dayEl.dataset.reviewDate);
-  }
-});
-
 // ==================== 每日复盘 ====================
-
-// 评分情绪标签
-const SCORE_MOODS = [
-  '今天有点水 😅', '状态不太好 😕', '浑浑噩噩的一天 😶',
-  '勉强及格 📋', '中规中矩 🙂', '还不错 👍',
-  '今天挺顺 😊', '效率很高 🎯', '几乎完美 ✨',
-  '神级一天！🔥'
-];
-
-// 评分颜色
-const SCORE_COLORS = [
-  '#c85555', '#c85555', '#c9a04a',
-  '#c9a04a', 'var(--accent)', 'var(--accent)',
-  'var(--accent)', 'var(--green)', 'var(--green)',
-  'var(--green)'
-];
 
 function formatReviewDate() {
   var d = new Date();
@@ -7036,6 +7410,7 @@ document.getElementById('libraryModalImport').addEventListener('click', function
       completed: false,
       doneSettled: false,
       duration: 0,
+      sessions: [],
       _fresh: true,
     });
   });
@@ -7075,18 +7450,8 @@ document.getElementById('libraryModal').addEventListener('click', function(e) {
 document.getElementById('btnLibrary').addEventListener('click', function() { openImportModal('tasks'); });
 document.getElementById('btnLibraryTomorrow').addEventListener('click', function() { openImportModal('tomorrow'); });
 
-// 复盘状态
-var reviewState = {
-  score: 5,
-  uncompletedItems: [], // [{taskId, title, difficulty, solution}]
-  saved: true,
-  dragging: false,
-  readOnly: false,
-};
-
 // 复盘历史回看状态
 var reviewViewDate = null;   // null = 今天；否则为 'YYYY-MM-DD'
-var reviewEnterDate = null;  // 从看板跳转到复盘页时要定位的日期
 
 function pad2n(n) { return (n < 10 ? '0' : '') + n; }
 function todayKey() {
@@ -7114,37 +7479,292 @@ function shiftReviewDay(delta) {
   var today = parseDateStr(todayKey());
   if (d.getTime() > today.getTime()) return; // 不能看未来
   reviewViewDate = dateStrOf(d);
+  reviewMonthYear = d.getFullYear();
+  reviewMonthValue = d.getMonth() + 1;
   loadReview();
 }
 
-function setScore(value) {
-  value = Math.max(1, Math.min(10, Math.round(value)));
-  reviewState.score = value;
-  reviewState.saved = false;
+var REVIEW_TASK_COLORS = [
+  '#c9a87c', '#7a9e7e', '#6f8fb8', '#c96f7b',
+  '#9a7fb8', '#d49c5f', '#5fa6a0', '#b8a35f',
+  '#8b7d6b', '#6d9f71'
+];
 
-  var numEl = document.getElementById('scoreNumber');
-  var moodEl = document.getElementById('scoreMood');
-  var knob = document.getElementById('scoreKnob');
-  var fill = document.getElementById('scoreFill');
+function reviewTaskColor(taskId, tasks) {
+  var idx = tasks.findIndex(function(t) { return t.id === taskId; });
+  return REVIEW_TASK_COLORS[(idx < 0 ? 0 : idx) % REVIEW_TASK_COLORS.length];
+}
 
-  if (numEl) {
-    numEl.textContent = value;
-    numEl.classList.remove('changing');
-    void numEl.offsetWidth; // force reflow
-    numEl.classList.add('changing');
-    numEl.style.color = SCORE_COLORS[value - 1];
+function formatTimeOfDay(value) {
+  var d = new Date(value);
+  if (isNaN(d.getTime())) return '';
+  return pad2n(d.getHours()) + ':' + pad2n(d.getMinutes());
+}
+
+function collectReviewSessions(tasks, dateStr, isToday) {
+  var dayStartDate = parseDateStr(dateStr);
+  dayStartDate.setHours(0, 0, 0, 0);
+  var dayEndDate = new Date(dayStartDate.getTime());
+  dayEndDate.setDate(dayEndDate.getDate() + 1);
+  var dayStart = dayStartDate.getTime();
+  var dayEnd = dayEndDate.getTime();
+  var sessions = [];
+
+  tasks.forEach(function(task) {
+    var color = reviewTaskColor(task.id, tasks);
+    (task.sessions || []).forEach(function(session) {
+      var start = Number(session.start);
+      var end = Number(session.end);
+      if (!isFinite(start) || !isFinite(end) || end <= start) return;
+      start = Math.max(start, dayStart);
+      end = Math.min(end, dayEnd);
+      if (end <= start) return;
+      var subtask = session.subtaskId
+        ? (task.subtasks || []).find(function(s) { return s.id === session.subtaskId; })
+        : null;
+      sessions.push({
+        taskId: task.id,
+        taskTitle: task.title,
+        taskDetail: task.detail || '',
+        taskCompleted: !!task.completed,
+        subtaskText: subtask ? subtask.text : '',
+        start: start,
+        end: end,
+        duration: Math.round((end - start) / 1000),
+        source: session.source || 'timer',
+        color: color,
+      });
+    });
+  });
+
+  if (isToday && currentTimer && currentTimer.start) {
+    var activeTask = currentTimer.mode === 'task' ? findTaskById(currentTimer.id) : null;
+    var activeStart = Math.max(currentTimer.start, dayStart);
+    var activeEnd = Math.min(Date.now(), dayEnd);
+    if (activeEnd > activeStart) {
+      var activeSubtask = activeTask && currentTimer.subtaskId
+        ? (activeTask.subtasks || []).find(function(s) { return s.id === currentTimer.subtaskId; })
+        : null;
+      sessions.push({
+        taskId: currentTimer.id,
+        taskTitle: activeTask ? activeTask.title : '自由计时',
+        taskDetail: activeTask ? (activeTask.detail || '') : '',
+        taskCompleted: activeTask ? !!activeTask.completed : false,
+        subtaskText: activeSubtask ? activeSubtask.text : '',
+        start: activeStart,
+        end: activeEnd,
+        duration: Math.round((activeEnd - activeStart) / 1000),
+        source: 'active',
+        color: currentTimer.mode === 'task'
+          ? reviewTaskColor(currentTimer.id, tasks)
+          : '#b8a35f',
+      });
+    }
   }
-  if (moodEl) moodEl.textContent = SCORE_MOODS[value - 1];
-  if (knob) {
-    knob.textContent = value;
-    knob.style.borderColor = SCORE_COLORS[value - 1];
-    knob.style.color = SCORE_COLORS[value - 1];
+
+  sessions.sort(function(a, b) { return a.start - b.start; });
+  return { dayStart: dayStart, dayEnd: dayEnd, sessions: sessions };
+}
+
+function renderReviewStats(tasks, sessions, isToday) {
+  var grid = document.getElementById('reviewStatGrid');
+  var insightEl = document.getElementById('reviewOverviewInsight');
+  if (!grid) return;
+
+  var totalTasks = tasks.length;
+  var doneTasks = tasks.filter(function(t) { return t.completed; }).length;
+  var completion = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
+  var timedTasks = tasks.filter(function(t) { return getTaskTotalDuration(t) > 0; }).length;
+  var longest = sessions.reduce(function(max, s) { return Math.max(max, s.duration); }, 0);
+  var rangeText = sessions.length
+    ? formatTimeOfDay(sessions[0].start) + '–' + formatTimeOfDay(sessions[sessions.length - 1].end)
+    : '--';
+  var rangeSub = sessions.length ? sessions.length + ' 个计时块' : '暂无区间数据';
+
+  grid.innerHTML =
+    '<div class="review-stat">'
+      + '<span class="review-stat-label">完成度</span>'
+      + '<strong class="review-stat-value">' + completion + '%</strong>'
+      + '<span class="review-stat-sub">' + doneTasks + ' / ' + totalTasks + ' 项任务</span>'
+    + '</div>'
+    + '<div class="review-stat">'
+      + '<span class="review-stat-label">有记录任务</span>'
+      + '<strong class="review-stat-value">' + timedTasks + '</strong>'
+      + '<span class="review-stat-sub">共 ' + totalTasks + ' 项任务</span>'
+    + '</div>'
+    + '<div class="review-stat">'
+      + '<span class="review-stat-label">计时区间</span>'
+      + '<strong class="review-stat-value">' + rangeText + '</strong>'
+      + '<span class="review-stat-sub">' + rangeSub + '</span>'
+    + '</div>'
+    + '<div class="review-stat">'
+      + '<span class="review-stat-label">最长专注</span>'
+      + '<strong class="review-stat-value">' + (longest ? formatDurationShort(longest) : '--') + '</strong>'
+      + '<span class="review-stat-sub">' + (longest ? '单次连续计时' : '暂无连续记录') + '</span>'
+    + '</div>';
+
+  if (!insightEl) return;
+  var ranked = tasks.map(function(t) {
+    return { title: t.title, duration: getTaskTotalDuration(t) };
+  }).filter(function(t) {
+    return t.duration > 0;
+  }).sort(function(a, b) {
+    return b.duration - a.duration;
+  });
+  var totalSeconds = ranked.reduce(function(sum, t) { return sum + t.duration; }, 0);
+  var insights = [];
+  if (ranked.length && totalSeconds) {
+    insights.push('投入最多：' + ranked[0].title + '，占 ' + Math.round(ranked[0].duration / totalSeconds * 100) + '%');
+  }
+  if (sessions.length) {
+    var hourMinutes = {};
+    sessions.forEach(function(s) {
+      var cursor = s.start;
+      while (cursor < s.end) {
+        var d = new Date(cursor);
+        var nextHour = new Date(d.getTime());
+        nextHour.setMinutes(60, 0, 0);
+        var segmentEnd = Math.min(s.end, nextHour.getTime());
+        var hour = d.getHours();
+        hourMinutes[hour] = (hourMinutes[hour] || 0) + Math.round((segmentEnd - cursor) / 60000);
+        cursor = segmentEnd;
+      }
+    });
+    var peakHour = null;
+    var peakMinutes = -1;
+    Object.keys(hourMinutes).forEach(function(hour) {
+      if (hourMinutes[hour] > peakMinutes) {
+        peakMinutes = hourMinutes[hour];
+        peakHour = parseInt(hour, 10);
+      }
+    });
+    if (peakHour !== null && peakMinutes > 0) {
+      insights.push('主要投入时段：' + pad2n(peakHour) + ':00–' + pad2n((peakHour + 1) % 24) + ':00');
+    }
+  }
+  insights.push('任务完成度 ' + completion + '%');
+  insightEl.textContent = insights.join(' · ');
+}
+
+function renderReviewPie(tasks) {
+  var chart = document.getElementById('reviewPieChart');
+  var legend = document.getElementById('reviewPieLegend');
+  var summary = document.getElementById('reviewPieSummary');
+  if (!chart || !legend || !summary) return;
+
+  var items = tasks.map(function(t) {
+    return {
+      title: t.title,
+      duration: getTaskTotalDuration(t),
+      color: reviewTaskColor(t.id, tasks),
+    };
+  }).filter(function(t) {
+    return t.duration > 0;
+  }).sort(function(a, b) {
+    return b.duration - a.duration;
+  });
+
+  var total = items.reduce(function(sum, t) { return sum + t.duration; }, 0);
+  if (!total) {
+    chart.style.background = 'rgba(255,255,255,0.08)';
+    legend.innerHTML = '<div class="review-data-empty">还没有任务用时记录。</div>';
+    summary.textContent = '还没有任务用时记录。完成计时或手动调整用时后，这里会显示任务占比。';
+    return;
   }
 
-  // 更新滑块位置
-  var pct = ((value - 1) / 9) * 100;
-  if (knob) knob.style.left = pct + '%';
-  if (fill) fill.style.width = pct + '%';
+  var cursor = 0;
+  var gradientParts = [];
+  items.forEach(function(item) {
+    item.percent = item.duration / total * 100;
+    var start = cursor;
+    cursor += item.percent;
+    gradientParts.push(item.color + ' ' + start.toFixed(3) + '% ' + cursor.toFixed(3) + '%');
+  });
+
+  chart.style.background = 'conic-gradient(' + gradientParts.join(', ') + ')';
+  legend.innerHTML = items.map(function(item) {
+    return '<div class="review-pie-legend-item">'
+      + '<span class="review-pie-dot" style="background:' + item.color + ';"></span>'
+      + '<span class="review-pie-name" title="' + escAttr(item.title) + '">' + escapeHtml(item.title) + '</span>'
+      + '<span class="review-pie-value">' + formatDurationShort(item.duration) + ' · ' + Math.round(item.percent) + '%</span>'
+    + '</div>';
+  }).join('');
+
+  summary.textContent = '共 ' + formatDurationShort(total) + '，覆盖 ' + items.length + ' 项任务。'
+    + '用时最高的是「' + items[0].title + '」，占 ' + Math.round(items[0].percent) + '%。';
+}
+
+function renderReviewTimeline(sessionData, isToday) {
+  var summary = document.getElementById('reviewTimelineSummary');
+  var list = document.getElementById('reviewTimelineList');
+  if (!summary || !list) return;
+
+  var allSessions = sessionData.sessions || [];
+  var sessions = allSessions.filter(function(s) { return s.duration >= 5 * 60; });
+  if (!sessions.length) {
+    if (allSessions.length) {
+      summary.textContent = '少于 5 分钟的计时块不会显示在时间轴中。';
+      list.innerHTML = '<div class="review-data-empty">当前没有达到 5 分钟的计时记录。</div>';
+    } else {
+      summary.textContent = isToday
+        ? '今天还没有可还原的计时区间。从现在开始使用计时器，之后会自动出现在这里。'
+        : '这一天只有累计用时，没有保存开始和结束时间，因此无法还原时间轴。';
+      list.innerHTML = '<div class="review-data-empty">升级后的计时记录会按真实时间显示在这里。</div>';
+    }
+    return;
+  }
+
+  var totalDuration = sessions.reduce(function(sum, s) { return sum + s.duration; }, 0);
+  summary.textContent = sessions.length + ' 个计时块 · 共 ' + formatDurationShort(totalDuration)
+    + ' · ' + formatTimeOfDay(sessions[0].start) + '–' + formatTimeOfDay(sessions[sessions.length - 1].end);
+
+  var previousEnd = null;
+  list.innerHTML = sessions.map(function(s) {
+    var gapText = previousEnd
+      ? '距上一段 ' + formatDurationShort(Math.max(0, Math.round((s.start - previousEnd) / 1000)))
+      : '当天第一个计时块';
+    var share = totalDuration ? Math.round(s.duration / totalDuration * 100) : 0;
+    var sourceLabel = s.source === 'free'
+      ? '自由计时'
+      : (s.subtaskText ? '详情计时' : '主任务计时');
+    var statusLabel = s.source === 'active' ? '进行中' : (s.taskCompleted ? '已完成' : '未完成');
+    var statusClass = s.source === 'active' ? ' active' : (s.taskCompleted ? '' : ' pending');
+    var detailText = s.subtaskText || s.taskDetail || '';
+    var html = '<div class="review-timeline-item">'
+      + '<div class="review-timeline-time">'
+        + '<strong>' + formatTimeOfDay(s.start) + '</strong>'
+        + '<span>' + formatTimeOfDay(s.end) + '</span>'
+      + '</div>'
+      + '<div class="review-timeline-rail">'
+        + '<span class="review-timeline-dot" style="background:' + s.color + ';"></span>'
+      + '</div>'
+      + '<div class="review-timeline-main">'
+        + '<div class="review-timeline-head">'
+          + '<div class="review-timeline-title">' + escapeHtml(s.taskTitle) + '</div>'
+          + '<div class="review-timeline-duration">' + formatDurationShort(s.duration) + '</div>'
+        + '</div>'
+        + '<div class="review-timeline-meta">'
+          + '<span>' + formatTimeOfDay(s.start) + '–' + formatTimeOfDay(s.end) + '</span>'
+          + '<span>·</span><span>' + sourceLabel + '</span>'
+          + '<span class="review-timeline-status' + statusClass + '">' + statusLabel + '</span>'
+        + '</div>'
+        + (detailText ? '<div class="review-timeline-detail">' + escapeHtml(detailText) + '</div>' : '')
+        + '<div class="review-timeline-foot">'
+          + '<span>' + gapText + '</span>'
+          + '<span>占当天计时 ' + share + '%</span>'
+        + '</div>'
+      + '</div>'
+    + '</div>';
+    previousEnd = previousEnd ? Math.max(previousEnd, s.end) : s.end;
+    return html;
+  }).join('');
+}
+
+function renderReviewAnalytics(tasks, dateStr, isToday) {
+  var sessionData = collectReviewSessions(tasks, dateStr, isToday);
+  renderReviewStats(tasks, sessionData.sessions, isToday);
+  renderReviewPie(tasks);
+  renderReviewTimeline(sessionData, isToday);
 }
 
 // 加载复盘（支持按日期回看历史）
@@ -7163,200 +7783,17 @@ async function loadReview() {
     tasks = (data && data.tasks) || [];
   } catch(e) { tasks = []; }
 
-  // 加载该日复盘数据
-  var reviewData = {};
-  try {
-    var r = await apiFetch('/api/review?date=' + dateStr + '&_t=' + Date.now());
-    if (r.ok) reviewData = await r.json();
-  } catch(e) {}
-
-  renderReview(tasks, reviewData, isToday);
+  renderReview(tasks, isToday, dateStr);
+  await loadReviewMonth();
 }
 
-function renderReview(tasks, reviewData, isToday) {
+function renderReview(tasks, isToday, dateStr) {
   isToday = (isToday === undefined) ? true : isToday;
-  var completed = tasks.filter(function(t) { return t.completed; });
-  var uncompleted = tasks.filter(function(t) { return !t.completed; });
-
-  // 只读模式（回看历史）：锁定评分滑块、隐藏保存按钮、只读渲染
-  reviewState.readOnly = !isToday;
-  var scoreSection = document.querySelector('.score-section');
-  if (scoreSection) scoreSection.classList.toggle('review-readonly', reviewState.readOnly);
-  var modeBar = document.getElementById('reviewModeBar');
-  if (modeBar) modeBar.classList.toggle('hidden', isToday);
-  var saveBtn = document.getElementById('btnReviewSave');
-  if (saveBtn) saveBtn.style.display = isToday ? '' : 'none';
+  dateStr = dateStr || todayKey();
   var nextBtn = document.getElementById('btnReviewNext');
-  if (nextBtn) nextBtn.disabled = isToday; // 今天没有"下一天"
+  if (nextBtn) nextBtn.disabled = isToday;
   updateReviewDateDisplay();
-
-  // 恢复评分
-  var savedScore = reviewData.score || 5;
-  reviewState.score = savedScore;
-
-  // 恢复未完成任务反思
-  reviewState.uncompletedItems = [];
-  uncompleted.forEach(function(t) {
-    var saved = (reviewData.uncompletedTasks || []).find(function(s) {
-      return s.taskId === t.id;
-    });
-    reviewState.uncompletedItems.push({
-      taskId: t.id,
-      title: t.title,
-      detail: t.detail || '',
-      subtasks: t.subtasks || [],
-      difficulty: (saved && saved.difficulty) || '',
-      solution: (saved && saved.solution) || '',
-    });
-  });
-
-  // 渲染评分
-  setScore(savedScore);
-
-  // 渲染已完成任务
-  var doneList = document.getElementById('reviewCompletedList');
-  if (completed.length > 0) {
-    var doneHtml = '<div class="review-task-list">';
-    completed.forEach(function(t) {
-      doneHtml += '<div class="review-task-item done">'
-        + '<span class="review-task-bullet">✓</span>'
-        + '<span class="review-task-title">' + escapeHtml(t.title) + '</span>'
-        + '</div>'
-        + (t.detail ? '<div class="review-task-detail">' + escapeHtml(t.detail) + '</div>' : '')
-        + (t.subtasks && t.subtasks.length
-            ? '<div class="review-subtasks">' + t.subtasks.map(function(s) {
-                return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</div>';
-              }).join('') + '</div>'
-            : '');
-    });
-    doneHtml += '</div>';
-    doneList.innerHTML = doneHtml;
-    document.getElementById('reviewCompletedSection').style.display = '';
-  } else {
-    var emptyMsg = tasks.length === 0 ? '当天没有任务记录' : '没有已完成的任务';
-    doneList.innerHTML = '<div class="review-task-list"><div class="review-task-item" style="color:var(--text-muted);font-size:0.95rem;">' + emptyMsg + '</div></div>';
-    document.getElementById('reviewCompletedSection').style.display = '';
-  }
-
-  // 总用时
-  var totalSecs = 0;
-  tasks.forEach(function(t) {
-    if (t.completed) totalSecs += (t.duration || 0);
-    (t.subtasks || []).forEach(function(st) { totalSecs += (st.duration || 0); });
-  });
-  var timeEl = document.getElementById('reviewTotalTime');
-  if (totalSecs > 0) {
-    timeEl.textContent = '🕐 ' + (isToday ? '今日' : '当日') + '总用时：' + formatDurationShort(totalSecs);
-    timeEl.style.display = '';
-  } else {
-    timeEl.style.display = 'none';
-  }
-
-  // 渲染未完成任务
-  var unList = document.getElementById('reviewUncompletedList');
-  var allDone = document.getElementById('reviewAllDone');
-
-  if (reviewState.readOnly) {
-    // 只读：从已保存复盘显示未完成项与反思
-    unList.style.display = '';
-    allDone.style.display = 'none';
-    var savedUn = reviewData.uncompletedTasks || [];
-    if (savedUn.length > 0) {
-      var roHtml = '<div class="review-task-list">';
-      savedUn.forEach(function(item, idx) {
-        roHtml += '<div class="review-task-item pending">'
-          + '<span class="review-task-bullet">' + (idx + 1) + '</span>'
-          + '<span class="review-task-title">' + escapeHtml(item.title) + '</span>'
-          + '</div>'
-          + (item.detail ? '<div class="review-task-detail">' + escapeHtml(item.detail) + '</div>' : '')
-          + (item.subtasks && item.subtasks.length
-              ? '<div class="review-subtasks">' + item.subtasks.map(function(s) {
-                  return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</div>';
-                }).join('') + '</div>'
-              : '')
-          + '<div class="review-reflection readonly">'
-            + '<div class="reflect-line">🤔 <span class="reflect-label">困难：</span>' + escapeHtml(item.difficulty || '—') + '</div>'
-            + '<div class="reflect-line">💡 <span class="reflect-label">计划：</span>' + escapeHtml(item.solution || '—') + '</div>'
-          + '</div>';
-      });
-      roHtml += '</div>';
-      unList.innerHTML = roHtml;
-    } else if (uncompleted.length > 0) {
-      unList.innerHTML = '<div class="review-no-review">这一天没有写反思 ✍️</div>';
-    } else {
-      unList.style.display = 'none';
-      allDone.style.display = '';
-    }
-  } else if (uncompleted.length > 0) {
-    unList.style.display = '';
-    allDone.style.display = 'none';
-    var unHtml = '<div class="review-task-list">';
-    reviewState.uncompletedItems.forEach(function(item, idx) {
-      unHtml += '<div class="review-task-item pending" data-idx="' + idx + '">'
-        + '<span class="review-task-bullet">' + (idx + 1) + '</span>'
-        + '<span class="review-task-title">' + escapeHtml(item.title) + '</span>'
-        + '</div>'
-        + (item.detail ? '<div class="review-task-detail">' + escapeHtml(item.detail) + '</div>' : '')
-        + (item.subtasks && item.subtasks.length
-            ? '<div class="review-subtasks">' + item.subtasks.map(function(s) {
-                return '<div class="review-subtask' + (s.done ? ' done' : '') + '">' + (s.done ? '✓ ' : '○ ') + escapeHtml(s.text) + (s.duration ? ' · ' + formatDurationShort(s.duration) : '') + '</div>';
-              }).join('') + '</div>'
-            : '')
-        + '<div class="review-reflection" data-idx="' + idx + '">'
-          + '<div class="review-reflection-field">'
-            + '<label>🤔 遇到了什么困难？</label>'
-            + '<textarea data-difficulty="' + idx + '" placeholder="描述一下遇到的困难…" rows="2">' + escAttr(item.difficulty) + '</textarea>'
-          + '</div>'
-          + '<div class="review-reflection-field">'
-            + '<label>💡 打算怎么解决？</label>'
-            + '<textarea data-solution="' + idx + '" placeholder="想一下解决计划…" rows="2">' + escAttr(item.solution) + '</textarea>'
-          + '</div>'
-        + '</div>';
-    });
-    unHtml += '</div>';
-    unList.innerHTML = unHtml;
-
-    // 绑定 textarea 变化监听
-    unList.querySelectorAll('textarea[data-difficulty]').forEach(function(ta) {
-      ta.addEventListener('input', function() {
-        var idx = parseInt(this.dataset.difficulty);
-        if (reviewState.uncompletedItems[idx]) {
-          reviewState.uncompletedItems[idx].difficulty = this.value;
-          reviewState.saved = false;
-        }
-      });
-    });
-    unList.querySelectorAll('textarea[data-solution]').forEach(function(ta) {
-      ta.addEventListener('input', function() {
-        var idx = parseInt(this.dataset.solution);
-        if (reviewState.uncompletedItems[idx]) {
-          reviewState.uncompletedItems[idx].solution = this.value;
-          reviewState.saved = false;
-        }
-      });
-    });
-  } else {
-    unList.style.display = 'none';
-    allDone.style.display = '';
-  }
-
-  // 如果已有保存记录，标记已保存状态
-  if (reviewData.score) {
-    reviewState.saved = true;
-    document.querySelectorAll('.review-section').forEach(function(el) {
-      el.classList.add('saved-indicator');
-    });
-    document.getElementById('reviewSaveStatus').textContent = '已保存 ✓';
-    document.getElementById('reviewSaveStatus').classList.add('show');
-  } else {
-    document.querySelectorAll('.review-section').forEach(function(el) {
-      el.classList.remove('saved-indicator');
-    });
-  }
-
-  // 全部完成提示文案随模式变化
-  var allDoneMsg = allDone && allDone.querySelector('div:nth-child(2)');
-  if (allDoneMsg) allDoneMsg.textContent = isToday ? '今天的任务全部完成！太棒了 👏' : '这一天全部完成，真棒！👏';
+  renderReviewAnalytics(tasks, dateStr, isToday);
 }
 
 function escAttr(str) {
@@ -7364,119 +7801,30 @@ function escAttr(str) {
   return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// 保存复盘
-async function saveReview() {
-  var btn = document.getElementById('btnReviewSave');
-  if (btn) btn.disabled = true;
-
-  // 收集 textarea 最新值
-  reviewState.uncompletedItems.forEach(function(item, idx) {
-    var diffTa = document.querySelector('textarea[data-difficulty="' + idx + '"]');
-    var solTa = document.querySelector('textarea[data-solution="' + idx + '"]');
-    if (diffTa) item.difficulty = diffTa.value;
-    if (solTa) item.solution = solTa.value;
-  });
-
-  var payload = {
-    score: reviewState.score,
-    uncompletedTasks: reviewState.uncompletedItems.map(function(item) {
-      return {
-        taskId: item.taskId,
-        title: item.title,
-        detail: item.detail || '',
-        subtasks: item.subtasks || [],
-        difficulty: item.difficulty,
-        solution: item.solution,
-      };
-    }),
-  };
-
-  try {
-    var res = await apiFetch('/api/review', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ review: payload }),
-    });
-    if (res.status === 401) { handleAuthError(); return; }
-    if (res.ok) {
-      reviewState.saved = true;
-      var statusEl = document.getElementById('reviewSaveStatus');
-      statusEl.textContent = '已保存 ✓';
-      statusEl.classList.add('show');
-      document.querySelectorAll('.review-section').forEach(function(el) {
-        el.classList.add('saved-indicator');
-      });
-      setTimeout(function() {
-        statusEl.classList.remove('show');
-      }, 3000);
-    }
-  } catch(e) {
-    var statusEl = document.getElementById('reviewSaveStatus');
-    statusEl.textContent = '保存失败';
-    statusEl.style.color = '#c85555';
-    statusEl.classList.add('show');
-    setTimeout(function() {
-      statusEl.classList.remove('show');
-      statusEl.style.color = '';
-    }, 3000);
-  } finally {
-    if (btn) btn.disabled = false;
+// 月度日历交互
+document.getElementById('reviewMonthCalendar').addEventListener('click', function(e) {
+  var monthBtn = e.target.closest('[data-review-month]');
+  if (monthBtn) {
+    changeReviewMonth(parseInt(monthBtn.dataset.reviewMonth, 10));
+    return;
   }
-}
-
-// 评分滑块交互
-(function initScoreSlider() {
-  var track = document.getElementById('scoreTrack');
-  if (!track) return;
-
-  function getScoreFromEvent(e) {
-    var rect = track.getBoundingClientRect();
-    var x = e.clientX - rect.left;
-    var pct = Math.max(0, Math.min(1, x / rect.width));
-    return Math.round(pct * 9 + 1);
+  var dayBtn = e.target.closest('[data-review-day]');
+  if (dayBtn) {
+    reviewViewDate = dayBtn.dataset.reviewDay;
+    reviewMonthYear = parseInt(reviewViewDate.slice(0, 4), 10);
+    reviewMonthValue = parseInt(reviewViewDate.slice(5, 7), 10);
+    loadReview();
   }
-
-  function onPointerDown(e) {
-    e.preventDefault();
-    reviewState.dragging = true;
-    var score = getScoreFromEvent(e);
-    setScore(score);
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp);
-    document.addEventListener('pointercancel', onPointerUp);
-    document.getElementById('scoreKnob').classList.add('dragging');
-  }
-
-  function onPointerMove(e) {
-    e.preventDefault();
-    if (!reviewState.dragging) return;
-    var score = getScoreFromEvent(e);
-    setScore(score);
-  }
-
-  function onPointerUp(e) {
-    document.removeEventListener('pointermove', onPointerMove);
-    document.removeEventListener('pointerup', onPointerUp);
-    document.removeEventListener('pointercancel', onPointerUp);
-    reviewState.dragging = false;
-    document.getElementById('scoreKnob').classList.remove('dragging');
-    // 松开时自动保存
-    if (!reviewState.saved) {
-      saveReview();
-    }
-  }
-
-  track.addEventListener('pointerdown', onPointerDown);
-})();
-
-// 保存按钮
-document.getElementById('btnReviewSave').addEventListener('click', saveReview);
+});
 
 // 复盘历史回看导航
 document.getElementById('btnReviewPrev').addEventListener('click', function() { shiftReviewDay(-1); });
 document.getElementById('btnReviewNext').addEventListener('click', function() { shiftReviewDay(1); });
 document.getElementById('btnReviewToday').addEventListener('click', function() {
   reviewViewDate = null;
+  var now = new Date();
+  reviewMonthYear = now.getFullYear();
+  reviewMonthValue = now.getMonth() + 1;
   loadReview();
 });
 
